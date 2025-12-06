@@ -1,3 +1,40 @@
 <resources>
     <string name="app_name">Spool</string>
+
+    <string name="app_tagline">Measure. Manage. Print.</string>
+
+    <string name="dashboard_title">Inventory</string>
+    <string name="dashboard_empty">No spools found.\nTap + to add your first roll.</string>
+    <string name="stats_total_weight">Total Stock</string>
+    <string name="stats_spool_count">Spools</string>
+
+    <string name="title_new_spool">New Spool</string>
+    <string name="title_edit_spool">Edit Spool</string>
+
+    <string name="label_brand">Brand</string>
+    <string name="hint_brand">e.g. Prusament</string>
+
+    <string name="label_material">Material Type</string>
+
+    <string name="label_color">Color</string>
+
+    <string name="label_initial_weight">Initial Weight (g)</string>
+    <string name="label_current_weight">Current Weight (g)</string>
+
+    <string name="header_settings">Print Settings</string>
+    <string name="label_temp_nozzle">Nozzle (°C)</string>
+    <string name="label_temp_bed">Bed (°C)</string>
+
+    <string name="btn_save">Save Spool</string>
+    <string name="btn_delete">Delete</string>
+    <string name="btn_cancel">Cancel</string>
+    <string name="btn_deduct">Deduct</string>
+    <string name="btn_fab">Add New Spool</string>
+
+    <string name="details_remaining">Remaining</string>
+    <string name="dialog_deduct_title">Log Print</string>
+    <string name="dialog_deduct_instruction">Enter weight used (g)</string>
+    <string name="confirm_delete">Delete this spool permanently?</string>
+
+    <string name="unit_grams">g</string>
 </resources>
