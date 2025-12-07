@@ -13,6 +13,7 @@ object Dimens {
     // Component Specifics
     val CardElevation = 2.dp
     val BorderThickness = 2.dp // Thicker borders for that "technical" look
+    val BorderRadius = 4.dp
 
     // Icon Sizes
     val IconSmall = 16.dp

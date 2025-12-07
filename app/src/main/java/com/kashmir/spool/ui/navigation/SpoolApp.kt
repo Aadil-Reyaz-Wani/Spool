@@ -1,6 +1,8 @@
 package com.kashmir.spool.ui.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
@@ -12,11 +14,14 @@ import com.kashmir.spool.ui.screens.AppViewModelProvider
 import com.kashmir.spool.ui.screens.dashboard.DashboardScreen
 import com.kashmir.spool.ui.screens.dashboard.DashboardViewModel
 import com.kashmir.spool.ui.screens.entry.SpoolEntryScreen
+import com.kashmir.spool.ui.screens.entry.SpoolEntryViewModel
 
 @Composable
 fun MySpoolApp(modifier: Modifier = Modifier) {
     val dashboardViewModel: DashboardViewModel = viewModel(factory = AppViewModelProvider.Factory)
+    val spoolEntryViewModel: SpoolEntryViewModel = viewModel(factory = AppViewModelProvider.Factory)
 
+    val spoolEntryUiState by spoolEntryViewModel.spoolEntryUiState.collectAsState()
 
 
 
@@ -43,7 +48,44 @@ fun MySpoolApp(modifier: Modifier = Modifier) {
                 SpoolEntryScreen(
                     onNavigateUp = {
                         backStack.removeLastOrNull()
-                    }
+                    },
+                    uiState = spoolEntryUiState,
+                    onBrandValueChange = { newValue ->
+                        spoolEntryViewModel.updateTextField(
+                            newBrand = newValue,
+                            newMaterial = spoolEntryUiState.material,
+                            newTotalWeight = spoolEntryUiState.totalWeight,
+                            newColorHex = spoolEntryUiState.colorHex
+                        )
+                    },
+                    onMaterialValueChange = {newValue->
+                        spoolEntryViewModel.updateTextField(
+                            newBrand = spoolEntryUiState.brand,
+                            newMaterial = newValue,
+                            newTotalWeight = spoolEntryUiState.totalWeight,
+                            newColorHex = spoolEntryUiState.colorHex
+                        )
+                    },
+                    onInitialWeightValueChange = {newValue->
+                        spoolEntryViewModel.updateTextField(
+                            newBrand = spoolEntryUiState.brand,
+                            newMaterial = spoolEntryUiState.material,
+                            newTotalWeight = newValue.toInt(),
+                            newColorHex = spoolEntryUiState.colorHex
+                        )
+                    },
+                    onColorValueChange = {newValue->
+                        spoolEntryViewModel.updateTextField(
+                            newBrand = spoolEntryUiState.brand,
+                            newMaterial = spoolEntryUiState.material,
+                            newTotalWeight = spoolEntryUiState.totalWeight,
+                            newColorHex = newValue
+                        )
+                    },
+                    selectedColor = spoolEntryUiState.colorHex,
+                    onSaveClick = spoolEntryViewModel::saveSpool,
+                    isValid = spoolEntryViewModel.isValid(),
+                    modifier = modifier
                 )
             }
 
