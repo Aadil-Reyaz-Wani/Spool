@@ -1,6 +1,6 @@
 package com.kashmir.spool.ui.screens.entry
 
-import androidx.core.graphics.isSrgb
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.kashmir.spool.data.entity.Filament
@@ -15,10 +15,12 @@ class SpoolEntryViewModel(
     private val _spoolEntryUiState = MutableStateFlow(SpoolEntryUiState())
     val spoolEntryUiState = _spoolEntryUiState.asStateFlow()
 
+    val isError = MutableStateFlow(false)
+
     fun updateTextField(
         newBrand: String,
         newMaterial: String,
-        newTotalWeight: Int,
+        newTotalWeight: String,
         newColorHex: Long
     ) {
 
@@ -36,16 +38,24 @@ class SpoolEntryViewModel(
         val freshFilament = _spoolEntryUiState.value.toFilament()
 
         viewModelScope.launch {
-            spoolRepository.insertSpool(freshFilament)
-            _spoolEntryUiState.value = SpoolEntryUiState()
+            try {
+                if (freshFilament.totalWeight != null && freshFilament.totalWeight > 0 ) {
+                    spoolRepository.insertSpool(freshFilament)
+                    _spoolEntryUiState.value = SpoolEntryUiState()
+                    isError.value = false
+                }else {
+                    isError.value = true
+                }
+            }catch (e: ArithmeticException) {
+                Log.d("ENTER","${e.message}")
+            }
         }
     }
 
     fun isValid(): Boolean {
         return _spoolEntryUiState.value.brand.isNotBlank()
                 && _spoolEntryUiState.value.material.isNotBlank()
-                && _spoolEntryUiState.value.totalWeight > 0
-                && _spoolEntryUiState.value.colorHex.isSrgb
+                && _spoolEntryUiState.value.totalWeight.isNotBlank()
     }
 }
 
@@ -53,7 +63,7 @@ data class SpoolEntryUiState(
     val id: Int = 0,
     val brand: String = "",
     val material: String = "",
-    val totalWeight: Int = 0,
+    val totalWeight: String = "",
     val colorHex: Long = 0xFF000000
 )
 
@@ -62,7 +72,7 @@ fun SpoolEntryUiState.toFilament(): Filament {
         id = id,
         brand = brand,
         material = material,
-        totalWeight = totalWeight,
+        totalWeight = totalWeight.toDoubleOrNull(),
         colorHex = colorHex
     )
 }

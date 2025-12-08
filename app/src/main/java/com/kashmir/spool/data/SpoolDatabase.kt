@@ -9,7 +9,7 @@ import com.kashmir.spool.data.entity.Filament
 import kotlin.concurrent.Volatile
 
 
-@Database(entities = [Filament::class], version = 1, exportSchema = false)
+@Database(entities = [Filament::class], version = 2, exportSchema = false)
 abstract class SpoolDatabase : RoomDatabase(){
 
     abstract fun spoolDao(): SpoolDao

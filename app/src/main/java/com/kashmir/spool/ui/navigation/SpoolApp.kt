@@ -21,9 +21,11 @@ fun MySpoolApp(modifier: Modifier = Modifier) {
     val dashboardViewModel: DashboardViewModel = viewModel(factory = AppViewModelProvider.Factory)
     val spoolEntryViewModel: SpoolEntryViewModel = viewModel(factory = AppViewModelProvider.Factory)
 
+    val listOfSpools by dashboardViewModel.getAllSpool.collectAsState()
+
+
     val spoolEntryUiState by spoolEntryViewModel.spoolEntryUiState.collectAsState()
-
-
+    val isWeightValid by spoolEntryViewModel.isError.collectAsState()
 
     val backStack = rememberNavBackStack(Routes.Dashboard)
     NavDisplay(
@@ -39,7 +41,8 @@ fun MySpoolApp(modifier: Modifier = Modifier) {
                 DashboardScreen(
                     onFabClick = {
                         backStack.add(Routes.SpoolEntry)
-                    }
+                    },
+                    listOfSpools = listOfSpools
                 )
             }
 
@@ -70,7 +73,7 @@ fun MySpoolApp(modifier: Modifier = Modifier) {
                         spoolEntryViewModel.updateTextField(
                             newBrand = spoolEntryUiState.brand,
                             newMaterial = spoolEntryUiState.material,
-                            newTotalWeight = newValue.toInt(),
+                            newTotalWeight = newValue,
                             newColorHex = spoolEntryUiState.colorHex
                         )
                     },
@@ -85,6 +88,7 @@ fun MySpoolApp(modifier: Modifier = Modifier) {
                     selectedColor = spoolEntryUiState.colorHex,
                     onSaveClick = spoolEntryViewModel::saveSpool,
                     isValid = spoolEntryViewModel.isValid(),
+                    isError = isWeightValid,
                     modifier = modifier
                 )
             }

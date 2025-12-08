@@ -5,9 +5,9 @@ import kotlinx.coroutines.flow.Flow
 
 interface SpoolRepository {
 
-    suspend fun insertSpool(filament: Filament)
+    suspend fun insertSpool(filament: Filament) // This is DONE
     suspend fun updateSpool(filament: Filament)
     suspend fun deleteSpool(filament: Filament)
-    fun getAllSpoolsStream(): Flow<List<Filament>>
+    fun getAllSpoolsStream(): Flow<List<Filament>> // WORKING on This
 
 }

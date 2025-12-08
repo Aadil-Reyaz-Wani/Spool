@@ -14,6 +14,9 @@
     <string name="label_brand">Brand</string>
     <string name="hint_brand">e.g. Prusament</string>
 
+    <string name="weight_error_message">*Please enter valid weight</string>
+
+
     <string name="label_material">Material Type</string>
 
     <string name="label_color">Color</string>

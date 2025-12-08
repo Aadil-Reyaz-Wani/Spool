@@ -15,7 +15,7 @@ data class Filament(
     @ColumnInfo(name = "color_hex")
     val colorHex: Long,
     @ColumnInfo(name = "total_weight")
-    val totalWeight: Int?,
+    val totalWeight: Double?,
 //    @ColumnInfo(name = "current_weight")
 //    val currentWeight: Int,
 //    @ColumnInfo(name = "temp_nozzle")

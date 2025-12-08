@@ -17,6 +17,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import com.kashmir.spool.R
 import com.kashmir.spool.ui.common.SpoolAppBar
@@ -33,6 +34,7 @@ fun SpoolEntryScreen(
     selectedColor: Long,
     onSaveClick: () -> Unit,
     isValid: Boolean,
+    isError: Boolean,
     modifier: Modifier = Modifier
 ) {
     Scaffold(
@@ -55,7 +57,8 @@ fun SpoolEntryScreen(
             onColorValueChange = onColorValueChange,
             selectedColor = selectedColor,
             onSaveClick = onSaveClick,
-            isValid = isValid
+            isValid = isValid,
+            isWeightValid = isError
         )
     }
 }
@@ -71,6 +74,7 @@ fun EntryFields(
     selectedColor: Long,
     onSaveClick: () -> Unit,
     isValid: Boolean,
+    isWeightValid: Boolean,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -86,7 +90,9 @@ fun EntryFields(
                     style = MaterialTheme.typography.labelMedium
                 )
             },
+            placeholder = { Text(stringResource(R.string.hint_brand)) },
             singleLine = true,
+            keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words),
             modifier = Modifier.fillMaxWidth()
         )
         Spacer(modifier = Modifier.height(Dimens.PaddingSmall))
@@ -100,11 +106,12 @@ fun EntryFields(
                 )
             },
             singleLine = true,
+            keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Characters),
             modifier = Modifier.fillMaxWidth()
         )
         Spacer(modifier = Modifier.height(Dimens.PaddingSmall))
         OutlinedTextField(
-            value = uiState.totalWeight.toString(),
+            value = uiState.totalWeight,
             onValueChange = onInitialWeightValueChange,
             label = {
                 Text(
@@ -114,6 +121,8 @@ fun EntryFields(
             },
             singleLine = true,
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+            supportingText = { if (isWeightValid) Text(text = stringResource(R.string.weight_error_message)) },
+            isError = isWeightValid,
             modifier = Modifier.fillMaxWidth()
         )
         Spacer(modifier = Modifier.height(Dimens.PaddingSmall))
@@ -132,6 +141,7 @@ fun EntryFields(
             Text(
                 text = stringResource(R.string.btn_save),
                 style = MaterialTheme.typography.labelLarge,
+                color = if (isValid) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.inversePrimary,
                 fontWeight = FontWeight.Bold
             )
         }
@@ -144,7 +154,7 @@ fun EntryFieldsPreview() {
     val uiState = SpoolEntryUiState(
         brand = "Brand",
         material = "PLA",
-        totalWeight = 1000
+        totalWeight = "1000"
     )
     EntryFields(
         uiState = uiState,
@@ -154,6 +164,7 @@ fun EntryFieldsPreview() {
         onColorValueChange = {},
         selectedColor = 0xFF000000,
         onSaveClick = {},
-        isValid = true
+        isValid = true,
+        isWeightValid = true
     )
 }
