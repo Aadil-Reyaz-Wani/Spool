@@ -21,6 +21,7 @@ class SpoolEntryViewModel(
         newBrand: String,
         newMaterial: String,
         newTotalWeight: String,
+        newColorName: String,
         newColorHex: Long
     ) {
 
@@ -28,6 +29,7 @@ class SpoolEntryViewModel(
             brand = newBrand,
             material = newMaterial,
             totalWeight = newTotalWeight,
+            colorName = newColorName,
             colorHex = newColorHex
         )
     }
@@ -64,6 +66,7 @@ data class SpoolEntryUiState(
     val brand: String = "",
     val material: String = "",
     val totalWeight: String = "",
+    val colorName: String = "",
     val colorHex: Long = 0xFF000000
 )
 
@@ -73,6 +76,11 @@ fun SpoolEntryUiState.toFilament(): Filament {
         brand = brand,
         material = material,
         totalWeight = totalWeight.toDoubleOrNull(),
-        colorHex = colorHex
+        currentWeight = totalWeight.toDoubleOrNull(), // Keep eye on this one, this could cause problem in future
+        colorHex = colorHex,
+        colorName = colorName,
+        tempNozzle = 0,
+        tempBed = 0,
+        note = ""
     )
 }

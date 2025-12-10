@@ -4,8 +4,13 @@ plugins {
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.jetbrains.kotlin.serialization)
     id("com.google.devtools.ksp")
+    alias(libs.plugins.androidx.room)
 }
 
+
+room {
+    schemaDirectory("$projectDir/schemas")
+}
 android {
     namespace = "com.kashmir.spool"
     compileSdk {

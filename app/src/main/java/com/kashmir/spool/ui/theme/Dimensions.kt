@@ -1,6 +1,8 @@
 package com.kashmir.spool.ui.theme
 
+import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 
 object Dimens {
     // Standard Grid (Multiples of 4/8)
@@ -12,8 +14,9 @@ object Dimens {
 
     // Component Specifics
     val CardElevation = 2.dp
-    val BorderThickness = 2.dp // Thicker borders for that "technical" look
+    val BorderThickness = 0.5.dp // Thicker borders for that "technical" look
     val BorderRadius = 4.dp
+    val CornerRadius = 16.dp
 
     // Icon Sizes
     val IconSmall = 16.dp
@@ -25,4 +28,10 @@ object Dimens {
     val ProgressBarHeight = 12.dp    // Thick enough to read easily
     val SpoolCardMinHeight = 80.dp   // Minimum touch target for list items
     val gapHeight = 4.dp
+
+
+    val IconSize = 32.dp
+
+    //Text Sizes
+    val TextInGhostCard = 18.sp
 }

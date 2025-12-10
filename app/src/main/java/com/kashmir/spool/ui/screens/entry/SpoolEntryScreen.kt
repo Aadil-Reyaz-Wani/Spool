@@ -2,11 +2,14 @@ package com.kashmir.spool.ui.screens.entry
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -30,6 +33,7 @@ fun SpoolEntryScreen(
     onBrandValueChange: (String) -> Unit,
     onMaterialValueChange: (String) -> Unit,
     onInitialWeightValueChange: (String) -> Unit,
+    onColorNameChange: (String) -> Unit,
     onColorValueChange: (Long) -> Unit,
     selectedColor: Long,
     onSaveClick: () -> Unit,
@@ -50,15 +54,16 @@ fun SpoolEntryScreen(
     ) { paddingValues ->
         EntryFields(
             uiState = uiState,
-            modifier = Modifier.padding(paddingValues = paddingValues),
             onBrandValueChange = onBrandValueChange,
             onMaterialValueChange = onMaterialValueChange,
             onInitialWeightValueChange = onInitialWeightValueChange,
+            onColorNameChange = onColorNameChange,
             onColorValueChange = onColorValueChange,
             selectedColor = selectedColor,
             onSaveClick = onSaveClick,
             isValid = isValid,
-            isWeightValid = isError
+            isWeightValid = isError,
+            modifier = Modifier.padding(paddingValues = paddingValues)
         )
     }
 }
@@ -70,6 +75,7 @@ fun EntryFields(
     onBrandValueChange: (String) -> Unit,
     onMaterialValueChange: (String) -> Unit,
     onInitialWeightValueChange: (String) -> Unit,
+    onColorNameChange:(String) -> Unit,
     onColorValueChange: (Long) -> Unit,
     selectedColor: Long,
     onSaveClick: () -> Unit,
@@ -107,6 +113,20 @@ fun EntryFields(
             },
             singleLine = true,
             keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Characters),
+            modifier = Modifier.fillMaxWidth()
+        )
+        Spacer(modifier = Modifier.height(Dimens.PaddingSmall))
+        OutlinedTextField(
+            value = uiState.colorName,
+            onValueChange = onColorNameChange,
+            label = {
+                Text(
+                    text = stringResource(R.string.label_color),
+                    style = MaterialTheme.typography.labelMedium
+                )
+            },
+            singleLine = true,
+            keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words),
             modifier = Modifier.fillMaxWidth()
         )
         Spacer(modifier = Modifier.height(Dimens.PaddingSmall))
@@ -154,6 +174,7 @@ fun EntryFieldsPreview() {
     val uiState = SpoolEntryUiState(
         brand = "Brand",
         material = "PLA",
+        colorName = "Galaxy Must Green",
         totalWeight = "1000"
     )
     EntryFields(
@@ -161,6 +182,7 @@ fun EntryFieldsPreview() {
         onBrandValueChange = {},
         onMaterialValueChange = {},
         onInitialWeightValueChange = {},
+        onColorNameChange = {},
         onColorValueChange = {},
         selectedColor = 0xFF000000,
         onSaveClick = {},

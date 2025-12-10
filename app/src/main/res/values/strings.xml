@@ -10,6 +10,7 @@
 
     <string name="title_new_spool">New Spool</string>
     <string name="title_edit_spool">Edit Spool</string>
+    <string name="spool_details">Spool Details</string>
 
     <string name="label_brand">Brand</string>
     <string name="hint_brand">e.g. Prusament</string>
@@ -29,15 +30,19 @@
     <string name="label_temp_bed">Bed (°C)</string>
 
     <string name="btn_save">Save Spool</string>
-    <string name="btn_delete">Delete</string>
+    <string name="btn_delete">Delete Spool</string>
     <string name="btn_cancel">Cancel</string>
-    <string name="btn_deduct">Deduct</string>
+    <string name="btn_edit">Edit Spool</string>
     <string name="btn_fab">Add New Spool</string>
 
     <string name="details_remaining">Remaining</string>
     <string name="dialog_deduct_title">Log Print</string>
     <string name="dialog_deduct_instruction">Enter weight used (g)</string>
     <string name="confirm_delete">Delete this spool permanently?</string>
+
+
+    <string name="missing_settings">Add Nozzle &amp; Bed Temperatures</string>
+    <string name="missing_notes">Add print notes or observations</string>
 
     <string name="unit_grams">g</string>
 </resources>

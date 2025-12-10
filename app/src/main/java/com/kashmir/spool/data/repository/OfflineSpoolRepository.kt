@@ -22,4 +22,8 @@ class OfflineSpoolRepository(
     override fun getAllSpoolsStream(): Flow<List<Filament>> {
         return spoolDao.getAllSpools()
     }
+
+    override fun getSpoolStream(id: Int): Flow<Filament> {
+        return spoolDao.getSpool(id = id)
+    }
 }

@@ -1,6 +1,7 @@
 package com.kashmir.spool.ui.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
@@ -13,6 +14,8 @@ import androidx.navigation3.ui.NavDisplay
 import com.kashmir.spool.ui.screens.AppViewModelProvider
 import com.kashmir.spool.ui.screens.dashboard.DashboardScreen
 import com.kashmir.spool.ui.screens.dashboard.DashboardViewModel
+import com.kashmir.spool.ui.screens.details.SpoolDetailsScreen
+import com.kashmir.spool.ui.screens.details.SpoolDetailsViewModel
 import com.kashmir.spool.ui.screens.entry.SpoolEntryScreen
 import com.kashmir.spool.ui.screens.entry.SpoolEntryViewModel
 
@@ -20,12 +23,16 @@ import com.kashmir.spool.ui.screens.entry.SpoolEntryViewModel
 fun MySpoolApp(modifier: Modifier = Modifier) {
     val dashboardViewModel: DashboardViewModel = viewModel(factory = AppViewModelProvider.Factory)
     val spoolEntryViewModel: SpoolEntryViewModel = viewModel(factory = AppViewModelProvider.Factory)
+    val spoolDetailsViewModel: SpoolDetailsViewModel = viewModel(factory = AppViewModelProvider.Factory)
+
 
     val listOfSpools by dashboardViewModel.getAllSpool.collectAsState()
 
 
     val spoolEntryUiState by spoolEntryViewModel.spoolEntryUiState.collectAsState()
     val isWeightValid by spoolEntryViewModel.isError.collectAsState()
+
+    val spoolDetails by spoolDetailsViewModel.spoolDetails.collectAsState()
 
     val backStack = rememberNavBackStack(Routes.Dashboard)
     NavDisplay(
@@ -42,12 +49,15 @@ fun MySpoolApp(modifier: Modifier = Modifier) {
                     onFabClick = {
                         backStack.add(Routes.SpoolEntry)
                     },
+                    onCardClick = {id->
+                        backStack.add(Routes.SpoolDetails(id))
+                    },
                     listOfSpools = listOfSpools
                 )
             }
 
             // Entry Screen Entry
-            entry<Routes.SpoolEntry>{
+            entry<Routes.SpoolEntry> {
                 SpoolEntryScreen(
                     onNavigateUp = {
                         backStack.removeLastOrNull()
@@ -58,38 +68,67 @@ fun MySpoolApp(modifier: Modifier = Modifier) {
                             newBrand = newValue,
                             newMaterial = spoolEntryUiState.material,
                             newTotalWeight = spoolEntryUiState.totalWeight,
-                            newColorHex = spoolEntryUiState.colorHex
+                            newColorHex = spoolEntryUiState.colorHex,
+                            newColorName = spoolEntryUiState.colorName
                         )
                     },
-                    onMaterialValueChange = {newValue->
+                    onMaterialValueChange = { newValue ->
                         spoolEntryViewModel.updateTextField(
                             newBrand = spoolEntryUiState.brand,
                             newMaterial = newValue,
                             newTotalWeight = spoolEntryUiState.totalWeight,
-                            newColorHex = spoolEntryUiState.colorHex
+                            newColorHex = spoolEntryUiState.colorHex,
+                            newColorName = spoolEntryUiState.colorName
                         )
                     },
-                    onInitialWeightValueChange = {newValue->
+                    onInitialWeightValueChange = { newValue ->
                         spoolEntryViewModel.updateTextField(
                             newBrand = spoolEntryUiState.brand,
                             newMaterial = spoolEntryUiState.material,
                             newTotalWeight = newValue,
-                            newColorHex = spoolEntryUiState.colorHex
+                            newColorHex = spoolEntryUiState.colorHex,
+                            newColorName = spoolEntryUiState.colorName
                         )
                     },
-                    onColorValueChange = {newValue->
+                    onColorNameChange = { newValue ->
                         spoolEntryViewModel.updateTextField(
                             newBrand = spoolEntryUiState.brand,
                             newMaterial = spoolEntryUiState.material,
                             newTotalWeight = spoolEntryUiState.totalWeight,
-                            newColorHex = newValue
+                            newColorHex = spoolEntryUiState.colorHex,
+                            newColorName = newValue
+                        )
+                    },
+                    onColorValueChange = { newValue ->
+                        spoolEntryViewModel.updateTextField(
+                            newBrand = spoolEntryUiState.brand,
+                            newMaterial = spoolEntryUiState.material,
+                            newTotalWeight = spoolEntryUiState.totalWeight,
+                            newColorHex = newValue,
+                            newColorName = spoolEntryUiState.colorName
                         )
                     },
                     selectedColor = spoolEntryUiState.colorHex,
-                    onSaveClick = spoolEntryViewModel::saveSpool,
+                    onSaveClick = {
+                        spoolEntryViewModel.saveSpool()
+                        backStack.removeLastOrNull()
+                    },
                     isValid = spoolEntryViewModel.isValid(),
                     isError = isWeightValid,
                     modifier = modifier
+                )
+            }
+
+            // Details Screen Entry
+            entry<Routes.SpoolDetails> { entry->
+                LaunchedEffect(entry.id) {
+                    spoolDetailsViewModel.loadSpool(entry.id)
+                }
+                SpoolDetailsScreen(
+                    spoolDetails = spoolDetails,
+                    navigateUp = {
+                        backStack.removeLastOrNull()
+                    }
                 )
             }
 

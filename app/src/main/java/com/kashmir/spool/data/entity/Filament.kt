@@ -10,16 +10,18 @@ data class Filament(
     val id: Int = 0,
     val brand: String,
     val material: String,
-//    @ColumnInfo(name = "color_name")
-//    val colorName: String,
+    @ColumnInfo(name = "color_name")
+    val colorName: String,
     @ColumnInfo(name = "color_hex")
     val colorHex: Long,
     @ColumnInfo(name = "total_weight")
     val totalWeight: Double?,
-//    @ColumnInfo(name = "current_weight")
-//    val currentWeight: Int,
-//    @ColumnInfo(name = "temp_nozzle")
-//    val tempNozzle: Int,
-//    @ColumnInfo(name = "temp_bed")
-//    val tempBed: Int
+    @ColumnInfo(name = "current_weight")
+    val currentWeight: Double?,
+    @ColumnInfo(name = "temp_nozzle")
+    val tempNozzle: Int,
+    @ColumnInfo(name = "temp_bed", defaultValue = "0")
+    val tempBed: Int,
+    @ColumnInfo(name = "note", defaultValue = "")
+    val note: String,
 )

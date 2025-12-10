@@ -6,6 +6,7 @@ import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.kashmir.spool.SpoolApplication
 import com.kashmir.spool.ui.screens.dashboard.DashboardViewModel
+import com.kashmir.spool.ui.screens.details.SpoolDetailsViewModel
 import com.kashmir.spool.ui.screens.entry.SpoolEntryViewModel
 
 
@@ -19,6 +20,12 @@ object AppViewModelProvider {
 
         initializer {
             SpoolEntryViewModel(
+                toSpoolApplication().container.spoolRepository
+            )
+        }
+
+        initializer {
+            SpoolDetailsViewModel(
                 toSpoolApplication().container.spoolRepository
             )
         }
