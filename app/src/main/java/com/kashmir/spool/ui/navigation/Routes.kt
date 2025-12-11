@@ -9,7 +9,7 @@ sealed interface Routes : NavKey {
     object Dashboard : Routes
 
     @Serializable
-    object SpoolEntry : Routes
+    data class SpoolEntry(val id: Int) : Routes
 
     @Serializable
     data class SpoolDetails(val id: Int) : Routes

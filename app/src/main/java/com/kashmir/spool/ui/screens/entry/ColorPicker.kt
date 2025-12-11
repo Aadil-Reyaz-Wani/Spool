@@ -5,15 +5,24 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.kashmir.spool.data.FilamentColorData
 import com.kashmir.spool.ui.theme.Dimens
@@ -25,22 +34,58 @@ fun ColorSelectionGrid(
     modifier: Modifier = Modifier
 ) {
 
-    LazyVerticalGrid(
-        columns = GridCells.Adaptive(150.dp),
-        verticalArrangement = Arrangement.spacedBy(Dimens.PaddingMedium),
-        horizontalArrangement = Arrangement.spacedBy(Dimens.PaddingMedium),
+    Card(
+        modifier = modifier.fillMaxWidth(),
+        elevation = CardDefaults.cardElevation(Dimens.CardElevation),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
+        ),
+
     ) {
-        items(FilamentColorData.defaultColors) {filamentColor->
-            val isSelected = filamentColor.colorValue == selectedColor
+        Column(
+            modifier = Modifier
+                .padding(Dimens.PaddingSmall)
+                .fillMaxWidth(),
+        ) {
 
-            ColorCircle(
-                colorHex = filamentColor.colorValue,
-                isSelected = isSelected,
-                onClick = { onSelectedColor(filamentColor.colorValue) }
-            )
+            Text(
+                text = "Choose Spool Color",
+                style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
 
+                )
+            Spacer(modifier = Modifier.height(Dimens.gapHeight))
+            FlowRow(
+                modifier = Modifier.fillMaxWidth(),
+                itemVerticalAlignment = Alignment.CenterVertically,
+                verticalArrangement = Arrangement.spacedBy(space = Dimens.PaddingMedium),
+                horizontalArrangement = Arrangement.spacedBy(
+                    space = Dimens.PaddingMedium,
+                    alignment = Alignment.CenterHorizontally
+                ),
+            ) {
+                FilamentColorData.defaultColors.forEach { filamentColor ->
+                    val isSelected = filamentColor.colorValue == selectedColor
+
+                    ColorCircle(
+                        colorHex = filamentColor.colorValue,
+                        isSelected = isSelected,
+                        onClick = { onSelectedColor(filamentColor.colorValue) }
+                    )
+
+                }
+            }
         }
+
     }
+}
+
+@Preview
+@Composable
+fun ColorSelectionGridPreview() {
+    ColorSelectionGrid(
+        selectedColor = 0xFF000000,
+        onSelectedColor = {}
+    )
 }
 
 @Composable
@@ -56,14 +101,19 @@ fun ColorCircle(
             .clip(CircleShape)
             .background(color = FilamentColorData.getComposeColor(colorHex))
             .clickable(onClick = onClick)
+            .border(
+                width = 1.dp,
+                color = MaterialTheme.colorScheme.outlineVariant, // Subtle grey line
+                shape = CircleShape
+            )
             .then(
                 if (isSelected) {
                     Modifier.border(
-                        width = Dimens.BorderThickness,
+                        width = Dimens.ColorDotBorderThickness,
                         color = MaterialTheme.colorScheme.primary,
                         shape = CircleShape
                     )
-                }else Modifier
+                } else Modifier
             )
     )
 }

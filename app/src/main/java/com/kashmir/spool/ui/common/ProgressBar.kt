@@ -20,6 +20,7 @@ import com.kashmir.spool.ui.theme.Dimens
 @Composable
 fun WeightProgressBar(
     totalWeight: String,
+    currentWeight: String,
     colorHex: Long,
     modifier: Modifier = Modifier
 ) {
@@ -41,7 +42,7 @@ fun WeightProgressBar(
             modifier = Modifier.fillMaxWidth()
         ) {
             Text(
-                text = "750g",
+                text = "${currentWeight}g",
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 style = MaterialTheme.typography.labelSmall,
                 modifier = Modifier.weight(1f)

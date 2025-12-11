@@ -1,12 +1,12 @@
 {
   "formatVersion": 1,
   "database": {
-    "version": 8,
-    "identityHash": "4ed7db0ea09ce851139f5289ec642974",
+    "version": 9,
+    "identityHash": "29f74ce927d25b4e7227fbd3ce687e00",
     "entities": [
       {
         "tableName": "filaments",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `brand` TEXT NOT NULL, `material` TEXT NOT NULL, `color_name` TEXT NOT NULL, `color_hex` INTEGER NOT NULL, `total_weight` REAL, `current_weight` REAL, `temp_nozzle` INTEGER, `temp_bed` INTEGER DEFAULT 0, `note` TEXT NOT NULL DEFAULT '')",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `brand` TEXT NOT NULL, `material` TEXT NOT NULL, `color_name` TEXT NOT NULL, `color_hex` INTEGER NOT NULL, `total_weight` REAL, `current_weight` REAL, `temp_nozzle` INTEGER DEFAULT 0, `temp_bed` INTEGER DEFAULT 0, `note` TEXT NOT NULL DEFAULT '')",
         "fields": [
           {
             "fieldPath": "id",
@@ -51,7 +51,8 @@
           {
             "fieldPath": "tempNozzle",
             "columnName": "temp_nozzle",
-            "affinity": "INTEGER"
+            "affinity": "INTEGER",
+            "defaultValue": "0"
           },
           {
             "fieldPath": "tempBed",
@@ -77,7 +78,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '4ed7db0ea09ce851139f5289ec642974')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '29f74ce927d25b4e7227fbd3ce687e00')"
     ]
   }
 }

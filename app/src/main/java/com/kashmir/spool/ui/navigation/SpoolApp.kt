@@ -23,7 +23,8 @@ import com.kashmir.spool.ui.screens.entry.SpoolEntryViewModel
 fun MySpoolApp(modifier: Modifier = Modifier) {
     val dashboardViewModel: DashboardViewModel = viewModel(factory = AppViewModelProvider.Factory)
     val spoolEntryViewModel: SpoolEntryViewModel = viewModel(factory = AppViewModelProvider.Factory)
-    val spoolDetailsViewModel: SpoolDetailsViewModel = viewModel(factory = AppViewModelProvider.Factory)
+    val spoolDetailsViewModel: SpoolDetailsViewModel =
+        viewModel(factory = AppViewModelProvider.Factory)
 
 
     val listOfSpools by dashboardViewModel.getAllSpool.collectAsState()
@@ -47,9 +48,9 @@ fun MySpoolApp(modifier: Modifier = Modifier) {
             entry<Routes.Dashboard> {
                 DashboardScreen(
                     onFabClick = {
-                        backStack.add(Routes.SpoolEntry)
+                        backStack.add(Routes.SpoolEntry(id = 0))
                     },
-                    onCardClick = {id->
+                    onCardClick = { id ->
                         backStack.add(Routes.SpoolDetails(id))
                     },
                     listOfSpools = listOfSpools
@@ -57,7 +58,10 @@ fun MySpoolApp(modifier: Modifier = Modifier) {
             }
 
             // Entry Screen Entry
-            entry<Routes.SpoolEntry> {
+            entry<Routes.SpoolEntry> { entry ->
+                LaunchedEffect(entry.id) {
+                    spoolEntryViewModel.loadSpool(entry.id)
+                }
                 SpoolEntryScreen(
                     onNavigateUp = {
                         backStack.removeLastOrNull()
@@ -69,7 +73,11 @@ fun MySpoolApp(modifier: Modifier = Modifier) {
                             newMaterial = spoolEntryUiState.material,
                             newTotalWeight = spoolEntryUiState.totalWeight,
                             newColorHex = spoolEntryUiState.colorHex,
-                            newColorName = spoolEntryUiState.colorName
+                            newColorName = spoolEntryUiState.colorName,
+                            newCurrentWeight = spoolEntryUiState.currentWeight,
+                            newTempNozzle = spoolEntryUiState.tempNozzle,
+                            newTempBed = spoolEntryUiState.tempBed,
+                            newNote = spoolEntryUiState.note
                         )
                     },
                     onMaterialValueChange = { newValue ->
@@ -78,7 +86,11 @@ fun MySpoolApp(modifier: Modifier = Modifier) {
                             newMaterial = newValue,
                             newTotalWeight = spoolEntryUiState.totalWeight,
                             newColorHex = spoolEntryUiState.colorHex,
-                            newColorName = spoolEntryUiState.colorName
+                            newColorName = spoolEntryUiState.colorName,
+                            newCurrentWeight = spoolEntryUiState.currentWeight,
+                            newTempNozzle = spoolEntryUiState.tempNozzle,
+                            newTempBed = spoolEntryUiState.tempBed,
+                            newNote = spoolEntryUiState.note
                         )
                     },
                     onInitialWeightValueChange = { newValue ->
@@ -87,7 +99,11 @@ fun MySpoolApp(modifier: Modifier = Modifier) {
                             newMaterial = spoolEntryUiState.material,
                             newTotalWeight = newValue,
                             newColorHex = spoolEntryUiState.colorHex,
-                            newColorName = spoolEntryUiState.colorName
+                            newColorName = spoolEntryUiState.colorName,
+                            newCurrentWeight = spoolEntryUiState.currentWeight,
+                            newTempNozzle = spoolEntryUiState.tempNozzle,
+                            newTempBed = spoolEntryUiState.tempBed,
+                            newNote = spoolEntryUiState.note
                         )
                     },
                     onColorNameChange = { newValue ->
@@ -96,7 +112,11 @@ fun MySpoolApp(modifier: Modifier = Modifier) {
                             newMaterial = spoolEntryUiState.material,
                             newTotalWeight = spoolEntryUiState.totalWeight,
                             newColorHex = spoolEntryUiState.colorHex,
-                            newColorName = newValue
+                            newColorName = newValue,
+                            newCurrentWeight = spoolEntryUiState.currentWeight,
+                            newTempNozzle = spoolEntryUiState.tempNozzle,
+                            newTempBed = spoolEntryUiState.tempBed,
+                            newNote = spoolEntryUiState.note
                         )
                     },
                     onColorValueChange = { newValue ->
@@ -105,22 +125,80 @@ fun MySpoolApp(modifier: Modifier = Modifier) {
                             newMaterial = spoolEntryUiState.material,
                             newTotalWeight = spoolEntryUiState.totalWeight,
                             newColorHex = newValue,
-                            newColorName = spoolEntryUiState.colorName
+                            newColorName = spoolEntryUiState.colorName,
+                            newCurrentWeight = spoolEntryUiState.currentWeight,
+                            newTempNozzle = spoolEntryUiState.tempNozzle,
+                            newTempBed = spoolEntryUiState.tempBed,
+                            newNote = spoolEntryUiState.note
                         )
                     },
-                    selectedColor = spoolEntryUiState.colorHex,
-                    onSaveClick = {
-                        spoolEntryViewModel.saveSpool()
+                    onCurrentWeightValueChange = {newValue ->
+                        spoolEntryViewModel.updateTextField(
+                            newBrand = spoolEntryUiState.brand,
+                            newMaterial = spoolEntryUiState.material,
+                            newTotalWeight = spoolEntryUiState.totalWeight,
+                            newColorHex = spoolEntryUiState.colorHex,
+                            newColorName = spoolEntryUiState.colorName,
+                            newCurrentWeight = newValue,
+                            newTempNozzle = spoolEntryUiState.tempNozzle,
+                            newTempBed = spoolEntryUiState.tempBed,
+                            newNote = spoolEntryUiState.note
+                        )
+                    },
+                    onNozzleTempValueChange = {newValue ->
+                        spoolEntryViewModel.updateTextField(
+                            newBrand = spoolEntryUiState.brand,
+                            newMaterial = spoolEntryUiState.material,
+                            newTotalWeight = spoolEntryUiState.totalWeight,
+                            newColorHex = spoolEntryUiState.colorHex,
+                            newColorName = spoolEntryUiState.colorName,
+                            newCurrentWeight = spoolEntryUiState.currentWeight,
+                            newTempNozzle = newValue,
+                            newTempBed = spoolEntryUiState.tempBed,
+                            newNote = spoolEntryUiState.note
+                        )
+                    },
+                    onBedTempValueChange = {newValue ->
+                        spoolEntryViewModel.updateTextField(
+                            newBrand = spoolEntryUiState.brand,
+                            newMaterial = spoolEntryUiState.material,
+                            newTotalWeight = spoolEntryUiState.totalWeight,
+                            newColorHex = spoolEntryUiState.colorHex,
+                            newColorName = spoolEntryUiState.colorName,
+                            newCurrentWeight = spoolEntryUiState.currentWeight,
+                            newTempNozzle = spoolEntryUiState.tempNozzle,
+                            newTempBed = newValue,
+                            newNote = spoolEntryUiState.note
+                        )
+                    },
+                    onNoteValueChange = {newValue ->
+                        spoolEntryViewModel.updateTextField(
+                            newBrand = spoolEntryUiState.brand,
+                            newMaterial = spoolEntryUiState.material,
+                            newTotalWeight = spoolEntryUiState.totalWeight,
+                            newColorHex = spoolEntryUiState.colorHex,
+                            newColorName = spoolEntryUiState.colorName,
+                            newCurrentWeight = spoolEntryUiState.currentWeight,
+                            newTempNozzle = spoolEntryUiState.tempNozzle,
+                            newTempBed = spoolEntryUiState.tempBed,
+                            newNote = newValue
+                        )
+                    },
+                    onSaveOrUpdateClick = {
+                        spoolEntryViewModel.saveOrUpdateSpool(entry.id)
                         backStack.removeLastOrNull()
                     },
+                    selectedColor = spoolEntryUiState.colorHex,
                     isValid = spoolEntryViewModel.isValid(),
                     isError = isWeightValid,
+                    isEditMode = spoolEntryViewModel.isEditMode(entry.id),
+                    resetState = spoolEntryViewModel::resetState,
                     modifier = modifier
                 )
             }
 
             // Details Screen Entry
-            entry<Routes.SpoolDetails> { entry->
+            entry<Routes.SpoolDetails> { entry ->
                 LaunchedEffect(entry.id) {
                     spoolDetailsViewModel.loadSpool(entry.id)
                 }
@@ -128,7 +206,10 @@ fun MySpoolApp(modifier: Modifier = Modifier) {
                     spoolDetails = spoolDetails,
                     navigateUp = {
                         backStack.removeLastOrNull()
-                    }
+                    },
+                    onUpdateClick = { id ->
+                        backStack.add(Routes.SpoolEntry(id = id))
+                    },
                 )
             }
 

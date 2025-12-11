@@ -101,10 +101,10 @@ fun DashboardScreen(
                         brandName = spool.brand,
                         materialType = spool.material,
                         totalWeight = spool.totalWeight.toString(),
+                        currentWeight = spool.currentWeight.toString(),
                         colorHex = spool.colorHex,
                         onCardClick = { onCardClick(spool.id) }
                     )
-
                 }
             }
         }
@@ -117,6 +117,7 @@ fun SpoolItemCard(
     brandName: String,
     materialType: String,
     totalWeight: String,
+    currentWeight: String,
     colorHex: Long,
     onCardClick: () -> Unit,
     modifier: Modifier = Modifier
@@ -163,6 +164,7 @@ fun SpoolItemCard(
             // Remaining filament
             WeightProgressBar(
                 totalWeight = totalWeight,
+                currentWeight = currentWeight,
                 colorHex = colorHex,
                 modifier = modifier
             )
@@ -177,6 +179,7 @@ private fun SpoolCardPreview() {
         brandName = "Brand",
         materialType = "Material Type",
         totalWeight = "1000",
+        currentWeight = "230",
         colorHex = 0xFF000000,
         onCardClick = {},
         modifier = Modifier

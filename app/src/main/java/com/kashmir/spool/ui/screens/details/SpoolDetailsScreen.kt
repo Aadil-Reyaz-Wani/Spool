@@ -1,9 +1,6 @@
 package com.kashmir.spool.ui.screens.details
 
-import android.graphics.drawable.Icon
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -17,12 +14,8 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.outlined.Notes
 import androidx.compose.material.icons.automirrored.outlined.StickyNote2
-import androidx.compose.material.icons.filled.Whatshot
 import androidx.compose.material.icons.outlined.DeviceThermostat
-import androidx.compose.material.icons.outlined.Notes
-import androidx.compose.material.icons.outlined.StickyNote2
 import androidx.compose.material.icons.outlined.Thermostat
 import androidx.compose.material.icons.outlined.Whatshot
 import androidx.compose.material3.Button
@@ -31,19 +24,11 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextFieldColors
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.drawBehind
-import androidx.compose.ui.geometry.CornerRadius
-import androidx.compose.ui.graphics.PathEffect
-import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -61,6 +46,7 @@ import com.kashmir.spool.ui.theme.Dimens
 fun SpoolDetailsScreen(
     spoolDetails: Filament,
     navigateUp: () -> Unit,
+    onUpdateClick: (Int) -> Unit,
     modifier: Modifier = Modifier
 ) {
     Scaffold(
@@ -76,13 +62,15 @@ fun SpoolDetailsScreen(
 
         DetailsScreen(
             totalWeight = spoolDetails.totalWeight.toString(),
+            currentWeight = spoolDetails.currentWeight.toString(),
             colorHex = spoolDetails.colorHex,
             brandName = spoolDetails.brand,
             materialType = spoolDetails.material,
             colorName = spoolDetails.colorName,
-            nozzleTemp = spoolDetails.tempNozzle,
-            bedTemp = spoolDetails.tempBed,
+            nozzleTemp = spoolDetails.tempNozzle.toString(),
+            bedTemp = spoolDetails.tempBed.toString(),
             note = spoolDetails.note,
+            onEditClick = { onUpdateClick(spoolDetails.id) },
             modifier = Modifier.padding(paddingValues = paddingValues)
         )
     }
@@ -91,13 +79,15 @@ fun SpoolDetailsScreen(
 @Composable
 fun DetailsScreen(
     totalWeight: String,
+    currentWeight: String,
     colorHex: Long,
     brandName: String,
     materialType: String,
     colorName: String,
-    nozzleTemp: Int,
-    bedTemp: Int,
+    nozzleTemp: String,
+    bedTemp: String,
     note: String,
+    onEditClick:() -> Unit,
     modifier: Modifier = Modifier
 ) {
     val scrollState = rememberScrollState()
@@ -108,6 +98,7 @@ fun DetailsScreen(
     ) {
         MainDetailsCard(
             totalWeight = totalWeight,
+            currentWeight = currentWeight,
             colorHex = colorHex,
             brandName = brandName,
             materialType = materialType,
@@ -115,7 +106,7 @@ fun DetailsScreen(
         )
 
         // Temperature Card
-        if (nozzleTemp > 0 || bedTemp > 0) {
+        if (nozzleTemp.toInt() > 0 || bedTemp.toInt() > 0) {
             TemperatureDetailsCard(
                 nozzleTemp = nozzleTemp.toString(),
                 bedTemp = bedTemp.toString()
@@ -146,12 +137,12 @@ fun DetailsScreen(
             modifier = Modifier.padding(Dimens.PaddingMedium)
         ){
             Button(
-                onClick = {},
+                onClick = onEditClick,
                 shape = RoundedCornerShape(Dimens.BorderRadius),
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text(
-                    text = stringResource(R.string.btn_edit),
+                    text = stringResource(R.string.btn_update),
                     style = MaterialTheme.typography.labelLarge,
                     fontWeight = FontWeight.Bold
                 )
@@ -180,19 +171,22 @@ fun DetailsScreen(
 fun DetailsScreenPreview() {
     DetailsScreen(
         totalWeight = "1000",
+        currentWeight = "320",
         colorHex = 0xFF4CAF50,
         brandName = "Prusament",
         materialType = "PLA",
         colorName = "Galaxy Green",
-        nozzleTemp = 216,
-        bedTemp = 60,
-        note = "This is my note"
+        nozzleTemp = "216",
+        bedTemp = "60",
+        note = "This is my note",
+        onEditClick = {}
     )
 }
 
 @Composable
 fun MainDetailsCard(
     totalWeight: String,
+    currentWeight: String,
     colorHex: Long,
     brandName: String,
     materialType: String,
@@ -201,7 +195,6 @@ fun MainDetailsCard(
 ) {
     Card(
         elevation = CardDefaults.cardElevation(Dimens.CardElevation),
-//        border = BorderStroke(width = Dimens.BorderThickness, color = MaterialTheme.colorScheme.primary),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.primaryContainer,
             contentColor = MaterialTheme.colorScheme.onPrimaryContainer
@@ -276,6 +269,7 @@ fun MainDetailsCard(
             // Progress Bar
             WeightProgressBar(
                 totalWeight = totalWeight,
+                currentWeight = currentWeight,
                 colorHex = colorHex,
             )
         }
@@ -287,6 +281,7 @@ fun MainDetailsCard(
 fun MainDetailsCardPreview() {
     MainDetailsCard(
         totalWeight = "1000",
+        currentWeight = "230",
         colorHex = 0xFF000000,
         brandName = "MatterHackers",
         materialType = "PETG",

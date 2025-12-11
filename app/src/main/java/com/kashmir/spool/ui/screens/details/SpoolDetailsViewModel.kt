@@ -61,14 +61,3 @@ class SpoolDetailsViewModel(
         _idTrigger.value = id
     }
 }
-
-data class SpoolDetailsUiState(
-    val id: Int = 0,
-    val brand: String = "",
-    val material: String = "",
-    val totalWeight: Double? = 0.0,
-    val colorHex: Long = 0xFF000000,
-    val currentWeight: Double? = 0.0,
-    val tempNozzle: Int = 0,
-    val tempBed: Int = 0
-)

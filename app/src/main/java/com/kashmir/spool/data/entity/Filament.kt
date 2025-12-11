@@ -18,10 +18,10 @@ data class Filament(
     val totalWeight: Double?,
     @ColumnInfo(name = "current_weight")
     val currentWeight: Double?,
-    @ColumnInfo(name = "temp_nozzle")
-    val tempNozzle: Int,
+    @ColumnInfo(name = "temp_nozzle", defaultValue = "0")
+    val tempNozzle: Int?,
     @ColumnInfo(name = "temp_bed", defaultValue = "0")
-    val tempBed: Int,
+    val tempBed: Int?,
     @ColumnInfo(name = "note", defaultValue = "")
     val note: String,
 )

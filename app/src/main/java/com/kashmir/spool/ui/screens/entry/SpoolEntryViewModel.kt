@@ -5,8 +5,15 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.kashmir.spool.data.entity.Filament
 import com.kashmir.spool.data.repository.SpoolRepository
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 class SpoolEntryViewModel(
@@ -17,12 +24,17 @@ class SpoolEntryViewModel(
 
     val isError = MutableStateFlow(false)
 
+    // Text field value changes
     fun updateTextField(
         newBrand: String,
         newMaterial: String,
         newTotalWeight: String,
         newColorName: String,
-        newColorHex: Long
+        newColorHex: Long,
+        newCurrentWeight: String,
+        newTempNozzle: String,
+        newTempBed: String,
+        newNote: String
     ) {
 
         _spoolEntryUiState.value = _spoolEntryUiState.value.copy(
@@ -30,44 +42,83 @@ class SpoolEntryViewModel(
             material = newMaterial,
             totalWeight = newTotalWeight,
             colorName = newColorName,
-            colorHex = newColorHex
+            colorHex = newColorHex,
+            currentWeight = newCurrentWeight,
+            tempNozzle = newTempNozzle,
+            tempBed = newTempBed,
+            note = newNote
         )
     }
 
+
+    fun loadSpool(id: Int) {
+        if (id == 0) return
+        viewModelScope.launch {
+            val currentSpool = spoolRepository.getSpoolStream(id).first()
+            _spoolEntryUiState.value = currentSpool.toSpoolEntryUiState()
+        }
+
+    }
+
+
+
     // Save Spool to DB
-    fun saveSpool() {
+    fun saveOrUpdateSpool(id: Int) {
 
         val freshFilament = _spoolEntryUiState.value.toFilament()
 
         viewModelScope.launch {
-            try {
-                if (freshFilament.totalWeight != null && freshFilament.totalWeight > 0 ) {
-                    spoolRepository.insertSpool(freshFilament)
-                    _spoolEntryUiState.value = SpoolEntryUiState()
-                    isError.value = false
-                }else {
-                    isError.value = true
+
+            if (id > 0) {
+                spoolRepository.updateSpool(freshFilament)
+                return@launch
+            }else {
+                try {
+                    if (freshFilament.totalWeight != null && freshFilament.totalWeight > 0 ) {
+                        spoolRepository.insertSpool(freshFilament)
+                        _spoolEntryUiState.value = SpoolEntryUiState()
+                        isError.value = false
+                    }else {
+                        isError.value = true
+                    }
+                }catch (e: ArithmeticException) {
+                    Log.d("ENTER","${e.message}")
                 }
-            }catch (e: ArithmeticException) {
-                Log.d("ENTER","${e.message}")
             }
+
         }
     }
 
+    //Additional little tweak functions
     fun isValid(): Boolean {
         return _spoolEntryUiState.value.brand.isNotBlank()
                 && _spoolEntryUiState.value.material.isNotBlank()
                 && _spoolEntryUiState.value.totalWeight.isNotBlank()
     }
+
+    fun isEditMode(id: Int) : Boolean {
+        return (id > 0)
+    }
+
+    fun resetState() {
+        _spoolEntryUiState.value = SpoolEntryUiState()
+    }
+
 }
 
+
+// Ui State and Extension Functions
 data class SpoolEntryUiState(
     val id: Int = 0,
     val brand: String = "",
     val material: String = "",
     val totalWeight: String = "",
     val colorName: String = "",
-    val colorHex: Long = 0xFF000000
+    val colorHex: Long = 0xFF000000,
+    val currentWeight: String = "",
+    val tempNozzle: String = "",
+    val tempBed: String = "",
+    val note: String = ""
 )
 
 fun SpoolEntryUiState.toFilament(): Filament {
@@ -76,11 +127,26 @@ fun SpoolEntryUiState.toFilament(): Filament {
         brand = brand,
         material = material,
         totalWeight = totalWeight.toDoubleOrNull(),
-        currentWeight = totalWeight.toDoubleOrNull(), // Keep eye on this one, this could cause problem in future
+        currentWeight = currentWeight.toDoubleOrNull(), // Keep eye on this one, this could cause problem in future
         colorHex = colorHex,
         colorName = colorName,
-        tempNozzle = 0,
-        tempBed = 0,
-        note = ""
+        tempNozzle = tempNozzle.toIntOrNull(),
+        tempBed = tempBed.toIntOrNull(),
+        note = note
+    )
+}
+
+fun Filament.toSpoolEntryUiState(): SpoolEntryUiState {
+    return SpoolEntryUiState(
+        id = id,
+        brand = brand,
+        material = material,
+        totalWeight = totalWeight.toString(),
+        currentWeight = currentWeight.toString(),
+        colorHex = colorHex,
+        colorName = colorName,
+        tempNozzle = tempNozzle.toString(),
+        tempBed = tempBed.toString(),
+        note = note
     )
 }

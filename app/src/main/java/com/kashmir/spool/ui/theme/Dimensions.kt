@@ -15,6 +15,7 @@ object Dimens {
     // Component Specifics
     val CardElevation = 2.dp
     val BorderThickness = 0.5.dp // Thicker borders for that "technical" look
+    val ColorDotBorderThickness = 3.dp
     val BorderRadius = 4.dp
     val CornerRadius = 16.dp
 

@@ -21,6 +21,8 @@
     <string name="label_material">Material Type</string>
 
     <string name="label_color">Color</string>
+    <string name="label_color_code">Hex Color Code</string>
+    <string name="hint_color_code">e.g. 0xFF000000</string>
 
     <string name="label_initial_weight">Initial Weight (g)</string>
     <string name="label_current_weight">Current Weight (g)</string>
@@ -32,7 +34,7 @@
     <string name="btn_save">Save Spool</string>
     <string name="btn_delete">Delete Spool</string>
     <string name="btn_cancel">Cancel</string>
-    <string name="btn_edit">Edit Spool</string>
+    <string name="btn_update">Update Spool</string>
     <string name="btn_fab">Add New Spool</string>
 
     <string name="details_remaining">Remaining</string>
@@ -43,6 +45,7 @@
 
     <string name="missing_settings">Add Nozzle &amp; Bed Temperatures</string>
     <string name="missing_notes">Add print notes or observations</string>
+    <string name="label_note">Note</string>
 
     <string name="unit_grams">g</string>
 </resources>
