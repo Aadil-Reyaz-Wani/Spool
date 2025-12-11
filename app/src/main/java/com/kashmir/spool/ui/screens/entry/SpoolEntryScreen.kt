@@ -34,7 +34,7 @@ fun SpoolEntryScreen(
         modifier = modifier,
         topBar = {
             SpoolAppBar(
-                title = stringResource(R.string.title_new_spool),
+                title = if (!isEditMode) stringResource(R.string.title_new_spool) else stringResource(R.string.title_update_spool),
                 canNavigateBack = true,
                 navigateUp = onNavigateUp,
                 modifier = modifier

@@ -29,11 +29,11 @@ fun WeightProgressBar(
     ) {
         Spacer(modifier = Modifier.height(Dimens.gapHeight))
         LinearProgressIndicator(
-            progress = { 20f / 100 },
+            progress = { currentWeight.toFloat()/totalWeight.toFloat() },
             modifier = Modifier
                 .fillMaxWidth()
                 .size(Dimens.ProgressBarHeight),
-            color = Color(colorHex),
+            color = Color(colorHex!!),
             trackColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f),
             strokeCap = StrokeCap.Round,
             gapSize = 0.dp,

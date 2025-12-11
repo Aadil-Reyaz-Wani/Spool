@@ -7,7 +7,7 @@ interface SpoolRepository {
 
     suspend fun insertSpool(filament: Filament) // This is DONE
     suspend fun updateSpool(filament: Filament)
-    suspend fun deleteSpool(filament: Filament)
+    suspend fun deleteSpool(filament: Filament?)
     fun getAllSpoolsStream(): Flow<List<Filament>> // This one is also Completed
     fun getSpoolStream(id: Int): Flow<Filament>
 

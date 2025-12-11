@@ -9,7 +9,7 @@
     <string name="stats_spool_count">Spools</string>
 
     <string name="title_new_spool">New Spool</string>
-    <string name="title_edit_spool">Edit Spool</string>
+    <string name="title_update_spool">Update Spool</string>
     <string name="spool_details">Spool Details</string>
 
     <string name="label_brand">Brand</string>

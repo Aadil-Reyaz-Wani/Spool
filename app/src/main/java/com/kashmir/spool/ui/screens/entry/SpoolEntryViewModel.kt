@@ -41,9 +41,9 @@ class SpoolEntryViewModel(
             brand = newBrand,
             material = newMaterial,
             totalWeight = newTotalWeight,
+            currentWeight = newCurrentWeight,
             colorName = newColorName,
             colorHex = newColorHex,
-            currentWeight = newCurrentWeight,
             tempNozzle = newTempNozzle,
             tempBed = newTempBed,
             note = newNote
@@ -75,13 +75,18 @@ class SpoolEntryViewModel(
             }else {
                 try {
                     if (freshFilament.totalWeight != null && freshFilament.totalWeight > 0 ) {
-                        spoolRepository.insertSpool(freshFilament)
+
+                        val filamentToInsert = freshFilament.copy(
+                            currentWeight = freshFilament.totalWeight
+                        )
+
+                        spoolRepository.insertSpool(filamentToInsert)
                         _spoolEntryUiState.value = SpoolEntryUiState()
                         isError.value = false
                     }else {
                         isError.value = true
                     }
-                }catch (e: ArithmeticException) {
+                } catch (e: ArithmeticException) {
                     Log.d("ENTER","${e.message}")
                 }
             }
@@ -127,11 +132,11 @@ fun SpoolEntryUiState.toFilament(): Filament {
         brand = brand,
         material = material,
         totalWeight = totalWeight.toDoubleOrNull(),
-        currentWeight = currentWeight.toDoubleOrNull(), // Keep eye on this one, this could cause problem in future
+        currentWeight = currentWeight.toDoubleOrNull(),
         colorHex = colorHex,
         colorName = colorName,
-        tempNozzle = tempNozzle.toIntOrNull(),
-        tempBed = tempBed.toIntOrNull(),
+        tempNozzle = tempNozzle.toIntOrNull() ?: 0,
+        tempBed = tempBed.toIntOrNull() ?: 0,
         note = note
     )
 }

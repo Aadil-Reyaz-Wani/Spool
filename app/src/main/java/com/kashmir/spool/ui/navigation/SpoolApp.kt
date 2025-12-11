@@ -210,6 +210,10 @@ fun MySpoolApp(modifier: Modifier = Modifier) {
                     onUpdateClick = { id ->
                         backStack.add(Routes.SpoolEntry(id = id))
                     },
+                    onConfirmDelete = { filament ->
+                        spoolDetailsViewModel.deleteSpool(filament)
+                        backStack.removeLastOrNull()
+                    }
                 )
             }
 

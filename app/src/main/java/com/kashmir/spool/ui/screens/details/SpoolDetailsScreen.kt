@@ -27,6 +27,10 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -40,6 +44,7 @@ import com.kashmir.spool.data.entity.Filament
 import com.kashmir.spool.ui.common.GhostCard
 import com.kashmir.spool.ui.common.SpoolAppBar
 import com.kashmir.spool.ui.common.WeightProgressBar
+import com.kashmir.spool.ui.components.DeleteConfirmationAlertDialog
 import com.kashmir.spool.ui.theme.Dimens
 
 @Composable
@@ -47,6 +52,7 @@ fun SpoolDetailsScreen(
     spoolDetails: Filament,
     navigateUp: () -> Unit,
     onUpdateClick: (Int) -> Unit,
+    onConfirmDelete: (Filament) -> Unit,
     modifier: Modifier = Modifier
 ) {
     Scaffold(
@@ -71,6 +77,7 @@ fun SpoolDetailsScreen(
             bedTemp = spoolDetails.tempBed.toString(),
             note = spoolDetails.note,
             onEditClick = { onUpdateClick(spoolDetails.id) },
+            onConfirmDelete = { onConfirmDelete(spoolDetails) },
             modifier = Modifier.padding(paddingValues = paddingValues)
         )
     }
@@ -87,10 +94,12 @@ fun DetailsScreen(
     nozzleTemp: String,
     bedTemp: String,
     note: String,
-    onEditClick:() -> Unit,
+    onEditClick: () -> Unit,
+    onConfirmDelete: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val scrollState = rememberScrollState()
+    var showDialog by rememberSaveable { mutableStateOf(false) }
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -108,10 +117,10 @@ fun DetailsScreen(
         // Temperature Card
         if (nozzleTemp.toInt() > 0 || bedTemp.toInt() > 0) {
             TemperatureDetailsCard(
-                nozzleTemp = nozzleTemp.toString(),
-                bedTemp = bedTemp.toString()
+                nozzleTemp = nozzleTemp,
+                bedTemp = bedTemp
             )
-        }else {
+        } else {
             GhostCard(
                 text = stringResource(R.string.missing_settings),
                 icon = Icons.Outlined.DeviceThermostat,
@@ -124,7 +133,7 @@ fun DetailsScreen(
             NotesCard(
                 note = note
             )
-        }else {
+        } else {
             GhostCard(
                 text = stringResource(R.string.missing_notes),
                 icon = Icons.AutoMirrored.Outlined.StickyNote2,
@@ -132,10 +141,9 @@ fun DetailsScreen(
             )
         }
 
-        Column (
-//            verticalArrangement = Arrangement.Center,
+        Column(
             modifier = Modifier.padding(Dimens.PaddingMedium)
-        ){
+        ) {
             Button(
                 onClick = onEditClick,
                 shape = RoundedCornerShape(Dimens.BorderRadius),
@@ -149,9 +157,12 @@ fun DetailsScreen(
             }
             Spacer(modifier = Modifier.height(Dimens.PaddingTiny))
             OutlinedButton(
-                onClick = {},
+                onClick = { showDialog = true },
                 shape = RoundedCornerShape(Dimens.BorderRadius),
-                border = BorderStroke(width = Dimens.BorderThickness, color = MaterialTheme.colorScheme.primary),
+                border = BorderStroke(
+                    width = Dimens.BorderThickness,
+                    color = MaterialTheme.colorScheme.primary
+                ),
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text(
@@ -162,8 +173,19 @@ fun DetailsScreen(
                 )
             }
         }
-    }
 
+        if (showDialog) {
+            DeleteConfirmationAlertDialog(
+                onConfirmDelete = {
+                    onConfirmDelete()
+                    showDialog = false
+                },
+                onDismiss = {
+                    showDialog = false
+                }
+            )
+        }
+    }
 }
 
 @Preview
@@ -179,7 +201,8 @@ fun DetailsScreenPreview() {
         nozzleTemp = "216",
         bedTemp = "60",
         note = "This is my note",
-        onEditClick = {}
+        onEditClick = {},
+        onConfirmDelete = {}
     )
 }
 
@@ -291,7 +314,6 @@ fun MainDetailsCardPreview() {
 }
 
 
-
 @Composable
 fun TemperatureDetailsCard(
     nozzleTemp: String,
@@ -300,7 +322,6 @@ fun TemperatureDetailsCard(
 ) {
     Card(
         elevation = CardDefaults.cardElevation(Dimens.CardElevation),
-//        border = BorderStroke(width = Dimens.BorderThickness, color = MaterialTheme.colorScheme.primaryContainer),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.primaryContainer,
             contentColor = MaterialTheme.colorScheme.onPrimaryContainer
@@ -392,7 +413,6 @@ fun NotesCard(
 ) {
     Card(
         elevation = CardDefaults.cardElevation(Dimens.CardElevation),
-//        border = BorderStroke(width = Dimens.BorderThickness, color = MaterialTheme.colorScheme.primaryContainer),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.primaryContainer,
             contentColor = MaterialTheme.colorScheme.onPrimaryContainer

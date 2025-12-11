@@ -11,6 +11,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 
 class SpoolDetailsViewModel(
     private val spoolRepository: SpoolRepository
@@ -56,6 +57,13 @@ class SpoolDetailsViewModel(
                 note = ""
             )
         )
+
+    fun deleteSpool(filament: Filament) {
+//        if (id == 0) return
+            viewModelScope.launch {
+                spoolRepository.deleteSpool(filament)
+            }
+    }
 
     fun loadSpool(id: Int) {
         _idTrigger.value = id
