@@ -25,6 +25,6 @@ interface SpoolDao {
     fun getAllSpools(): Flow<List<Filament>>
 
     @Query("SELECT * FROM filaments WHERE id = :id")
-    fun getSpool(id: Int) : Flow<Filament>
+    fun getSpool(id: Int) : Flow<Filament?>
 
 }

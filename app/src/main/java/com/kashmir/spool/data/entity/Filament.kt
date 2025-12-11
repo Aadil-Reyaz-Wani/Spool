@@ -14,14 +14,14 @@ data class Filament(
     val colorName: String,
     @ColumnInfo(name = "color_hex")
     val colorHex: Long,
-    @ColumnInfo(name = "total_weight")
-    val totalWeight: Double?,
-    @ColumnInfo(name = "current_weight")
-    val currentWeight: Double?,
+    @ColumnInfo(name = "total_weight", defaultValue = "0")
+    val totalWeight: Double = 0.0,
+    @ColumnInfo(name = "current_weight", defaultValue = "0")
+    val currentWeight: Double = 0.0,
     @ColumnInfo(name = "temp_nozzle", defaultValue = "0")
-    val tempNozzle: Int?,
+    val tempNozzle: Int = 0,
     @ColumnInfo(name = "temp_bed", defaultValue = "0")
-    val tempBed: Int?,
+    val tempBed: Int = 0,
     @ColumnInfo(name = "note", defaultValue = "")
     val note: String,
 )

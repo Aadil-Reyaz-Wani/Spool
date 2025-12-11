@@ -11,12 +11,8 @@ class OfflineSpoolRepository(
         return spoolDao.insertSpool(filament = filament)
     }
 
-    override suspend fun deleteSpool(filament: Filament?) {
-        if (filament != null) {
+    override suspend fun deleteSpool(filament: Filament) {
             return spoolDao.deleteSpool(filament = filament)
-        }else {
-            println("Nullable result found")
-        }
     }
 
     override suspend fun updateSpool(filament: Filament) {
@@ -27,7 +23,7 @@ class OfflineSpoolRepository(
         return spoolDao.getAllSpools()
     }
 
-    override fun getSpoolStream(id: Int): Flow<Filament> {
+    override fun getSpoolStream(id: Int): Flow<Filament?> {
         return spoolDao.getSpool(id = id)
     }
 }

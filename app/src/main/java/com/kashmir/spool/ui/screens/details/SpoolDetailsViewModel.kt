@@ -8,6 +8,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.stateIn
@@ -19,50 +20,39 @@ class SpoolDetailsViewModel(
 
     private val _idTrigger = MutableStateFlow(0)
 
+    private val emptyFilament = Filament(
+        id = 0,
+        brand = "",
+        material = "",
+        totalWeight = 0.0,
+        colorHex = 0xFF000000,
+        colorName = "",
+        currentWeight = 0.0,
+        tempBed = 0,
+        tempNozzle = 0,
+        note = ""
+    )
+
     @OptIn(ExperimentalCoroutinesApi::class)
     val spoolDetails: StateFlow<Filament> = _idTrigger
-        .flatMapLatest { id->
+        .flatMapLatest { id ->
             if (id == 0) {
-                flowOf(
-                    Filament(
-                        id = 0,
-                        brand = "",
-                        material = "",
-                        totalWeight = 0.0,
-                        colorHex = 0xFF000000,
-                        colorName = "",
-                        currentWeight = 0.0,
-                        tempBed = 0,
-                        tempNozzle = 0,
-                        note = ""
-                    )
-                )
-            }else {
+                flowOf(emptyFilament)
+            } else {
                 spoolRepository.getSpoolStream(id)
             }
         }
+        .filterNotNull()
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5000),
-            initialValue = Filament(
-                id = 0,
-                brand = "",
-                material = "",
-                totalWeight = 0.0,
-                colorHex = 0xFF000000,
-                colorName = "",
-                currentWeight = 0.0,
-                tempBed = 0,
-                tempNozzle = 0,
-                note = ""
-            )
+            initialValue = emptyFilament
         )
 
     fun deleteSpool(filament: Filament) {
-//        if (id == 0) return
-            viewModelScope.launch {
-                spoolRepository.deleteSpool(filament)
-            }
+        viewModelScope.launch {
+            spoolRepository.deleteSpool(filament)
+        }
     }
 
     fun loadSpool(id: Int) {

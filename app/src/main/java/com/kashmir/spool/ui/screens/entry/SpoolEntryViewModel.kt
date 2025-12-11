@@ -55,7 +55,11 @@ class SpoolEntryViewModel(
         if (id == 0) return
         viewModelScope.launch {
             val currentSpool = spoolRepository.getSpoolStream(id).first()
-            _spoolEntryUiState.value = currentSpool.toSpoolEntryUiState()
+
+            currentSpool?.let { spool ->
+                _spoolEntryUiState.value = spool.toSpoolEntryUiState()
+            }
+
         }
 
     }
@@ -74,7 +78,7 @@ class SpoolEntryViewModel(
                 return@launch
             }else {
                 try {
-                    if (freshFilament.totalWeight != null && freshFilament.totalWeight > 0 ) {
+                    if (freshFilament.totalWeight > 0 ) {
 
                         val filamentToInsert = freshFilament.copy(
                             currentWeight = freshFilament.totalWeight
@@ -131,8 +135,8 @@ fun SpoolEntryUiState.toFilament(): Filament {
         id = id,
         brand = brand,
         material = material,
-        totalWeight = totalWeight.toDoubleOrNull(),
-        currentWeight = currentWeight.toDoubleOrNull(),
+        totalWeight = totalWeight.toDoubleOrNull() ?: 0.0,
+        currentWeight = currentWeight.toDoubleOrNull() ?: 0.0,
         colorHex = colorHex,
         colorName = colorName,
         tempNozzle = tempNozzle.toIntOrNull() ?: 0,
