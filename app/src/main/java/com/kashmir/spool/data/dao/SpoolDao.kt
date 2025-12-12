@@ -27,4 +27,9 @@ interface SpoolDao {
     @Query("SELECT * FROM filaments WHERE id = :id")
     fun getSpool(id: Int) : Flow<Filament?>
 
+    @Query("SELECT current_weight FROM filaments WHERE id = :id")
+    fun getCurrentWeight(id: Int) : Double
+
+    @Query("UPDATE filaments SET current_weight = :currentWeight WHERE id = :id")
+    suspend fun updateCurrentWeight(id: Int, currentWeight: Double)
 }

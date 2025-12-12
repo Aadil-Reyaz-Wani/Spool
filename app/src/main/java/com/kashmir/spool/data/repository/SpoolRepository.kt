@@ -10,5 +10,7 @@ interface SpoolRepository {
     suspend fun deleteSpool(filament: Filament)
     fun getAllSpoolsStream(): Flow<List<Filament>> // This one is also Completed
     fun getSpoolStream(id: Int): Flow<Filament?>
+    fun getCurrentWeightStream(id: Int) : Double
+    suspend fun updateCurrentWeight(id: Int, currentWeight: Double)
 
 }

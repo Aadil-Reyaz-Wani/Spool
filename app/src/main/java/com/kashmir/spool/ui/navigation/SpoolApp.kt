@@ -34,6 +34,9 @@ fun MySpoolApp(modifier: Modifier = Modifier) {
     val isWeightValid by spoolEntryViewModel.isError.collectAsState()
 
     val spoolDetails by spoolDetailsViewModel.spoolDetails.collectAsState()
+    val printWeight by spoolDetailsViewModel.printWeight.collectAsState()
+
+
 
     val backStack = rememberNavBackStack(Routes.Dashboard)
     NavDisplay(
@@ -213,6 +216,14 @@ fun MySpoolApp(modifier: Modifier = Modifier) {
                     onConfirmDelete = { filament ->
                         spoolDetailsViewModel.deleteSpool(filament)
                         backStack.removeLastOrNull()
+                    },
+                    isPrintMode = spoolEntryViewModel.isEditMode(entry.id), // Keep eye on this
+                    printWeight = printWeight,
+                    onPrintWeightValueChange = { newValue->
+                        spoolDetailsViewModel.quickDeductionUpdateField(newValue = newValue)
+                    },
+                    onPrintWeightClick = {id, weight ->
+                        spoolDetailsViewModel.deductCurrentWeight(id, weight)
                     }
                 )
             }

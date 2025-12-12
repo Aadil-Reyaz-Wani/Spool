@@ -17,6 +17,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardCapitalization
@@ -48,7 +49,7 @@ fun EntryFields(
     modifier: Modifier = Modifier
 ) {
     LaunchedEffect(Unit) {
-        if(!isEditMode) resetState()
+        if (!isEditMode) resetState()
     }
 
     val scrollState = rememberScrollState()
@@ -68,7 +69,12 @@ fun EntryFields(
                     style = MaterialTheme.typography.labelMedium
                 )
             },
-            placeholder = { Text(stringResource(R.string.hint_brand)) },
+            placeholder = {
+                Text(
+                    text = stringResource(R.string.hint_brand),
+                    modifier = Modifier.alpha(0.5f),
+                )
+            },
             singleLine = true,
             keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words),
             modifier = Modifier.fillMaxWidth()
@@ -81,6 +87,12 @@ fun EntryFields(
                 Text(
                     text = stringResource(R.string.label_material),
                     style = MaterialTheme.typography.labelMedium
+                )
+            },
+            placeholder = {
+                Text(
+                    text = stringResource(R.string.hint_material),
+                    modifier = Modifier.alpha(0.5f),
                 )
             },
             singleLine = true,
@@ -97,6 +109,12 @@ fun EntryFields(
                     style = MaterialTheme.typography.labelMedium
                 )
             },
+            placeholder = {
+                Text(
+                    text = stringResource(R.string.hint_color),
+                    modifier = Modifier.alpha(0.5f),
+                )
+            },
             singleLine = true,
             keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words),
             modifier = Modifier.fillMaxWidth()
@@ -109,6 +127,12 @@ fun EntryFields(
                 Text(
                     text = stringResource(R.string.label_initial_weight),
                     style = MaterialTheme.typography.labelMedium
+                )
+            },
+            placeholder = {
+                Text(
+                    text = stringResource(R.string.hint_total_wight),
+                    modifier = Modifier.alpha(0.5f),
                 )
             },
             singleLine = true,
@@ -128,6 +152,12 @@ fun EntryFields(
                         style = MaterialTheme.typography.labelMedium
                     )
                 },
+                placeholder = {
+                    Text(
+                        text = stringResource(R.string.hint_total_wight),
+                        modifier = Modifier.alpha(0.5f),
+                    )
+                },
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                 modifier = Modifier.fillMaxWidth()
@@ -140,6 +170,12 @@ fun EntryFields(
                     Text(
                         text = stringResource(R.string.label_temp_nozzle),
                         style = MaterialTheme.typography.labelMedium
+                    )
+                },
+                placeholder = {
+                    Text(
+                        text = stringResource(R.string.hint_nozzle),
+                        modifier = Modifier.alpha(0.5f),
                     )
                 },
                 singleLine = true,
@@ -156,6 +192,12 @@ fun EntryFields(
                         style = MaterialTheme.typography.labelMedium
                     )
                 },
+                placeholder = {
+                    Text(
+                        text = stringResource(R.string.hint_bed),
+                        modifier = Modifier.alpha(0.5f),
+                    )
+                },
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                 modifier = Modifier.fillMaxWidth()
@@ -170,11 +212,16 @@ fun EntryFields(
                         style = MaterialTheme.typography.labelMedium
                     )
                 },
+                placeholder = {
+                    Text(
+                        text = stringResource(R.string.hint_note),
+                        modifier = Modifier.alpha(0.5f),
+                    )
+                },
                 keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences),
                 modifier = Modifier.fillMaxWidth()
             )
         }
-
         Spacer(modifier = Modifier.height(Dimens.PaddingSmall))
         ColorSelectionGrid(
             selectedColor = selectedColor,
@@ -189,7 +236,7 @@ fun EntryFields(
             enabled = isValid
         ) {
             Text(
-                text = if (!isEditMode)stringResource(R.string.btn_save) else stringResource(R.string.btn_update),
+                text = if (!isEditMode) stringResource(R.string.btn_save) else stringResource(R.string.btn_update),
                 style = MaterialTheme.typography.labelLarge,
                 color = if (isValid) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.inversePrimary,
                 fontWeight = FontWeight.Bold

@@ -125,7 +125,7 @@ fun SpoolItemCard(
     Card(
         elevation = CardDefaults.cardElevation(Dimens.CardElevation),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceContainer,
+            containerColor = MaterialTheme.colorScheme.surface,
             contentColor = MaterialTheme.colorScheme.onSurface
         ),
         modifier = modifier

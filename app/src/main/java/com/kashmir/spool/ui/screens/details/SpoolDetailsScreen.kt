@@ -12,10 +12,12 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.StickyNote2
 import androidx.compose.material.icons.outlined.DeviceThermostat
+import androidx.compose.material.icons.outlined.Print
 import androidx.compose.material.icons.outlined.Thermostat
 import androidx.compose.material.icons.outlined.Whatshot
 import androidx.compose.material3.Button
@@ -24,6 +26,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -36,6 +39,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -53,6 +57,10 @@ fun SpoolDetailsScreen(
     navigateUp: () -> Unit,
     onUpdateClick: (Int) -> Unit,
     onConfirmDelete: (Filament) -> Unit,
+    isPrintMode: Boolean,
+    printWeight: String,
+    onPrintWeightValueChange: (String) -> Unit,
+    onPrintWeightClick: (Int, String) -> Unit,
     modifier: Modifier = Modifier
 ) {
     Scaffold(
@@ -78,6 +86,10 @@ fun SpoolDetailsScreen(
             note = spoolDetails.note,
             onEditClick = { onUpdateClick(spoolDetails.id) },
             onConfirmDelete = { onConfirmDelete(spoolDetails) },
+            isPrintMode = isPrintMode,
+            printWeight = printWeight,
+            onPrintWeightValueChange = onPrintWeightValueChange,
+            onPrintWeightClick = { onPrintWeightClick(spoolDetails.id, printWeight) },
             modifier = Modifier.padding(paddingValues = paddingValues)
         )
     }
@@ -96,6 +108,10 @@ fun DetailsScreen(
     note: String,
     onEditClick: () -> Unit,
     onConfirmDelete: () -> Unit,
+    isPrintMode: Boolean,
+    printWeight: String,
+    onPrintWeightValueChange: (String) -> Unit,
+    onPrintWeightClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val scrollState = rememberScrollState()
@@ -112,6 +128,13 @@ fun DetailsScreen(
             brandName = brandName,
             materialType = materialType,
             colorName = colorName
+        )
+
+        PrintCard(
+            isPrintMode = isPrintMode,
+            printWeight = printWeight,
+            onPrintWeightValueChange = onPrintWeightValueChange,
+            onPrintWeightClick = onPrintWeightClick
         )
 
         // Temperature Card
@@ -202,7 +225,11 @@ fun DetailsScreenPreview() {
         bedTemp = "60",
         note = "This is my note",
         onEditClick = {},
-        onConfirmDelete = {}
+        onConfirmDelete = {},
+        isPrintMode = false,
+        onPrintWeightValueChange = {},
+        printWeight = "",
+        onPrintWeightClick = {}
     )
 }
 
@@ -230,7 +257,7 @@ fun MainDetailsCard(
                 .fillMaxWidth()
                 .padding(
                     horizontal = Dimens.PaddingMedium,
-                    vertical = Dimens.PaddingSmall
+                    vertical = Dimens.PaddingMedium
                 )
         ) {
             Row {
@@ -299,6 +326,77 @@ fun MainDetailsCard(
     }
 }
 
+@Composable
+fun PrintCard(
+    isPrintMode: Boolean,
+    printWeight: String,
+    onPrintWeightValueChange: (String) -> Unit,
+    onPrintWeightClick:() -> Unit,
+    modifier: Modifier = Modifier
+) {
+    var showPrintField by rememberSaveable { mutableStateOf(false) }
+
+    Column(
+        modifier = modifier
+            .padding(horizontal = Dimens.PaddingMedium)
+            .fillMaxWidth()
+    ) {
+
+        if (showPrintField) {
+            OutlinedTextField(
+                value = printWeight,
+                onValueChange = onPrintWeightValueChange,
+                shape = MaterialTheme.shapes.large,
+                label = {Text(text = stringResource(R.string.label_deduct_weight))},
+                singleLine = true,
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                modifier = Modifier.fillMaxWidth()
+            )
+            Button(
+                onClick = {
+                    showPrintField = false
+                    onPrintWeightClick()
+
+                },
+                shape = RoundedCornerShape(Dimens.BorderRadius),
+                modifier = modifier.fillMaxWidth()
+            ) {
+                Icon(
+                    imageVector = Icons.Outlined.Print,
+                    contentDescription = stringResource(R.string.btn_log_print)
+                )
+                Spacer(modifier = Modifier.width(Dimens.gapHeight))
+                Text(
+                    text = stringResource(R.string.btn_log_print),
+                    style = MaterialTheme.typography.labelLarge,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+        } else {
+            Button(
+                onClick = {
+                    showPrintField = true
+
+                },
+                shape = RoundedCornerShape(Dimens.BorderRadius),
+                modifier = modifier.fillMaxWidth()
+            ) {
+                Icon(
+                    imageVector = Icons.Outlined.Print,
+                    contentDescription = stringResource(R.string.btn_log_print)
+                )
+                Spacer(modifier = Modifier.width(Dimens.gapHeight))
+                Text(
+                    text = stringResource(R.string.btn_log_print),
+                    style = MaterialTheme.typography.labelLarge,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+        }
+    }
+}
+
+
 @Preview
 @Composable
 fun MainDetailsCardPreview() {
@@ -334,7 +432,7 @@ fun TemperatureDetailsCard(
                 .fillMaxWidth()
                 .padding(
                     horizontal = Dimens.PaddingMedium,
-                    vertical = Dimens.PaddingSmall
+                    vertical = Dimens.PaddingMedium
                 )
         ) {
             Text(

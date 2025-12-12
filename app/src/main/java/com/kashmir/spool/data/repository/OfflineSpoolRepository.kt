@@ -26,4 +26,12 @@ class OfflineSpoolRepository(
     override fun getSpoolStream(id: Int): Flow<Filament?> {
         return spoolDao.getSpool(id = id)
     }
+
+    override fun getCurrentWeightStream(id: Int): Double {
+        return spoolDao.getCurrentWeight(id = id)
+    }
+
+    override suspend fun updateCurrentWeight(id: Int, currentWeight: Double) {
+        return spoolDao.updateCurrentWeight(id = id, currentWeight = currentWeight)
+    }
 }

@@ -31,7 +31,7 @@ object Dimens {
     val gapHeight = 4.dp
 
 
-    val IconSize = 32.dp
+    val IconSize = 42.dp
 
     //Text Sizes
     val TextInGhostCard = 18.sp

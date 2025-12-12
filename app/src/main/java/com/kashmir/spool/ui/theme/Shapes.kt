@@ -6,15 +6,15 @@ import androidx.compose.ui.unit.dp
 
 
 val Shapes = Shapes(
-    // Used for: Text Fields, Tags, Small Buttons
-    small = RoundedCornerShape(4.dp),
+    // Used for: Tags, Chips, Small Buttons
+    small = RoundedCornerShape(8.dp),
 
-    // Used for: Cards, Dialogs, Floating Action Buttons (FAB)
-    medium = RoundedCornerShape(8.dp),
+    // Used for: Cards, Dialogs, Date Pickers
+    medium = RoundedCornerShape(20.dp),
 
-    // Used for: Bottom Sheets, Navigation Drawers
-    large = RoundedCornerShape(12.dp),
+    // Used for: Text Fields (The Pill Look), Large Modal Drawers
+    large = RoundedCornerShape(24.dp),
 
-    // Used for: Large modal surfaces
-    extraLarge = RoundedCornerShape(16.dp)
+    // Used for: FABs, Large Action Buttons
+    extraLarge = RoundedCornerShape(50) // 50% = Full Circle
 )
