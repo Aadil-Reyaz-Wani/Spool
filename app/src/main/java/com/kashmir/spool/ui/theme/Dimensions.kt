@@ -13,8 +13,8 @@ object Dimens {
     val PaddingExtraLarge = 32.dp
 
     // Component Specifics
-    val CardElevation = 2.dp
-    val BorderThickness = 1.dp // Thicker borders for that "technical" look
+    val CardElevation = 4.dp
+    val BorderThickness = 1.dp
     val ColorDotBorderThickness = 4.dp
     val BorderRadius = 4.dp
     val CornerRadius = 16.dp
@@ -25,7 +25,7 @@ object Dimens {
     val IconLarge = 32.dp
 
     // Filament Specifics
-    val ColorDotSize = 24.dp         // The circle showing filament color
+    val ColorDotSize = 72.dp         // The circle showing filament color
     val ProgressBarHeight = 12.dp    // Thick enough to read easily
     val SpoolCardMinHeight = 80.dp   // Minimum touch target for list items
     val gapHeight = 4.dp

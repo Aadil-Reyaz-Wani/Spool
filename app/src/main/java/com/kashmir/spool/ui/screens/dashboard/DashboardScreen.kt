@@ -1,12 +1,12 @@
 package com.kashmir.spool.ui.screens.dashboard
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
@@ -18,6 +18,7 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.outlined.AddTask
@@ -28,6 +29,7 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -35,6 +37,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -57,7 +60,7 @@ fun DashboardScreen(
         modifier = modifier,
         topBar = {
             SpoolAppBar(
-                title = stringResource(R.string.dashboard_title).uppercase(),
+                title = stringResource(R.string.dashboard_title),
                 canNavigateBack = false,
                 navigateUp = {},
                 modifier = modifier
@@ -105,6 +108,7 @@ fun DashboardScreen(
                     SpoolItemCard(
                         brandName = spool.brand,
                         materialType = spool.material,
+                        colorName = spool.colorName,
                         totalWeight = spool.totalWeight.toString(),
                         currentWeight = spool.currentWeight.toString(),
                         colorHex = spool.colorHex,
@@ -121,6 +125,7 @@ fun DashboardScreen(
 fun SpoolItemCard(
     brandName: String,
     materialType: String,
+    colorName: String,
     totalWeight: String,
     currentWeight: String,
     colorHex: Long,
@@ -131,8 +136,9 @@ fun SpoolItemCard(
         elevation = CardDefaults.cardElevation(Dimens.CardElevation),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surface,
-            contentColor = MaterialTheme.colorScheme.onSurface
+            contentColor = MaterialTheme.colorScheme.onSurface,
         ),
+        shape = MaterialTheme.shapes.medium,
         modifier = modifier
             .fillMaxWidth()
             .padding(Dimens.PaddingSmall)
@@ -141,29 +147,56 @@ fun SpoolItemCard(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(Dimens.PaddingSmall)
+                .padding(Dimens.PaddingMedium),
+            verticalArrangement = Arrangement.spacedBy(2.dp),
+            horizontalAlignment = Alignment.Start
         ) {
-            Row {
-                Column(
-                    modifier = Modifier.weight(1f)
-                ) {
-                    Text(
-                        text = materialType,
-                        style = MaterialTheme.typography.titleSmall
-                    )
-                    Text(
-                        text = brandName,
-                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
-                    )
-                }
+
+
+            Surface(
+                shape = RoundedCornerShape(4.dp),
+                color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f)
+            ) {
+                Text(
+                    text = materialType.uppercase(),
+                    style = MaterialTheme.typography.labelMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f),
+                    modifier = Modifier
+                        .padding(horizontal = 6.dp, vertical = 2.dp)
+                )
+            }
+            Text(
+                text = brandName,
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.ExtraBold,
+                color = MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier.fillMaxWidth()
+            )
+            Text(
+                text = colorName,
+                style = MaterialTheme.typography.titleSmall,
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(Dimens.PaddingLarge),
+                contentAlignment = Alignment.Center
+            ) {
                 Box(
                     modifier = Modifier
                         .size(Dimens.ColorDotSize)
                         .clip(CircleShape)
-                        .align(alignment = Alignment.CenterVertically)
                         .background(color = Color(colorHex))
+                        .border(
+                            width = Dimens.BorderThickness,
+                            color = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f),
+                            shape = CircleShape
+                        )
                 )
-
             }
             Spacer(modifier = Modifier.height(Dimens.gapHeight))
             // Remaining filament
@@ -181,8 +214,9 @@ fun SpoolItemCard(
 @Composable
 private fun SpoolCardPreview() {
     SpoolItemCard(
-        brandName = "Brand",
-        materialType = "Material Type",
+        brandName = "HackersSpool",
+        materialType = "PETG",
+        colorName = "Galazy Mate Black",
         totalWeight = "1000",
         currentWeight = "230",
         colorHex = 0xFF000000,

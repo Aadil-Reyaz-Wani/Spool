@@ -3,7 +3,7 @@
 
     <string name="app_tagline">Measure. Manage. Print.</string>
 
-    <string name="dashboard_title">Inventory</string>
+    <string name="dashboard_title">Inventory\nDashboard</string>
     <string name="dashboard_empty">No spools found.\nTap + to add your first roll.</string>
     <string name="stats_total_weight">Total Stock</string>
     <string name="stats_spool_count">Spools</string>
@@ -30,9 +30,9 @@
     <string name="label_temp_bed">Bed (°C)</string>
 
     <string name="btn_save">Save Spool</string>
-    <string name="btn_delete">Delete Spool</string>
+    <string name="btn_delete">Delete</string>
     <string name="btn_cancel">Cancel</string>
-    <string name="btn_update">Update Spool</string>
+    <string name="btn_update">Update</string>
     <string name="btn_fab">Add New Spool</string>
     <string name="btn_log_print">Log Print (Subtract Weight)</string>
 
