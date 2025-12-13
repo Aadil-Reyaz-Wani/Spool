@@ -217,7 +217,6 @@ fun MySpoolApp(modifier: Modifier = Modifier) {
                         spoolDetailsViewModel.deleteSpool(filament)
                         backStack.removeLastOrNull()
                     },
-                    isPrintMode = spoolEntryViewModel.isEditMode(entry.id), // Keep eye on this
                     printWeight = printWeight,
                     onPrintWeightValueChange = { newValue->
                         spoolDetailsViewModel.quickDeductionUpdateField(newValue = newValue)

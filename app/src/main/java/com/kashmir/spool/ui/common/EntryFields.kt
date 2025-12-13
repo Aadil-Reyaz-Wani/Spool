@@ -2,28 +2,40 @@ package com.kashmir.spool.ui.common
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.AddBox
+import androidx.compose.material.icons.outlined.Circle
+import androidx.compose.material.icons.outlined.ColorLens
+import androidx.compose.material.icons.outlined.Colorize
+import androidx.compose.material.icons.outlined.EditNote
+import androidx.compose.material.icons.outlined.LineWeight
+import androidx.compose.material.icons.outlined.LocalFireDepartment
+import androidx.compose.material.icons.outlined.MonitorWeight
+import androidx.compose.material.icons.outlined.PointOfSale
+import androidx.compose.material.icons.outlined.Save
+import androidx.compose.material.icons.outlined.StickyNote2
+import androidx.compose.material.icons.outlined.TextFields
+import androidx.compose.material.icons.outlined.Thermostat
+import androidx.compose.material.icons.outlined.Update
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import com.kashmir.spool.R
+import com.kashmir.spool.ui.components.HeadingText
+import com.kashmir.spool.ui.components.SpoolButton
+import com.kashmir.spool.ui.components.SpoolOutlinedTextField
 import com.kashmir.spool.ui.screens.entry.ColorSelectionGrid
 import com.kashmir.spool.ui.screens.entry.SpoolEntryUiState
 import com.kashmir.spool.ui.theme.Dimens
@@ -60,188 +72,130 @@ fun EntryFields(
             .verticalScroll(scrollState)
             .imePadding()
     ) {
-        OutlinedTextField(
+
+        Spacer(modifier = Modifier.height(Dimens.PaddingLarge))
+        HeadingText(
+            text = "Spool Details",
+            icon = Icons.Outlined.AddBox
+        )
+        Spacer(modifier = Modifier.height(Dimens.PaddingMedium))
+        SpoolOutlinedTextField(
             value = uiState.brand,
             onValueChange = onBrandValueChange,
-            label = {
-                Text(
-                    text = stringResource(R.string.label_brand),
-                    style = MaterialTheme.typography.labelMedium
-                )
-            },
-            placeholder = {
-                Text(
-                    text = stringResource(R.string.hint_brand),
-                    modifier = Modifier.alpha(0.5f),
-                )
-            },
-            singleLine = true,
-            keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words),
-            modifier = Modifier.fillMaxWidth()
+            label = stringResource(R.string.label_brand),
+            placeholder = stringResource(R.string.hint_brand),
+            leadingIcon = Icons.Outlined.TextFields,
         )
-        Spacer(modifier = Modifier.height(Dimens.PaddingSmall))
-        OutlinedTextField(
+        Spacer(modifier = Modifier.height(Dimens.PaddingTiny))
+        SpoolOutlinedTextField(
             value = uiState.material,
             onValueChange = onMaterialValueChange,
-            label = {
-                Text(
-                    text = stringResource(R.string.label_material),
-                    style = MaterialTheme.typography.labelMedium
-                )
-            },
-            placeholder = {
-                Text(
-                    text = stringResource(R.string.hint_material),
-                    modifier = Modifier.alpha(0.5f),
-                )
-            },
+            label = stringResource(R.string.label_material),
+            placeholder = stringResource(R.string.hint_material),
+            leadingIcon = Icons.Outlined.Circle,
             singleLine = true,
             keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Characters),
-            modifier = Modifier.fillMaxWidth()
         )
-        Spacer(modifier = Modifier.height(Dimens.PaddingSmall))
-        OutlinedTextField(
-            value = uiState.colorName,
-            onValueChange = onColorNameChange,
-            label = {
-                Text(
-                    text = stringResource(R.string.label_color),
-                    style = MaterialTheme.typography.labelMedium
-                )
-            },
-            placeholder = {
-                Text(
-                    text = stringResource(R.string.hint_color),
-                    modifier = Modifier.alpha(0.5f),
-                )
-            },
-            singleLine = true,
-            keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words),
-            modifier = Modifier.fillMaxWidth()
+        Spacer(modifier = Modifier.height(Dimens.PaddingLarge))
+        HorizontalDivider()
+        Spacer(modifier = Modifier.height(Dimens.PaddingLarge))
+        HeadingText(
+            text = "Filament Color",
+            icon = Icons.Outlined.ColorLens,
         )
-        Spacer(modifier = Modifier.height(Dimens.PaddingSmall))
-        OutlinedTextField(
-            value = uiState.totalWeight,
-            onValueChange = onInitialWeightValueChange,
-            label = {
-                Text(
-                    text = stringResource(R.string.label_initial_weight),
-                    style = MaterialTheme.typography.labelMedium
-                )
-            },
-            placeholder = {
-                Text(
-                    text = stringResource(R.string.hint_total_wight),
-                    modifier = Modifier.alpha(0.5f),
-                )
-            },
-            singleLine = true,
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-            supportingText = { if (isWeightValid) Text(text = stringResource(R.string.weight_error_message)) },
-            isError = isWeightValid,
-            modifier = Modifier.fillMaxWidth()
-        )
-        if (isEditMode) {
-            Spacer(modifier = Modifier.height(Dimens.PaddingSmall))
-            OutlinedTextField(
-                value = uiState.currentWeight,
-                onValueChange = onCurrentWeightValueChange,
-                label = {
-                    Text(
-                        text = stringResource(R.string.label_current_weight),
-                        style = MaterialTheme.typography.labelMedium
-                    )
-                },
-                placeholder = {
-                    Text(
-                        text = stringResource(R.string.hint_total_wight),
-                        modifier = Modifier.alpha(0.5f),
-                    )
-                },
-                singleLine = true,
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                modifier = Modifier.fillMaxWidth()
-            )
-            Spacer(modifier = Modifier.height(Dimens.PaddingSmall))
-            OutlinedTextField(
-                value = uiState.tempNozzle,
-                onValueChange = onNozzleTempValueChange,
-                label = {
-                    Text(
-                        text = stringResource(R.string.label_temp_nozzle),
-                        style = MaterialTheme.typography.labelMedium
-                    )
-                },
-                placeholder = {
-                    Text(
-                        text = stringResource(R.string.hint_nozzle),
-                        modifier = Modifier.alpha(0.5f),
-                    )
-                },
-                singleLine = true,
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                modifier = Modifier.fillMaxWidth()
-            )
-            Spacer(modifier = Modifier.height(Dimens.PaddingSmall))
-            OutlinedTextField(
-                value = uiState.tempBed,
-                onValueChange = onBedTempValueChange,
-                label = {
-                    Text(
-                        text = stringResource(R.string.label_temp_bed),
-                        style = MaterialTheme.typography.labelMedium
-                    )
-                },
-                placeholder = {
-                    Text(
-                        text = stringResource(R.string.hint_bed),
-                        modifier = Modifier.alpha(0.5f),
-                    )
-                },
-                singleLine = true,
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                modifier = Modifier.fillMaxWidth()
-            )
-            Spacer(modifier = Modifier.height(Dimens.PaddingSmall))
-            OutlinedTextField(
-                value = uiState.note,
-                onValueChange = onNoteValueChange,
-                label = {
-                    Text(
-                        text = stringResource(R.string.label_note),
-                        style = MaterialTheme.typography.labelMedium
-                    )
-                },
-                placeholder = {
-                    Text(
-                        text = stringResource(R.string.hint_note),
-                        modifier = Modifier.alpha(0.5f),
-                    )
-                },
-                keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences),
-                modifier = Modifier.fillMaxWidth()
-            )
-        }
-        Spacer(modifier = Modifier.height(Dimens.PaddingSmall))
+        Spacer(modifier = Modifier.height(Dimens.PaddingMedium))
         ColorSelectionGrid(
             selectedColor = selectedColor,
             onSelectedColor = onColorValueChange
         )
-        Spacer(modifier = Modifier.height(Dimens.PaddingSmall))
-
-        Button(
-            onClick = onSaveOrUpdateClick,
-            modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(Dimens.BorderRadius),
-            enabled = isValid
-        ) {
-            Text(
-                text = if (!isEditMode) stringResource(R.string.btn_save) else stringResource(R.string.btn_update),
-                style = MaterialTheme.typography.labelLarge,
-                color = if (isValid) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.inversePrimary,
-                fontWeight = FontWeight.Bold
+        Spacer(modifier = Modifier.height(Dimens.PaddingMedium))
+        SpoolOutlinedTextField(
+            value = uiState.colorName,
+            onValueChange = onColorNameChange,
+            label = stringResource(R.string.label_color),
+            placeholder = stringResource(R.string.hint_color),
+            leadingIcon = Icons.Outlined.Colorize,
+            singleLine = true,
+            keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words),
+        )
+        Spacer(modifier = Modifier.height(Dimens.PaddingLarge))
+        HorizontalDivider()
+        Spacer(modifier = Modifier.height(Dimens.PaddingLarge))
+        HeadingText(text = "Specs", icon = Icons.Outlined.PointOfSale)
+        Spacer(modifier = Modifier.height(Dimens.PaddingMedium))
+        SpoolOutlinedTextField(
+            value = uiState.totalWeight,
+            onValueChange = onInitialWeightValueChange,
+            label = stringResource(R.string.label_initial_weight),
+            placeholder = stringResource(R.string.hint_total_wight),
+            leadingIcon = Icons.Outlined.MonitorWeight,
+            singleLine = true,
+            isError = isWeightValid,
+            supportingText = stringResource(R.string.weight_error_message),
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+        )
+        if (isEditMode) {
+            Spacer(modifier = Modifier.height(Dimens.PaddingTiny))
+            SpoolOutlinedTextField(
+                value = uiState.currentWeight,
+                onValueChange = onCurrentWeightValueChange,
+                label = stringResource(R.string.label_current_weight),
+                placeholder = stringResource(R.string.hint_total_wight),
+                leadingIcon = Icons.Outlined.LineWeight,
+                singleLine = true,
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
             )
+            Spacer(modifier = Modifier.height(Dimens.PaddingTiny))
+            SpoolOutlinedTextField(
+                value = uiState.tempNozzle,
+                onValueChange = onNozzleTempValueChange,
+                label = stringResource(R.string.label_temp_nozzle),
+                placeholder = stringResource(R.string.hint_nozzle),
+                leadingIcon = Icons.Outlined.Thermostat,
+                singleLine = true,
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+            )
+
+            Spacer(modifier = Modifier.height(Dimens.PaddingTiny))
+            SpoolOutlinedTextField(
+                value = uiState.tempBed,
+                onValueChange = onBedTempValueChange,
+                label = stringResource(R.string.label_temp_bed),
+                placeholder = stringResource(R.string.hint_bed),
+                leadingIcon = Icons.Outlined.LocalFireDepartment,
+                singleLine = true,
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+            )
+            Spacer(modifier = Modifier.height(Dimens.PaddingLarge))
+            HorizontalDivider()
+            Spacer(modifier = Modifier.height(Dimens.PaddingLarge))
+            HeadingText(text = "Notes (Optional)", icon = Icons.Outlined.StickyNote2)
+            Spacer(modifier = Modifier.height(Dimens.PaddingMedium))
+            SpoolOutlinedTextField(
+                value = uiState.note,
+                onValueChange = onNoteValueChange,
+                label = stringResource(R.string.label_note),
+                placeholder = stringResource(R.string.hint_note),
+                leadingIcon = Icons.Outlined.EditNote,
+                singleLine = false,
+                keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences),
+            )
+
         }
+        Spacer(modifier = Modifier.height(Dimens.PaddingExtraLarge))
+        SpoolButton(
+            text = if (!isEditMode) stringResource(R.string.btn_save) else stringResource(R.string.btn_update),
+            icon = if (!isEditMode) Icons.Outlined.Save else Icons.Outlined.Update,
+            contentDescription = if (!isEditMode) stringResource(R.string.btn_save) else stringResource(
+                R.string.btn_update
+            ),
+            onClick = onSaveOrUpdateClick,
+            buttonContainerColor = MaterialTheme.colorScheme.primary,
+            buttonContentColor = MaterialTheme.colorScheme.onPrimary,
+            enabled = isValid,
+            hasBorder = false,
+            modifier = Modifier.padding(bottom = Dimens.PaddingExtraLarge)
+        )
     }
 }
 

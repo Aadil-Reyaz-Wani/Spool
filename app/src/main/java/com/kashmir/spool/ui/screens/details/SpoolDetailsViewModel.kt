@@ -64,9 +64,9 @@ class SpoolDetailsViewModel(
         }
     }
 
+    // Subtract weight from current weight
     fun deductCurrentWeight(id: Int, deductedWeight: String) {
         val weight = spoolDetails.value.currentWeight
-
             if (deductedWeight.isNotBlank()) {
                 val newCurrentWeight = weight - deductedWeight.toDouble()
                 viewModelScope.launch {

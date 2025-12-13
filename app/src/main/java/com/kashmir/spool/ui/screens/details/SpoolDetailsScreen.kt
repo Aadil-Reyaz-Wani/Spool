@@ -17,6 +17,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.StickyNote2
 import androidx.compose.material.icons.outlined.DeviceThermostat
+import androidx.compose.material.icons.outlined.MonitorWeight
 import androidx.compose.material.icons.outlined.Print
 import androidx.compose.material.icons.outlined.Thermostat
 import androidx.compose.material.icons.outlined.Whatshot
@@ -26,7 +27,6 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -49,6 +49,8 @@ import com.kashmir.spool.ui.common.GhostCard
 import com.kashmir.spool.ui.common.SpoolAppBar
 import com.kashmir.spool.ui.common.WeightProgressBar
 import com.kashmir.spool.ui.components.DeleteConfirmationAlertDialog
+import com.kashmir.spool.ui.components.SpoolButton
+import com.kashmir.spool.ui.components.SpoolOutlinedTextField
 import com.kashmir.spool.ui.theme.Dimens
 
 @Composable
@@ -57,7 +59,6 @@ fun SpoolDetailsScreen(
     navigateUp: () -> Unit,
     onUpdateClick: (Int) -> Unit,
     onConfirmDelete: (Filament) -> Unit,
-    isPrintMode: Boolean,
     printWeight: String,
     onPrintWeightValueChange: (String) -> Unit,
     onPrintWeightClick: (Int, String) -> Unit,
@@ -86,7 +87,6 @@ fun SpoolDetailsScreen(
             note = spoolDetails.note,
             onEditClick = { onUpdateClick(spoolDetails.id) },
             onConfirmDelete = { onConfirmDelete(spoolDetails) },
-            isPrintMode = isPrintMode,
             printWeight = printWeight,
             onPrintWeightValueChange = onPrintWeightValueChange,
             onPrintWeightClick = { onPrintWeightClick(spoolDetails.id, printWeight) },
@@ -108,7 +108,6 @@ fun DetailsScreen(
     note: String,
     onEditClick: () -> Unit,
     onConfirmDelete: () -> Unit,
-    isPrintMode: Boolean,
     printWeight: String,
     onPrintWeightValueChange: (String) -> Unit,
     onPrintWeightClick: () -> Unit,
@@ -131,7 +130,6 @@ fun DetailsScreen(
         )
 
         PrintCard(
-            isPrintMode = isPrintMode,
             printWeight = printWeight,
             onPrintWeightValueChange = onPrintWeightValueChange,
             onPrintWeightClick = onPrintWeightClick
@@ -226,7 +224,6 @@ fun DetailsScreenPreview() {
         note = "This is my note",
         onEditClick = {},
         onConfirmDelete = {},
-        isPrintMode = false,
         onPrintWeightValueChange = {},
         printWeight = "",
         onPrintWeightClick = {}
@@ -328,7 +325,6 @@ fun MainDetailsCard(
 
 @Composable
 fun PrintCard(
-    isPrintMode: Boolean,
     printWeight: String,
     onPrintWeightValueChange: (String) -> Unit,
     onPrintWeightClick:() -> Unit,
@@ -343,55 +339,42 @@ fun PrintCard(
     ) {
 
         if (showPrintField) {
-            OutlinedTextField(
+
+            SpoolOutlinedTextField(
                 value = printWeight,
                 onValueChange = onPrintWeightValueChange,
-                shape = MaterialTheme.shapes.large,
-                label = {Text(text = stringResource(R.string.label_deduct_weight))},
-                singleLine = true,
+                label = stringResource(R.string.label_deduct_weight),
+                isError = false,
+                leadingIcon = Icons.Outlined.MonitorWeight,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                modifier = Modifier.fillMaxWidth()
             )
-            Button(
+            Spacer(modifier = Modifier.height(Dimens.PaddingSmall))
+            SpoolButton(
+                text = stringResource(R.string.btn_log_print),
+                icon = Icons.Outlined.Print,
+                contentDescription = "Print Button",
                 onClick = {
                     showPrintField = false
                     onPrintWeightClick()
-
                 },
-                shape = RoundedCornerShape(Dimens.BorderRadius),
-                modifier = modifier.fillMaxWidth()
-            ) {
-                Icon(
-                    imageVector = Icons.Outlined.Print,
-                    contentDescription = stringResource(R.string.btn_log_print)
-                )
-                Spacer(modifier = Modifier.width(Dimens.gapHeight))
-                Text(
-                    text = stringResource(R.string.btn_log_print),
-                    style = MaterialTheme.typography.labelLarge,
-                    fontWeight = FontWeight.Bold
-                )
-            }
+                buttonContainerColor = MaterialTheme.colorScheme.surface,
+                buttonContentColor = MaterialTheme.colorScheme.onSurface,
+                enabled = true,
+                hasBorder = true
+            )
         } else {
-            Button(
+            SpoolButton(
+                text = stringResource(R.string.btn_log_print),
+                icon = Icons.Outlined.Print,
+                contentDescription = "Print Button",
                 onClick = {
                     showPrintField = true
-
                 },
-                shape = RoundedCornerShape(Dimens.BorderRadius),
-                modifier = modifier.fillMaxWidth()
-            ) {
-                Icon(
-                    imageVector = Icons.Outlined.Print,
-                    contentDescription = stringResource(R.string.btn_log_print)
-                )
-                Spacer(modifier = Modifier.width(Dimens.gapHeight))
-                Text(
-                    text = stringResource(R.string.btn_log_print),
-                    style = MaterialTheme.typography.labelLarge,
-                    fontWeight = FontWeight.Bold
-                )
-            }
+                buttonContainerColor = MaterialTheme.colorScheme.surface,
+                buttonContentColor = MaterialTheme.colorScheme.onSurface,
+                enabled = true,
+                hasBorder = true
+            )
         }
     }
 }

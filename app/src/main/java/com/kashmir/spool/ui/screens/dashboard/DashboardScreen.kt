@@ -8,13 +8,15 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -55,7 +57,7 @@ fun DashboardScreen(
         modifier = modifier,
         topBar = {
             SpoolAppBar(
-                title = stringResource(R.string.app_name).uppercase(),
+                title = stringResource(R.string.dashboard_title).uppercase(),
                 canNavigateBack = false,
                 navigateUp = {},
                 modifier = modifier
@@ -65,11 +67,13 @@ fun DashboardScreen(
             FloatingActionButton(
                 onClick = onFabClick,
                 containerColor = MaterialTheme.colorScheme.primary,
-                contentColor = MaterialTheme.colorScheme.onPrimary
+                contentColor = MaterialTheme.colorScheme.onPrimary,
+                shape = MaterialTheme.shapes.extraLarge
             ) {
                 Icon(
                     Icons.Filled.Add,
-                    contentDescription = stringResource(R.string.btn_fab)
+                    contentDescription = stringResource(R.string.btn_fab),
+                    modifier = Modifier.size(Dimens.IconLarge)
                 )
             }
         },
@@ -91,7 +95,8 @@ fun DashboardScreen(
                 )
             }
         } else {
-            LazyColumn(
+            LazyVerticalGrid(
+                columns = GridCells.Adaptive(150.dp),
                 contentPadding = PaddingValues(bottom = 72.dp),
                 modifier = Modifier
                     .padding(paddingValues = paddingValues)
@@ -143,12 +148,12 @@ fun SpoolItemCard(
                     modifier = Modifier.weight(1f)
                 ) {
                     Text(
-                        text = brandName,
-                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
-                    )
-                    Text(
                         text = materialType,
                         style = MaterialTheme.typography.titleSmall
+                    )
+                    Text(
+                        text = brandName,
+                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
                     )
                 }
                 Box(

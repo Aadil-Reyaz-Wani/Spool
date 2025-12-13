@@ -14,8 +14,8 @@ object Dimens {
 
     // Component Specifics
     val CardElevation = 2.dp
-    val BorderThickness = 0.5.dp // Thicker borders for that "technical" look
-    val ColorDotBorderThickness = 3.dp
+    val BorderThickness = 1.dp // Thicker borders for that "technical" look
+    val ColorDotBorderThickness = 4.dp
     val BorderRadius = 4.dp
     val CornerRadius = 16.dp
 
@@ -29,6 +29,7 @@ object Dimens {
     val ProgressBarHeight = 12.dp    // Thick enough to read easily
     val SpoolCardMinHeight = 80.dp   // Minimum touch target for list items
     val gapHeight = 4.dp
+    val ButtonHeight = 50.dp
 
 
     val IconSize = 42.dp
