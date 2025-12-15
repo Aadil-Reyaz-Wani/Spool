@@ -19,7 +19,7 @@ class MainActivity : ComponentActivity() {
             SpoolTheme {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colorScheme.background
+                    color = MaterialTheme.colorScheme.surface
                 ) {
                     MySpoolApp()
                 }

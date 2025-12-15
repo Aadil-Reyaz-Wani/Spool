@@ -3,10 +3,13 @@ package com.kashmir.spool.ui.theme
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Shapes
 import androidx.compose.ui.unit.dp
+import com.kashmir.spool.ui.theme.Shapes
 
 
 val Shapes = Shapes(
-    // Used for: Tags, Chips, Small Buttons
+    // Used for: Tags
+    extraSmall = RoundedCornerShape(4.dp),
+    // Used for: Chips, Small Buttons
     small = RoundedCornerShape(8.dp),
 
     // Used for: Cards, Dialogs, Date Pickers

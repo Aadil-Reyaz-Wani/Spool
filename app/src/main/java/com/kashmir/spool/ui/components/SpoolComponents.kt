@@ -1,37 +1,47 @@
 package com.kashmir.spool.ui.components
 
+import android.graphics.PixelFormat
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.ColorLens
 import androidx.compose.material.icons.outlined.Print
 import androidx.compose.material.icons.outlined.TextFields
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.ButtonElevation
 import androidx.compose.material3.Icon
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardCapitalization
-import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.toUpperCase
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.kashmir.spool.ui.theme.BrandOrange
 import com.kashmir.spool.ui.theme.Dimens
-import org.jetbrains.annotations.Nls
 
 
 // Solid Button
@@ -45,7 +55,9 @@ fun SpoolButton(
     buttonContentColor: Color,
     enabled: Boolean,
     hasBorder: Boolean,
-    modifier: Modifier = Modifier
+    buttonDefaultElevation: Dp = 4.dp,
+    buttonPressedElevation: Dp = 2.dp,
+    modifier: Modifier = Modifier,
 ) {
     Button(
         onClick = onClick,
@@ -53,15 +65,15 @@ fun SpoolButton(
             .fillMaxWidth()
             .height(Dimens.ButtonHeight),
         enabled = enabled,
-        shape = MaterialTheme.shapes.extraLarge, // 50.dp pill shape
+        shape = MaterialTheme.shapes.extraLarge,
         colors = ButtonDefaults.buttonColors(
-            containerColor = buttonContainerColor, // Spool Yellow
-            contentColor = buttonContentColor, // Black Text
+            containerColor = buttonContainerColor,
+            contentColor = buttonContentColor,
             disabledContainerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)
         ),
         elevation = ButtonDefaults.buttonElevation(
-            defaultElevation = 4.dp,
-            pressedElevation = 2.dp
+            defaultElevation = buttonDefaultElevation,
+            pressedElevation = buttonPressedElevation
         ),
         border = if (hasBorder) BorderStroke(
             Dimens.BorderThickness,
@@ -165,26 +177,89 @@ private fun TextFieldPrev() {
 }
 
 @Composable
-fun HeadingText(
+fun SpoolHeadingText(
     text: String,
     icon: ImageVector,
+    alpha: Float = 1f,
+    iconTint: Color = MaterialTheme.colorScheme.primary,
+    textColor: Color = MaterialTheme.colorScheme.onSurface,
     modifier: Modifier = Modifier) {
     Row(
         modifier = modifier.fillMaxWidth(),
-        verticalAlignment = Alignment.CenterVertically
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(Dimens.gapHeight)
     ) {
         Icon(
             imageVector = icon,
             contentDescription = null,
-            tint = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f)
+            tint = iconTint,
+            modifier = Modifier.size(Dimens.IconMedium)
         )
-        Spacer(modifier = Modifier.width(Dimens.gapHeight))
         Text(
-            text = text.uppercase(),
+            text = text,
             style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f),
+            color = textColor,
             modifier = Modifier.fillMaxWidth()
-
         )
     }
+}
+
+
+@Composable
+fun SpoolTag(
+    text: String,
+    modifier: Modifier = Modifier
+) {
+
+    Surface(
+        shape = MaterialTheme.shapes.extraSmall,
+        color = MaterialTheme.colorScheme.secondaryContainer,
+        modifier = Modifier.border(
+            width = Dimens.BorderThickness,
+            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
+            shape = MaterialTheme.shapes.extraSmall
+        ),
+        contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
+        tonalElevation = 0.dp,
+        shadowElevation = 0.dp,
+        border = null,
+        content = {
+            Text(
+                text = text,
+                style = MaterialTheme.typography.labelMedium,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSecondaryContainer,
+                modifier = modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+
+            )
+        }
+    )
+}
+
+
+@Composable
+fun SpoolProgressBar(
+    percentage: Double,
+    currentWeight: String,
+    totalWeight: String,
+    modifier: Modifier = Modifier
+) {
+    val progress = currentWeight.toFloat()/totalWeight.toFloat()
+    LinearProgressIndicator(
+        progress = { progress },
+        modifier = Modifier
+            .fillMaxWidth()
+            .size(Dimens.ProgressBarHeight)
+            .clip(CircleShape),
+        color = if (percentage > 40) {
+            BrandOrange
+        } else if (percentage < 20) {
+            BrandOrange
+        } else {
+            BrandOrange
+        },
+        trackColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f),
+        strokeCap = StrokeCap.Butt,
+        gapSize = 1.5.dp,
+    )
 }

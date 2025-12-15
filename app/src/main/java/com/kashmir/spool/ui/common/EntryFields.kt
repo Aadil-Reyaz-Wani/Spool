@@ -33,7 +33,7 @@ import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import com.kashmir.spool.R
-import com.kashmir.spool.ui.components.HeadingText
+import com.kashmir.spool.ui.components.SpoolHeadingText
 import com.kashmir.spool.ui.components.SpoolButton
 import com.kashmir.spool.ui.components.SpoolOutlinedTextField
 import com.kashmir.spool.ui.screens.entry.ColorSelectionGrid
@@ -74,7 +74,7 @@ fun EntryFields(
     ) {
 
         Spacer(modifier = Modifier.height(Dimens.PaddingLarge))
-        HeadingText(
+        SpoolHeadingText(
             text = "Spool Details",
             icon = Icons.Outlined.AddBox
         )
@@ -99,7 +99,7 @@ fun EntryFields(
         Spacer(modifier = Modifier.height(Dimens.PaddingLarge))
         HorizontalDivider()
         Spacer(modifier = Modifier.height(Dimens.PaddingLarge))
-        HeadingText(
+        SpoolHeadingText(
             text = "Filament Color",
             icon = Icons.Outlined.ColorLens,
         )
@@ -121,7 +121,7 @@ fun EntryFields(
         Spacer(modifier = Modifier.height(Dimens.PaddingLarge))
         HorizontalDivider()
         Spacer(modifier = Modifier.height(Dimens.PaddingLarge))
-        HeadingText(text = "Specs", icon = Icons.Outlined.PointOfSale)
+        SpoolHeadingText(text = "Specs", icon = Icons.Outlined.PointOfSale)
         Spacer(modifier = Modifier.height(Dimens.PaddingMedium))
         SpoolOutlinedTextField(
             value = uiState.totalWeight,
@@ -169,7 +169,7 @@ fun EntryFields(
             Spacer(modifier = Modifier.height(Dimens.PaddingLarge))
             HorizontalDivider()
             Spacer(modifier = Modifier.height(Dimens.PaddingLarge))
-            HeadingText(text = "Notes (Optional)", icon = Icons.Outlined.StickyNote2)
+            SpoolHeadingText(text = "Notes (Optional)", icon = Icons.Outlined.StickyNote2)
             Spacer(modifier = Modifier.height(Dimens.PaddingMedium))
             SpoolOutlinedTextField(
                 value = uiState.note,

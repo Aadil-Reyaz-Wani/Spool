@@ -38,10 +38,10 @@ fun GhostCard(
 ) {
 
     val stroke = Stroke(
-        width = 4f,
-        pathEffect = PathEffect.dashPathEffect(floatArrayOf(10f, 10f), 0f)
+        width = 2f,
+        pathEffect = PathEffect.dashPathEffect(floatArrayOf(10f, 15f), 0f)
     )
-    val color = MaterialTheme.colorScheme.outline
+    val color = MaterialTheme.colorScheme.outline.copy(alpha = 0.7f)
 
     Box(
         modifier = modifier

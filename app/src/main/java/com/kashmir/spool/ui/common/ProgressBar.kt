@@ -18,6 +18,8 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.kashmir.spool.ui.components.SpoolProgressBar
+import com.kashmir.spool.ui.theme.BrandOrange
 import com.kashmir.spool.ui.theme.Dimens
 
 @Composable
@@ -27,6 +29,8 @@ fun WeightProgressBar(
     colorHex: Long,
     modifier: Modifier = Modifier
 ) {
+    val percentage = ((currentWeight.toDouble() / totalWeight.toDouble()) * 100)
+
     Column(
         modifier = modifier
     ) {
@@ -37,36 +41,36 @@ fun WeightProgressBar(
         ) {
             Text(
                 text = "Remaining",
-                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
+                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
                 style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
                 modifier = Modifier.weight(1f)
             )
             Text(
                 text = "${currentWeight}g",
                 style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
-                color = MaterialTheme.colorScheme.onSurface,
+                color = if (percentage > 40) {
+                    MaterialTheme.colorScheme.onSurface
+                } else if (percentage < 20) {
+                    MaterialTheme.colorScheme.error
+                } else {
+                    BrandOrange
+                },
                 textAlign = TextAlign.End,
                 modifier = Modifier.weight(1f)
 
             )
         }
         Spacer(modifier = Modifier.height(Dimens.gapHeight))
-        LinearProgressIndicator(
-            progress = { currentWeight.toFloat() / totalWeight.toFloat() },
-            modifier = Modifier
-                .fillMaxWidth()
-                .size(Dimens.ProgressBarHeight)
-                .clip(CircleShape),
-//            color = Color(colorHex),
-            color = MaterialTheme.colorScheme.primary,  //Have to change the color
-            trackColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f),
-            strokeCap = StrokeCap.Butt,
-            gapSize = 1.5.dp,
+
+        SpoolProgressBar(
+            percentage = percentage,
+            currentWeight = currentWeight,
+            totalWeight = totalWeight
         )
         Text(
             text = "of ${totalWeight}g",
             style = MaterialTheme.typography.titleSmall,
-            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
+            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
             textAlign = TextAlign.End,
             modifier = Modifier.fillMaxWidth()
 

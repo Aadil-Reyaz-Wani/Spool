@@ -59,4 +59,13 @@
     <string name="hint_color">e.g. Vertigo Grey</string>
     <string name="hint_total_wight">e.g. 1000</string>
 
+
+
+    <string name="heading_temperature">Temperature</string>
+    <string name="heading_note">Notes</string>
+    <string name="heading_nozzle">Nozzle</string>
+    <string name="heading_bed">Bed</string>
+
+
+
 </resources>

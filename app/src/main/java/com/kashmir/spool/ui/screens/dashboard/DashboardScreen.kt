@@ -7,18 +7,14 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.outlined.AddTask
@@ -29,7 +25,6 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -37,7 +32,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -46,6 +40,7 @@ import com.kashmir.spool.data.entity.Filament
 import com.kashmir.spool.ui.common.GhostCard
 import com.kashmir.spool.ui.common.SpoolAppBar
 import com.kashmir.spool.ui.common.WeightProgressBar
+import com.kashmir.spool.ui.components.SpoolTag
 import com.kashmir.spool.ui.theme.Dimens
 
 @Composable
@@ -135,7 +130,7 @@ fun SpoolItemCard(
     Card(
         elevation = CardDefaults.cardElevation(Dimens.CardElevation),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface,
+            containerColor = MaterialTheme.colorScheme.surfaceVariant,
             contentColor = MaterialTheme.colorScheme.onSurface,
         ),
         shape = MaterialTheme.shapes.medium,
@@ -153,19 +148,7 @@ fun SpoolItemCard(
         ) {
 
 
-            Surface(
-                shape = RoundedCornerShape(4.dp),
-                color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f)
-            ) {
-                Text(
-                    text = materialType.uppercase(),
-                    style = MaterialTheme.typography.labelMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f),
-                    modifier = Modifier
-                        .padding(horizontal = 6.dp, vertical = 2.dp)
-                )
-            }
+            SpoolTag(text = materialType.uppercase())
             Text(
                 text = brandName,
                 style = MaterialTheme.typography.titleMedium,
@@ -175,15 +158,15 @@ fun SpoolItemCard(
             )
             Text(
                 text = colorName,
-                style = MaterialTheme.typography.titleSmall,
-                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.fillMaxWidth()
             )
 
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(Dimens.PaddingLarge),
+                    .padding(Dimens.PaddingMedium),
                 contentAlignment = Alignment.Center
             ) {
                 Box(
@@ -192,13 +175,12 @@ fun SpoolItemCard(
                         .clip(CircleShape)
                         .background(color = Color(colorHex))
                         .border(
-                            width = Dimens.BorderThickness,
-                            color = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f),
+                            width = Dimens.ColorDotBorderThickness/2,
+                            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
                             shape = CircleShape
                         )
                 )
             }
-            Spacer(modifier = Modifier.height(Dimens.gapHeight))
             // Remaining filament
             WeightProgressBar(
                 totalWeight = totalWeight,

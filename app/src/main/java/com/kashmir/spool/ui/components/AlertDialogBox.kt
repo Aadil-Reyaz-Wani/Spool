@@ -1,23 +1,47 @@
 package com.kashmir.spool.ui.components
 
-import android.app.AlertDialog
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.CompassCalibration
+import androidx.compose.material.icons.outlined.DeleteSweep
+import androidx.compose.material.icons.outlined.MonitorWeight
+import androidx.compose.material.icons.outlined.Scale
+import androidx.compose.material.icons.rounded.Cancel
+import androidx.compose.material.icons.rounded.Delete
+import androidx.compose.material.icons.rounded.Print
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import com.kashmir.spool.R
+import com.kashmir.spool.ui.theme.Dimens
+import java.util.Properties
 
 
 @Composable
@@ -27,32 +51,77 @@ fun DeleteConfirmationAlertDialog(
     modifier: Modifier = Modifier
 ) {
     AlertDialog(
+        modifier = modifier
+            .fillMaxWidth()
+            .background(color = MaterialTheme.colorScheme.surface, shape = MaterialTheme.shapes.medium),
+        shape = MaterialTheme.shapes.medium,
         onDismissRequest = {
             onDismiss()
         },
+        icon = {
+            Icon(
+                Icons.Outlined.DeleteSweep,
+                null,
+                tint = MaterialTheme.colorScheme.error,
+                modifier = Modifier.size(Dimens.IconLarge)
+            )
+
+        },
         title = {
-            Text(text = "Confirm Deletion")
+            Text(
+                text = "Confirm Deletion",
+                color = MaterialTheme.colorScheme.onSurface
+            )
         },
         text = {
-            Text(text = "Are you sure you want to delete this item? This action cannot be undone.")
+            Text(
+                text = "Are you sure you want to delete this item? This action cannot be undone.",
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+
+            )
         },
         confirmButton = {
-            TextButton(
-                onClick = onConfirmDelete
+            FilledTonalButton(
+                onClick = onConfirmDelete,
+                shape = RoundedCornerShape(Dimens.BorderRadius),
+                colors = ButtonDefaults.filledTonalButtonColors(
+                    containerColor = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.5f),
+                    contentColor = MaterialTheme.colorScheme.onErrorContainer
+                ),
             ) {
+                Icon(
+                    imageVector = Icons.Rounded.Delete,
+                    contentDescription = null,
+                    modifier = Modifier.size(18.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
                 Text(
                     text = "Delete",
-                    color = MaterialTheme.colorScheme.error
+                    style = MaterialTheme.typography.labelLarge,
+                    fontWeight = FontWeight.Bold
                 )
             }
         },
         dismissButton = {
-            TextButton(
-                onClick = onDismiss
+            FilledTonalButton(
+                onClick = onDismiss,
+                shape = RoundedCornerShape(Dimens.BorderRadius),
+                colors = ButtonDefaults.filledTonalButtonColors(
+                    containerColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f),
+                    contentColor = MaterialTheme.colorScheme.onSurface
+                ),
             ) {
+
+                Icon(
+                    imageVector = Icons.Rounded.Cancel,
+                    contentDescription = null,
+                    modifier = Modifier.size(18.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
                 Text(
                     text = "Cancel",
-
+                    style = MaterialTheme.typography.labelLarge,
+                    fontWeight = FontWeight.Bold
                 )
             }
         }
@@ -62,45 +131,81 @@ fun DeleteConfirmationAlertDialog(
 
 @Composable
 fun InputAlertDialog(
+    printWeight: String,
+    onValueChange: (String) -> Unit,
+    onConfirm: (String) -> Unit,
     onDismissRequest: () -> Unit,
-    onConfirm: (String) -> Unit
+    modifier: Modifier = Modifier
 ) {
-    var inputText by rememberSaveable { mutableStateOf("") } // State to hold the TextField's value
-
     AlertDialog(
-        onDismissRequest = onDismissRequest,
+        modifier = modifier
+            .background(color = MaterialTheme.colorScheme.surface, shape = MaterialTheme.shapes.medium),
+        shape = MaterialTheme.shapes.medium,
+        icon = {
+            Icon(
+                imageVector = Icons.Outlined.Scale,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.size(Dimens.IconLarge)
+            )
+
+        },
         title = {
-            Text(text = "Enter Deducted Weight")
+            Text(
+                text = "Deduct Weight",
+                color = MaterialTheme.colorScheme.onSurface
+            )
         },
         text = {
-            Column { // Use a Column to place the Text and TextField vertically
-                Text("Please enter weight:")
-                Spacer(modifier = Modifier.height(16.dp))
-                OutlinedTextField(
-                    value = inputText,
-                    onValueChange = { inputText = it }, // Update state on user input
-                    label = { Text("Deduct Weight (g)") },
-                    singleLine = true
+            Column {
+                SpoolOutlinedTextField(
+                    value = printWeight,
+                    onValueChange = onValueChange,
+                    label = stringResource(R.string.label_deduct_weight),
+                    placeholder = stringResource(R.string.hint_total_wight),
+                    leadingIcon = Icons.Outlined.CompassCalibration,
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
                 )
             }
         },
+        onDismissRequest = onDismissRequest,
         confirmButton = {
-            Button(
+            FilledTonalButton(
                 onClick = {
-                    onConfirm(inputText) // Pass the input value to the confirmation logic
-                    onDismissRequest() // Dismiss the dialog after action
-                }
+                    onConfirm(printWeight)
+                    onDismissRequest()
+                },
+                shape = RoundedCornerShape(Dimens.BorderRadius),
+                colors = ButtonDefaults.filledTonalButtonColors(
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    contentColor = MaterialTheme.colorScheme.onPrimary
+                ),
             ) {
-                Text("Print")
+                Icon(
+                    imageVector = Icons.Rounded.Print,
+                    contentDescription = null,
+                    modifier = Modifier.size(18.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = "Deduct",
+                    style = MaterialTheme.typography.labelLarge,
+                    fontWeight = FontWeight.Bold
+                )
             }
         },
         dismissButton = {
             TextButton(
                 onClick = {
-                    onDismissRequest() // Dismiss the dialog on cancel
+                    onDismissRequest()
                 }
             ) {
-                Text("Cancel")
+                Text(
+                    text = "Cancel",
+                    color = MaterialTheme.colorScheme.onBackground,
+
+
+                )
             }
         }
     )
