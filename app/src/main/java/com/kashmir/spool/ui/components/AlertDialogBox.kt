@@ -1,7 +1,10 @@
 package com.kashmir.spool.ui.components
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -33,11 +36,13 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.kashmir.spool.R
 import com.kashmir.spool.ui.theme.Dimens
@@ -68,24 +73,31 @@ fun DeleteConfirmationAlertDialog(
 
         },
         title = {
-            Text(
-                text = "Confirm Deletion",
-                color = MaterialTheme.colorScheme.onSurface
-            )
+                Text(
+                    text = "Confirm Deletion",
+                    color = MaterialTheme.colorScheme.onSurface
+                )
         },
         text = {
-            Text(
-                text = "Are you sure you want to delete this item? This action cannot be undone.",
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+            Box(
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = "Are you sure you want to delete this item? This action cannot be undone.",
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.fillMaxWidth()
 
-            )
+                )
+            }
+
         },
         confirmButton = {
             FilledTonalButton(
                 onClick = onConfirmDelete,
-                shape = RoundedCornerShape(Dimens.BorderRadius),
+                shape = MaterialTheme.shapes.small,
                 colors = ButtonDefaults.filledTonalButtonColors(
-                    containerColor = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.5f),
+                    containerColor = MaterialTheme.colorScheme.errorContainer,
                     contentColor = MaterialTheme.colorScheme.onErrorContainer
                 ),
             ) {
@@ -103,24 +115,13 @@ fun DeleteConfirmationAlertDialog(
             }
         },
         dismissButton = {
-            FilledTonalButton(
-                onClick = onDismiss,
-                shape = RoundedCornerShape(Dimens.BorderRadius),
-                colors = ButtonDefaults.filledTonalButtonColors(
-                    containerColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f),
-                    contentColor = MaterialTheme.colorScheme.onSurface
-                ),
+            TextButton(
+                onClick = onDismiss
             ) {
-
-                Icon(
-                    imageVector = Icons.Rounded.Cancel,
-                    contentDescription = null,
-                    modifier = Modifier.size(18.dp)
-                )
-                Spacer(modifier = Modifier.width(8.dp))
                 Text(
                     text = "Cancel",
                     style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.onSurface,
                     fontWeight = FontWeight.Bold
                 )
             }
@@ -157,7 +158,11 @@ fun InputAlertDialog(
             )
         },
         text = {
-            Column {
+            Column (
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center,
+                modifier = Modifier.fillMaxWidth()
+            ){
                 SpoolOutlinedTextField(
                     value = printWeight,
                     onValueChange = onValueChange,
@@ -175,10 +180,10 @@ fun InputAlertDialog(
                     onConfirm(printWeight)
                     onDismissRequest()
                 },
-                shape = RoundedCornerShape(Dimens.BorderRadius),
+                shape = MaterialTheme.shapes.small,
                 colors = ButtonDefaults.filledTonalButtonColors(
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    contentColor = MaterialTheme.colorScheme.onPrimary
+                    containerColor = MaterialTheme.colorScheme.primaryContainer,
+                    contentColor = MaterialTheme.colorScheme.onPrimaryContainer
                 ),
             ) {
                 Icon(

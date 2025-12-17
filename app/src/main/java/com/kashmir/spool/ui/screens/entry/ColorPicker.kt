@@ -3,6 +3,7 @@ package com.kashmir.spool.ui.screens.entry
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -11,8 +12,12 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Circle
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -36,9 +41,9 @@ fun ColorSelectionGrid(
         FlowRow(
             modifier = Modifier.fillMaxWidth(),
             itemVerticalAlignment = Alignment.CenterVertically,
-            verticalArrangement = Arrangement.spacedBy(space = Dimens.PaddingMedium),
+            verticalArrangement = Arrangement.spacedBy(space = Dimens.PaddingSmall),
             horizontalArrangement = Arrangement.spacedBy(
-                space = Dimens.PaddingMedium,
+                space = Dimens.PaddingSmall,
                 alignment = Alignment.CenterHorizontally
             ),
         ) {
@@ -72,15 +77,25 @@ fun ColorCircle(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Box(
+
+    Icon(
+        imageVector = Icons.Filled.Circle,
+        contentDescription = null,
+        tint = if (!isSelected) {
+            FilamentColorData.getComposeColor(colorHex).copy(alpha = 0.6f)
+        } else {
+            FilamentColorData.getComposeColor(colorHex)
+        },
         modifier = Modifier
             .size(50.dp)
-            .clip(CircleShape)
-            .background(color = FilamentColorData.getComposeColor(colorHex))
-            .clickable(onClick = onClick)
+            .clickable(
+                interactionSource = remember { MutableInteractionSource() },
+                indication = null,
+                onClick = onClick
+            )
             .border(
-                width = 1.dp,
-                color = MaterialTheme.colorScheme.outline,
+                width = Dimens.BorderThickness,
+                color = MaterialTheme.colorScheme.outlineVariant,
                 shape = CircleShape
             )
             .then(

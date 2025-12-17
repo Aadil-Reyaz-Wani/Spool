@@ -15,7 +15,7 @@ object Dimens {
     // Component Specifics
     val CardElevation = 4.dp
     val BorderThickness = 1.dp
-    val ColorDotBorderThickness = 4.dp
+    val ColorDotBorderThickness = 2.dp
     val BorderRadius = 4.dp
     val CornerRadius = 16.dp
 

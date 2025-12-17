@@ -1,6 +1,5 @@
 package com.kashmir.spool.ui.components
 
-import android.graphics.PixelFormat
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -19,7 +18,6 @@ import androidx.compose.material.icons.outlined.Print
 import androidx.compose.material.icons.outlined.TextFields
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.ButtonElevation
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
@@ -36,7 +34,6 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardCapitalization
-import androidx.compose.ui.text.toUpperCase
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -55,9 +52,9 @@ fun SpoolButton(
     buttonContentColor: Color,
     enabled: Boolean,
     hasBorder: Boolean,
+    modifier: Modifier = Modifier,
     buttonDefaultElevation: Dp = 4.dp,
     buttonPressedElevation: Dp = 2.dp,
-    modifier: Modifier = Modifier,
 ) {
     Button(
         onClick = onClick,
@@ -130,7 +127,7 @@ fun SpoolOutlinedTextField(
         label = { Text(label) },
         placeholder = { Text(placeholder, color = Color.Gray) },
         modifier = modifier.fillMaxWidth(),
-        shape = MaterialTheme.shapes.large,
+        shape = MaterialTheme.shapes.medium,
         singleLine = singleLine,
         isError = isError,
         supportingText = {
@@ -150,12 +147,15 @@ fun SpoolOutlinedTextField(
         keyboardOptions = keyboardOptions,
         keyboardActions = keyboardActions,
         colors = OutlinedTextFieldDefaults.colors(
-            focusedBorderColor = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f),
-            unfocusedBorderColor = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f),
-            focusedLabelColor = MaterialTheme.colorScheme.onBackground,
-            unfocusedLabelColor = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f),
-            cursorColor = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f)
-
+            focusedBorderColor = MaterialTheme.colorScheme.primary,
+            unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant,
+            focusedLabelColor = MaterialTheme.colorScheme.primary,
+            unfocusedLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
+            cursorColor = MaterialTheme.colorScheme.primary,
+            focusedLeadingIconColor = MaterialTheme.colorScheme.primary,
+            unfocusedLeadingIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+            focusedTextColor =MaterialTheme.colorScheme.onSurface,
+            unfocusedTextColor = MaterialTheme.colorScheme.onSurface
         )
     )
 }
@@ -180,12 +180,13 @@ private fun TextFieldPrev() {
 fun SpoolHeadingText(
     text: String,
     icon: ImageVector,
+    modifier: Modifier = Modifier,
     alpha: Float = 1f,
     iconTint: Color = MaterialTheme.colorScheme.primary,
-    textColor: Color = MaterialTheme.colorScheme.onSurface,
-    modifier: Modifier = Modifier) {
+    textColor: Color = MaterialTheme.colorScheme.onSurface
+) {
     Row(
-        modifier = modifier.fillMaxWidth(),
+//        modifier = modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(Dimens.gapHeight)
     ) {
