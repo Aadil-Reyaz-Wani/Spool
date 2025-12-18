@@ -78,7 +78,7 @@ class SpoolEntryViewModel(
                 return@launch
             }else {
                 try {
-                    if (freshFilament.totalWeight > 0 ) {
+                    if (freshFilament.brand.isNotBlank() && freshFilament.material.isNotBlank() && freshFilament.totalWeight > 0 ) {
 
                         val filamentToInsert = freshFilament.copy(
                             currentWeight = freshFilament.totalWeight
@@ -90,6 +90,20 @@ class SpoolEntryViewModel(
                     }else {
                         isError.value = true
                     }
+
+
+//                    if (freshFilament.totalWeight > 0 ) {
+//
+//                        val filamentToInsert = freshFilament.copy(
+//                            currentWeight = freshFilament.totalWeight
+//                        )
+//
+//                        spoolRepository.insertSpool(filamentToInsert)
+//                        _spoolEntryUiState.value = SpoolEntryUiState()
+//                        isError.value = false
+//                    }else {
+//                        isError.value = true
+//                    }
                 } catch (e: ArithmeticException) {
                     Log.d("ENTER","${e.message}")
                 }

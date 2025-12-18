@@ -1,26 +1,19 @@
 package com.kashmir.spool.ui.common
 
 import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Circle
-import androidx.compose.material.icons.filled.Square
 import androidx.compose.material.icons.outlined.AddBox
-import androidx.compose.material.icons.outlined.Business
 import androidx.compose.material.icons.outlined.Circle
 import androidx.compose.material.icons.outlined.ColorLens
 import androidx.compose.material.icons.outlined.Colorize
@@ -32,10 +25,8 @@ import androidx.compose.material.icons.outlined.MonitorWeight
 import androidx.compose.material.icons.outlined.PointOfSale
 import androidx.compose.material.icons.outlined.Save
 import androidx.compose.material.icons.outlined.StickyNote2
-import androidx.compose.material.icons.outlined.TextFields
 import androidx.compose.material.icons.outlined.Thermostat
 import androidx.compose.material.icons.outlined.Update
-import androidx.compose.material.icons.outlined.Warehouse
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -43,7 +34,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardCapitalization
@@ -73,7 +63,7 @@ fun EntryFields(
     selectedColor: Long,
     onSaveOrUpdateClick: () -> Unit,
     isValid: Boolean,
-    isWeightValid: Boolean,
+    isFieldsFilled: Boolean,
     isEditMode: Boolean,
     resetState: () -> Unit,
     modifier: Modifier = Modifier
@@ -103,6 +93,9 @@ fun EntryFields(
             label = stringResource(R.string.label_brand),
             placeholder = stringResource(R.string.hint_brand),
             leadingIcon = Icons.Outlined.Factory,
+            isError = isFieldsFilled,
+            supportingText = stringResource(R.string.brand_error_message),
+            keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words)
         )
         Spacer(modifier = Modifier.height(Dimens.PaddingTiny))
         SpoolOutlinedTextField(
@@ -112,6 +105,8 @@ fun EntryFields(
             placeholder = stringResource(R.string.hint_material),
             leadingIcon = Icons.Outlined.Circle,
             singleLine = true,
+            isError = isFieldsFilled,
+            supportingText = stringResource(R.string.material_error_message),
             keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Characters),
         )
         Spacer(modifier = Modifier.height(Dimens.PaddingLarge))
@@ -168,7 +163,7 @@ fun EntryFields(
             placeholder = stringResource(R.string.hint_total_wight),
             leadingIcon = Icons.Outlined.MonitorWeight,
             singleLine = true,
-            isError = isWeightValid,
+            isError = isFieldsFilled,
             supportingText = stringResource(R.string.weight_error_message),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
         )
@@ -230,7 +225,7 @@ fun EntryFields(
             onClick = onSaveOrUpdateClick,
             buttonContainerColor = MaterialTheme.colorScheme.primary,
             buttonContentColor = MaterialTheme.colorScheme.onPrimary,
-            enabled = isValid,
+            enabled = true, // this is where i get changes
             hasBorder = false,
             modifier = Modifier.padding(bottom = Dimens.PaddingExtraLarge)
         )
@@ -261,7 +256,7 @@ fun EntryFieldsPreview() {
         onSaveOrUpdateClick = {},
         isValid = true,
         isEditMode = true,
-        isWeightValid = true,
+        isFieldsFilled = true,
         resetState = {},
         modifier = Modifier
     )

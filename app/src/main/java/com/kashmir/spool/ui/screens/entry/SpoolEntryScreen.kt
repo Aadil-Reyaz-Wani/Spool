@@ -55,7 +55,7 @@ fun SpoolEntryScreen(
             selectedColor = selectedColor,
             onSaveOrUpdateClick = onSaveOrUpdateClick,
             isValid = isValid,
-            isWeightValid = isError,
+            isFieldsFilled = isError,
             isEditMode = isEditMode,
             resetState = resetState,
             modifier = Modifier.padding(paddingValues = paddingValues)

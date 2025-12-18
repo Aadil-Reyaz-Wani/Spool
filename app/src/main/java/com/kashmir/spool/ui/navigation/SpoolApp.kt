@@ -31,7 +31,7 @@ fun MySpoolApp(modifier: Modifier = Modifier) {
 
 
     val spoolEntryUiState by spoolEntryViewModel.spoolEntryUiState.collectAsState()
-    val isWeightValid by spoolEntryViewModel.isError.collectAsState()
+    val isError by spoolEntryViewModel.isError.collectAsState()
 
     val spoolDetails by spoolDetailsViewModel.spoolDetails.collectAsState()
     val printWeight by spoolDetailsViewModel.printWeight.collectAsState()
@@ -189,11 +189,13 @@ fun MySpoolApp(modifier: Modifier = Modifier) {
                     },
                     onSaveOrUpdateClick = {
                         spoolEntryViewModel.saveOrUpdateSpool(entry.id)
-                        backStack.removeLastOrNull()
+                        if (spoolEntryViewModel.isValid()) {
+                            backStack.removeLastOrNull()
+                        }
                     },
                     selectedColor = spoolEntryUiState.colorHex,
                     isValid = spoolEntryViewModel.isValid(),
-                    isError = isWeightValid,
+                    isError = isError,
                     isEditMode = spoolEntryViewModel.isEditMode(entry.id),
                     resetState = spoolEntryViewModel::resetState,
                     modifier = modifier

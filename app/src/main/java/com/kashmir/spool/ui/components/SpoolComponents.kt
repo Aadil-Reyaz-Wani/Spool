@@ -116,6 +116,7 @@ fun SpoolOutlinedTextField(
     placeholder: String = "",
     isError: Boolean = false,
     leadingIcon: ImageVector,
+    trailingIcon: ImageVector? = null,  // Keep eye on this
     singleLine: Boolean = true,
     supportingText: String = "",
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
@@ -144,18 +145,36 @@ fun SpoolOutlinedTextField(
                 contentDescription = null
             )
         },
+        trailingIcon = {
+            if (trailingIcon != null) {
+                Icon(
+                    imageVector = trailingIcon,
+                    contentDescription = null
+                )
+            }
+        },
         keyboardOptions = keyboardOptions,
         keyboardActions = keyboardActions,
         colors = OutlinedTextFieldDefaults.colors(
             focusedBorderColor = MaterialTheme.colorScheme.primary,
             unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant,
+
             focusedLabelColor = MaterialTheme.colorScheme.primary,
             unfocusedLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
+
             cursorColor = MaterialTheme.colorScheme.primary,
+
             focusedLeadingIconColor = MaterialTheme.colorScheme.primary,
             unfocusedLeadingIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+
+            focusedTrailingIconColor = MaterialTheme.colorScheme.primary,
+            unfocusedTrailingIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+
             focusedTextColor =MaterialTheme.colorScheme.onSurface,
-            unfocusedTextColor = MaterialTheme.colorScheme.onSurface
+            unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
+
+            errorLeadingIconColor = MaterialTheme.colorScheme.error,
+            errorTrailingIconColor = MaterialTheme.colorScheme.error
         )
     )
 }
