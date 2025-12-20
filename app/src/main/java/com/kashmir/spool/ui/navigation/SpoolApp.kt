@@ -18,6 +18,8 @@ import com.kashmir.spool.ui.screens.details.SpoolDetailsScreen
 import com.kashmir.spool.ui.screens.details.SpoolDetailsViewModel
 import com.kashmir.spool.ui.screens.entry.SpoolEntryScreen
 import com.kashmir.spool.ui.screens.entry.SpoolEntryViewModel
+import com.kashmir.spool.ui.splash.SplashScreen
+import kotlinx.coroutines.delay
 
 @Composable
 fun MySpoolApp(modifier: Modifier = Modifier) {
@@ -38,7 +40,7 @@ fun MySpoolApp(modifier: Modifier = Modifier) {
 
 
 
-    val backStack = rememberNavBackStack(Routes.Dashboard)
+    val backStack = rememberNavBackStack(Routes.Splash)
     NavDisplay(
         backStack = backStack,
         modifier = modifier,
@@ -47,6 +49,17 @@ fun MySpoolApp(modifier: Modifier = Modifier) {
             rememberViewModelStoreNavEntryDecorator()
         ),
         entryProvider = entryProvider {
+
+            // Splash Screen Entry
+            entry<Routes.Splash> {
+                SplashScreen()
+                LaunchedEffect(Unit) {
+                    delay(1500L)
+                    backStack.add(Routes.Dashboard)
+                    backStack.remove(Routes.Splash)
+                }
+            }
+
             // Dashboard Screen Entry
             entry<Routes.Dashboard> {
                 DashboardScreen(

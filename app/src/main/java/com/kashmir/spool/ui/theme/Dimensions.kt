@@ -37,4 +37,5 @@ object Dimens {
 
     //Text Sizes
     val TextInGhostCard = 18.sp
+    val LetterSpacing = 1.5.sp
 }
