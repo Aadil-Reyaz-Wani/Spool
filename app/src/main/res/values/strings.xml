@@ -16,7 +16,8 @@
 
     <string name="weight_error_message">*Please enter valid weight</string>
     <string name="brand_error_message">*Please enter brand name</string>
-    <string name="material_error_message">*Please enter material type</string>
+    <string name="material_error_message">*Please select material type</string>
+    <string name="invalid_weight_error_message">*Initial weight is not valid</string>
 
 
     <string name="label_material">Material Type</string>

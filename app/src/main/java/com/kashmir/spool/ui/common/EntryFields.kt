@@ -43,6 +43,7 @@ import androidx.compose.ui.unit.dp
 import com.kashmir.spool.R
 import com.kashmir.spool.ui.components.SpoolHeadingText
 import com.kashmir.spool.ui.components.SpoolButton
+import com.kashmir.spool.ui.components.SpoolDropDownMenu
 import com.kashmir.spool.ui.components.SpoolOutlinedTextField
 import com.kashmir.spool.ui.screens.entry.ColorSelectionGrid
 import com.kashmir.spool.ui.screens.entry.SpoolEntryUiState
@@ -64,6 +65,7 @@ fun EntryFields(
     onSaveOrUpdateClick: () -> Unit,
     isValid: Boolean,
     isFieldsFilled: Boolean,
+    isWeightValid: Boolean,
     isEditMode: Boolean,
     resetState: () -> Unit,
     modifier: Modifier = Modifier
@@ -98,17 +100,29 @@ fun EntryFields(
             keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words)
         )
         Spacer(modifier = Modifier.height(Dimens.PaddingTiny))
-        SpoolOutlinedTextField(
+
+        // Here is ongoing work on dropdown menu
+        SpoolDropDownMenu(
             value = uiState.material,
             onValueChange = onMaterialValueChange,
             label = stringResource(R.string.label_material),
             placeholder = stringResource(R.string.hint_material),
             leadingIcon = Icons.Outlined.Circle,
-            singleLine = true,
             isError = isFieldsFilled,
             supportingText = stringResource(R.string.material_error_message),
-            keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Characters),
         )
+
+//        SpoolOutlinedTextField(
+//            value = uiState.material,
+//            onValueChange = onMaterialValueChange,
+//            label = stringResource(R.string.label_material),
+//            placeholder = stringResource(R.string.hint_material),
+//            leadingIcon = Icons.Outlined.Circle,
+//            singleLine = true,
+//            isError = isFieldsFilled,
+//            supportingText = stringResource(R.string.material_error_message),
+//            keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Characters),
+//        )
         Spacer(modifier = Modifier.height(Dimens.PaddingLarge))
         HorizontalDivider()
         Spacer(modifier = Modifier.height(Dimens.PaddingLarge))
@@ -257,6 +271,7 @@ fun EntryFieldsPreview() {
         isValid = true,
         isEditMode = true,
         isFieldsFilled = true,
+        isWeightValid = true,
         resetState = {},
         modifier = Modifier
     )

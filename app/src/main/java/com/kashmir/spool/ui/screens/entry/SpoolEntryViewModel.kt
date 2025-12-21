@@ -23,6 +23,7 @@ class SpoolEntryViewModel(
     val spoolEntryUiState = _spoolEntryUiState.asStateFlow()
 
     val isError = MutableStateFlow(false)
+    val isWeightValid = MutableStateFlow(false)
 
     // Text field value changes
     fun updateTextField(
@@ -65,7 +66,6 @@ class SpoolEntryViewModel(
     }
 
 
-
     // Save Spool to DB
     fun saveOrUpdateSpool(id: Int) {
 
@@ -74,11 +74,21 @@ class SpoolEntryViewModel(
         viewModelScope.launch {
 
             if (id > 0) {
-                spoolRepository.updateSpool(freshFilament)
+                if (
+                    freshFilament.brand.isNotBlank()
+                    && freshFilament.material.isNotBlank()
+                    && freshFilament.totalWeight > 0 &&
+                    freshFilament.totalWeight >= freshFilament.currentWeight
+                ) {
+                    spoolRepository.updateSpool(freshFilament)
+                    isError.value = false
+                } else {
+                    isError.value = true
+                }
                 return@launch
-            }else {
+            } else {
                 try {
-                    if (freshFilament.brand.isNotBlank() && freshFilament.material.isNotBlank() && freshFilament.totalWeight > 0 ) {
+                    if (freshFilament.brand.isNotBlank() && freshFilament.material.isNotBlank() && freshFilament.totalWeight > 0) {
 
                         val filamentToInsert = freshFilament.copy(
                             currentWeight = freshFilament.totalWeight
@@ -87,25 +97,11 @@ class SpoolEntryViewModel(
                         spoolRepository.insertSpool(filamentToInsert)
                         _spoolEntryUiState.value = SpoolEntryUiState()
                         isError.value = false
-                    }else {
+                    } else {
                         isError.value = true
                     }
-
-
-//                    if (freshFilament.totalWeight > 0 ) {
-//
-//                        val filamentToInsert = freshFilament.copy(
-//                            currentWeight = freshFilament.totalWeight
-//                        )
-//
-//                        spoolRepository.insertSpool(filamentToInsert)
-//                        _spoolEntryUiState.value = SpoolEntryUiState()
-//                        isError.value = false
-//                    }else {
-//                        isError.value = true
-//                    }
                 } catch (e: ArithmeticException) {
-                    Log.d("ENTER","${e.message}")
+                    Log.d("ENTER", "${e.message}")
                 }
             }
 
@@ -119,7 +115,7 @@ class SpoolEntryViewModel(
                 && _spoolEntryUiState.value.totalWeight.isNotBlank()
     }
 
-    fun isEditMode(id: Int) : Boolean {
+    fun isEditMode(id: Int): Boolean {
         return (id > 0)
     }
 
@@ -134,7 +130,7 @@ class SpoolEntryViewModel(
 data class SpoolEntryUiState(
     val id: Int = 0,
     val brand: String = "",
-    val material: String = "",
+    var material: String = "",
     val totalWeight: String = "",
     val colorName: String = "",
     val colorHex: Long = 0xFF000000,

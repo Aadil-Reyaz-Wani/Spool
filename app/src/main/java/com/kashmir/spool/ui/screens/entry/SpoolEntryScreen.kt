@@ -26,6 +26,7 @@ fun SpoolEntryScreen(
     onSaveOrUpdateClick: () -> Unit,
     isValid: Boolean,
     isError: Boolean,
+    isWeightValid: Boolean,
     isEditMode: Boolean,
     resetState: () -> Unit,
     modifier: Modifier = Modifier
@@ -56,6 +57,7 @@ fun SpoolEntryScreen(
             onSaveOrUpdateClick = onSaveOrUpdateClick,
             isValid = isValid,
             isFieldsFilled = isError,
+            isWeightValid = isWeightValid,
             isEditMode = isEditMode,
             resetState = resetState,
             modifier = Modifier.padding(paddingValues = paddingValues)
