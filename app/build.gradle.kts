@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -8,17 +10,25 @@ plugins {
 }
 
 
+val keystoreProperties = Properties()
+
+val keystorePropertiesFile = rootProject.file("keystore.properties")
+
+if (keystorePropertiesFile.exists()) {
+    keystoreProperties.load(keystorePropertiesFile.inputStream())
+}
+
 room {
     schemaDirectory("$projectDir/schemas")
 }
 android {
-    namespace = "com.kashmir.spool"
+    namespace = "com.aadil.spool"
     compileSdk {
         version = release(36)
     }
 
     defaultConfig {
-        applicationId = "com.kashmir.spool"
+        applicationId = "com.aadil.spool"
         minSdk = 24
         targetSdk = 36
         versionCode = 1
@@ -27,8 +37,19 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    // Release Identity
+    signingConfigs {
+        create("release") {
+            storeFile = file(keystoreProperties["storeFile"] as String)
+            storePassword = keystoreProperties["storePassword"] as String
+            keyAlias = keystoreProperties["keyAlias"] as String
+            keyPassword = keystoreProperties["keyPassword"] as String
+        }
+    }
+
     buildTypes {
         release {
+            signingConfig = signingConfigs.getByName("release")
             isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
@@ -46,6 +67,9 @@ android {
     buildFeatures {
         compose = true
     }
+
+
+
 }
 
 dependencies {
