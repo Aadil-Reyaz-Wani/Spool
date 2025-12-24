@@ -79,7 +79,7 @@ fun ColorCircle(
         imageVector = Icons.Filled.Circle,
         contentDescription = null,
         tint = if (!isSelected) {
-            FilamentColorData.getComposeColor(colorHex).copy(alpha = 0.6f)
+            FilamentColorData.getComposeColor(colorHex).copy(alpha = 0.7f)
         } else {
             FilamentColorData.getComposeColor(colorHex)
         },

@@ -1,4 +1,4 @@
-package com.aadil.spool
+package com.aadil.spool.data
 
 object FilamentMaterialTypes {
     val materialTypes = listOf(

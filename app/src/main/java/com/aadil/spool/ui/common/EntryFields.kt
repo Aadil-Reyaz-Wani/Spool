@@ -12,6 +12,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.StickyNote2
 import androidx.compose.material.icons.filled.Circle
 import androidx.compose.material.icons.outlined.AddBox
 import androidx.compose.material.icons.outlined.Circle
@@ -24,7 +25,6 @@ import androidx.compose.material.icons.outlined.LocalFireDepartment
 import androidx.compose.material.icons.outlined.MonitorWeight
 import androidx.compose.material.icons.outlined.PointOfSale
 import androidx.compose.material.icons.outlined.Save
-import androidx.compose.material.icons.outlined.StickyNote2
 import androidx.compose.material.icons.outlined.Thermostat
 import androidx.compose.material.icons.outlined.Update
 import androidx.compose.material3.HorizontalDivider
@@ -202,7 +202,7 @@ fun EntryFields(
             Spacer(modifier = Modifier.height(Dimens.PaddingLarge))
             HorizontalDivider()
             Spacer(modifier = Modifier.height(Dimens.PaddingLarge))
-            SpoolHeadingText(text = "Notes (Optional)", icon = Icons.Outlined.StickyNote2)
+            SpoolHeadingText(text = "Notes (Optional)", icon = Icons.AutoMirrored.Outlined.StickyNote2)
             Spacer(modifier = Modifier.height(Dimens.PaddingMedium))
             SpoolOutlinedTextField(
                 value = uiState.note,
@@ -225,7 +225,7 @@ fun EntryFields(
             onClick = onSaveOrUpdateClick,
             buttonContainerColor = MaterialTheme.colorScheme.primary,
             buttonContentColor = MaterialTheme.colorScheme.onPrimary,
-            enabled = true, // this is where i get changes
+            enabled = true,
             hasBorder = false,
             modifier = Modifier.padding(bottom = Dimens.PaddingExtraLarge)
         )

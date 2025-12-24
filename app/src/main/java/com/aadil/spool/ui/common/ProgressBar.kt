@@ -20,7 +20,6 @@ import com.aadil.spool.ui.theme.Dimens
 fun WeightProgressBar(
     totalWeight: String,
     currentWeight: String,
-    colorHex: Long,
     modifier: Modifier = Modifier
 ) {
     val percentage = ((currentWeight.toDouble() / totalWeight.toDouble()) * 100)

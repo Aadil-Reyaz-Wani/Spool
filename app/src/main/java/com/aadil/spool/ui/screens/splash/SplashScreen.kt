@@ -1,4 +1,4 @@
-package com.aadil.spool.ui.splash
+package com.aadil.spool.ui.screens.splash
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement

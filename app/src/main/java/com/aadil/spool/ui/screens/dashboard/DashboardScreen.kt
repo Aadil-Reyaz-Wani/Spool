@@ -185,7 +185,6 @@ fun SpoolItemCard(
             WeightProgressBar(
                 totalWeight = totalWeight,
                 currentWeight = currentWeight,
-                colorHex = colorHex,
                 modifier = modifier
             )
         }
@@ -198,7 +197,7 @@ private fun SpoolCardPreview() {
     SpoolItemCard(
         brandName = "HackersSpool",
         materialType = "PETG",
-        colorName = "Galazy Mate Black",
+        colorName = "Galaxy Mate Black",
         totalWeight = "1000",
         currentWeight = "230",
         colorHex = 0xFF000000,

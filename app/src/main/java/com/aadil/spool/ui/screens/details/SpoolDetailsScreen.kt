@@ -281,7 +281,6 @@ fun MainDetailsCard(
             ) {
                 Column(
                     modifier = Modifier
-//                        .fillMaxWidth()
                         .padding(Dimens.PaddingMedium),
                     verticalArrangement = Arrangement.spacedBy(2.dp),
                     horizontalAlignment = Alignment.Start
@@ -315,7 +314,7 @@ fun MainDetailsCard(
                         modifier = Modifier
                             .size(Dimens.ColorDotSizeExtra)
                             .clip(shape = RoundedCornerShape(Dimens.CornerRadius))
-                            .background(color = Color(colorHex).copy(alpha = 0.55f))
+                            .background(color = Color(colorHex).copy(alpha = 0.7f))
                             .border(
                                 width = Dimens.BorderThickness,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f),
@@ -371,19 +370,6 @@ fun MainDetailsCard(
                     currentWeight = currentWeight,
                     totalWeight = totalWeight
                 )
-
-//                LinearProgressIndicator(
-//                    progress = { currentWeight.toFloat() / totalWeight.toFloat() },
-//                    modifier = Modifier
-//                        .fillMaxWidth()
-//                        .size(Dimens.ProgressBarHeight * 2)
-//                        .clip(CircleShape),
-////            color = Color(colorHex),
-//                    color = MaterialTheme.colorScheme.primary,  //Have to change the color
-//                    trackColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f),
-//                    strokeCap = StrokeCap.Butt,
-//                    gapSize = 1.5.dp
-//                )
             }
 
             Row(
@@ -587,16 +573,6 @@ fun TemperatureDetailsCard(
     }
 }
 
-//@Preview
-//@Composable
-//fun TemperatureDetailsCardPreview() {
-//    TemperatureDetailsCard(
-//        nozzleTemp = "280",
-//        bedTemp = "23"
-//    )
-//}
-
-
 @Composable
 fun NotesCard(
     note: String,
@@ -639,13 +615,5 @@ fun NotesCard(
         }
     }
 }
-
-//@Preview
-//@Composable
-//private fun NotesCardPreview() {
-//    NotesCard(
-//        note = "This is my note..."
-//    )
-//}
 
 

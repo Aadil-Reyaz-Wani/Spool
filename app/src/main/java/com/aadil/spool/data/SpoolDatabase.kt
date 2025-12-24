@@ -14,21 +14,9 @@ import kotlin.concurrent.Volatile
 @Database(
     entities = [Filament::class],
     version = 10,
-//    autoMigrations = [
-//        AutoMigration(from = 4, to = 5, spec = SpoolDatabase.MyAutoMigration::class),
-//        AutoMigration(from = 5, to = 6),
-//        AutoMigration(from = 6, to = 7),
-//        AutoMigration(from = 7, to = 8),
-//        AutoMigration(from = 8, to = 9),
-//        AutoMigration(from = 9, to = 10)
-//    ],
     exportSchema = false
 )
 abstract class SpoolDatabase : RoomDatabase() {
-
-//    @DeleteColumn(tableName = "filaments", columnName = "temp_bed")
-//    class MyAutoMigration : AutoMigrationSpec
-
     abstract fun spoolDao(): SpoolDao
 
 

@@ -18,7 +18,7 @@ import com.aadil.spool.ui.screens.details.SpoolDetailsScreen
 import com.aadil.spool.ui.screens.details.SpoolDetailsViewModel
 import com.aadil.spool.ui.screens.entry.SpoolEntryScreen
 import com.aadil.spool.ui.screens.entry.SpoolEntryViewModel
-import com.aadil.spool.ui.splash.SplashScreen
+import com.aadil.spool.ui.screens.splash.SplashScreen
 import kotlinx.coroutines.delay
 
 @Composable

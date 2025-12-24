@@ -10,7 +10,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.EventNote
+import androidx.compose.material.icons.automirrored.filled.EventNote
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -91,6 +91,6 @@ fun GhostCard(
 private fun GhostCardPreview() {
     GhostCard(
         text = "Please Add Something",
-        icon = Icons.Default.EventNote
+        icon = Icons.AutoMirrored.Filled.EventNote
     )
 }

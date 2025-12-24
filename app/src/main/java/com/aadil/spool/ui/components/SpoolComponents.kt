@@ -47,7 +47,7 @@ import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.aadil.spool.FilamentMaterialTypes.materialTypes
+import com.aadil.spool.data.FilamentMaterialTypes.materialTypes
 import com.aadil.spool.ui.theme.BrandOrange
 import com.aadil.spool.ui.theme.Dimens
 
@@ -328,7 +328,6 @@ fun SpoolHeadingText(
     textColor: Color = MaterialTheme.colorScheme.onSurface
 ) {
     Row(
-//        modifier = modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(Dimens.gapHeight)
     ) {
