@@ -11,6 +11,7 @@ composeBom = "2025.12.00"
 material3 = "1.7.8"
 materialIconsExtended = "1.7.8"
 roomRuntime = "2.8.4"
+truth = "1.4.5"
 uiTextGoogleFonts = "1.10.0"
 
 nav3Core = "1.0.0"
@@ -47,6 +48,7 @@ androidx-navigation3-ui = { module = "androidx.navigation3:navigation3-ui", vers
 
 androidx-lifecycle-viewmodel-navigation3 = { module = "androidx.lifecycle:lifecycle-viewmodel-navigation3", version.ref = "lifecycleViewmodelNav3" }
 kotlinx-serialization-core = { module = "org.jetbrains.kotlinx:kotlinx-serialization-core", version.ref = "kotlinxSerializationCore" }
+truth = { module = "com.google.truth:truth", version.ref = "truth" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
