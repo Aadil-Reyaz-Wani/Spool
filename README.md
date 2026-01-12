@@ -20,7 +20,7 @@ Built with modern Android development practices:
 * **UI Framework:** [Jetpack Compose](https://developer.android.com/jetpack/compose) (Material 3 Design)
 * **Architecture:** MVVM (Model-View-ViewModel)
 * **Local Database:** [Room Database](https://developer.android.com/training/data-storage/room) (SQLite abstraction)
-* **Navigation:** Jetpack Navigation Compose
+* **Navigation:** Jetpack Navigation Compose (Navigation 3)
 * **Dependency Injection:** Hilt
 
 ## Getting Started
