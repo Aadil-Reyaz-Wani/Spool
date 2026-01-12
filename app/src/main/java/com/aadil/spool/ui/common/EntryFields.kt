@@ -156,17 +156,19 @@ fun EntryFields(
         Spacer(modifier = Modifier.height(Dimens.PaddingLarge))
         SpoolHeadingText(text = "Specs", icon = Icons.Outlined.PointOfSale)
         Spacer(modifier = Modifier.height(Dimens.PaddingMedium))
-        SpoolOutlinedTextField(
-            value = uiState.totalWeight,
-            onValueChange = onInitialWeightValueChange,
-            label = stringResource(R.string.label_initial_weight),
-            placeholder = stringResource(R.string.hint_total_wight),
-            leadingIcon = Icons.Outlined.MonitorWeight,
-            singleLine = true,
-            isError = isFieldsFilled,
-            supportingText = stringResource(R.string.weight_error_message),
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-        )
+        if (!isEditMode) {
+            SpoolOutlinedTextField(
+                value = uiState.totalWeight,
+                onValueChange = onInitialWeightValueChange,
+                label = stringResource(R.string.label_initial_weight),
+                placeholder = stringResource(R.string.hint_total_wight),
+                leadingIcon = Icons.Outlined.MonitorWeight,
+                singleLine = true,
+                isError = isFieldsFilled,
+                supportingText = stringResource(R.string.weight_error_message),
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+            )
+        }
         if (isEditMode) {
             Spacer(modifier = Modifier.height(Dimens.PaddingTiny))
             SpoolOutlinedTextField(

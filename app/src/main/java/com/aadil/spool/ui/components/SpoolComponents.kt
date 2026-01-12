@@ -14,10 +14,12 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material.icons.outlined.KeyboardArrowDown
 import androidx.compose.material.icons.outlined.KeyboardArrowUp
 import androidx.compose.material.icons.outlined.Print
 import androidx.compose.material.icons.outlined.TextFields
+import androidx.compose.material.icons.outlined.WarningAmber
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DropdownMenuItem
@@ -350,12 +352,15 @@ fun SpoolHeadingText(
 @Composable
 fun SpoolTag(
     text: String,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    textColor: Color = MaterialTheme.colorScheme.onSecondaryContainer,
+    surfaceColor: Color = MaterialTheme.colorScheme.secondaryContainer,
+    isIconicTag: Boolean = false
 ) {
 
     Surface(
         shape = MaterialTheme.shapes.extraSmall,
-        color = MaterialTheme.colorScheme.secondaryContainer,
+        color = surfaceColor,
         modifier = Modifier.border(
             width = Dimens.BorderThickness,
             color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
@@ -366,14 +371,41 @@ fun SpoolTag(
         shadowElevation = 0.dp,
         border = null,
         content = {
-            Text(
-                text = text,
-                style = MaterialTheme.typography.labelMedium,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onSecondaryContainer,
+            Row(
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically,
                 modifier = modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+            ) {
 
-            )
+                if (isIconicTag){
+                    Icon(
+                        imageVector = Icons.Filled.Warning,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.error,
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Spacer(modifier = Modifier.width(Dimens.gapHeight))
+
+                }
+
+                Text(
+                    text = text,
+                    style = MaterialTheme.typography.labelMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = textColor,
+//                    modifier = modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+
+                )
+            }
+
+//            Text(
+//                text = text,
+//                style = MaterialTheme.typography.labelMedium,
+//                fontWeight = FontWeight.Bold,
+//                color = textColor,
+//                modifier = modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+//
+//            )
         }
     )
 }

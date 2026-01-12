@@ -226,7 +226,7 @@ fun DetailsScreen(
 fun DetailsScreenPreview() {
     DetailsScreen(
         totalWeight = "1000",
-        currentWeight = "230",
+        currentWeight = "23",
         colorHex = 0xFF4CAF50,
         brandName = "Prusament",
         materialType = "PLA",
@@ -363,8 +363,17 @@ fun MainDetailsCard(
             Column(
                 modifier = Modifier.padding(vertical = Dimens.PaddingMedium)
             ) {
+                // This warns the users of low stock for a particular filament/spool
+                if (percentage < 20) {
+                    SpoolTag(
+                        text = stringResource(R.string.low_stock),
+                        textColor = MaterialTheme.colorScheme.error,
+                        surfaceColor = MaterialTheme.colorScheme.errorContainer,
+                        isIconicTag = true
+                    )
+                }
+                Spacer(modifier = Modifier.height(Dimens.gapHeight))
                 // Progress Bar
-
                 SpoolProgressBar(
                     percentage = percentage,
                     currentWeight = currentWeight,

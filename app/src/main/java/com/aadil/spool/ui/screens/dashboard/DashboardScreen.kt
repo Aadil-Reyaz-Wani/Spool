@@ -1,5 +1,6 @@
 package com.aadil.spool.ui.screens.dashboard
 
+import android.annotation.SuppressLint
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -31,8 +32,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.aadil.spool.R
@@ -50,6 +53,11 @@ fun DashboardScreen(
     onCardClick: (Int) -> Unit,
     modifier: Modifier = Modifier
 ) {
+
+    val adaptiveMinSize = when {
+        isTablet() -> 180.dp
+        else -> 140.dp
+    }
 
     Scaffold(
         modifier = modifier,
@@ -77,7 +85,6 @@ fun DashboardScreen(
         },
         floatingActionButtonPosition = FabPosition.EndOverlay,
     ) { paddingValues ->
-
         if (listOfSpools.isEmpty()) {
             Column(
                 modifier = Modifier
@@ -94,10 +101,11 @@ fun DashboardScreen(
             }
         } else {
             LazyVerticalGrid(
-                columns = GridCells.Adaptive(150.dp),
-                contentPadding = PaddingValues(bottom = 72.dp),
                 modifier = Modifier
                     .padding(paddingValues = paddingValues)
+                    .fillMaxWidth(),
+                columns = GridCells.Adaptive(adaptiveMinSize),
+                contentPadding = PaddingValues(bottom = 72.dp)
             ) {
                 items(listOfSpools, key = { it.id }) { spool ->
                     SpoolItemCard(
@@ -113,7 +121,6 @@ fun DashboardScreen(
             }
         }
     }
-
 }
 
 @Composable
@@ -154,6 +161,8 @@ fun SpoolItemCard(
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.ExtraBold,
                 color = MaterialTheme.colorScheme.onSurface,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
                 modifier = Modifier.fillMaxWidth()
             )
             Text(
@@ -175,7 +184,7 @@ fun SpoolItemCard(
                         .clip(CircleShape)
                         .background(color = Color(colorHex))
                         .border(
-                            width = Dimens.ColorDotBorderThickness/2,
+                            width = Dimens.ColorDotBorderThickness / 2,
                             color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
                             shape = CircleShape
                         )
@@ -190,6 +199,15 @@ fun SpoolItemCard(
         }
     }
 }
+
+
+@SuppressLint("ConfigurationScreenWidthHeight")
+@Composable
+fun isTablet(): Boolean {
+    val configuration = LocalConfiguration.current
+    return configuration.screenWidthDp >= 600
+}
+
 
 @Preview(showBackground = true)
 @Composable
