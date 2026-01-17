@@ -3,8 +3,9 @@ package com.aadil.spool.data.repository
 import com.aadil.spool.data.dao.SpoolDao
 import com.aadil.spool.data.entity.Filament
 import kotlinx.coroutines.flow.Flow
+import javax.inject.Inject
 
-class OfflineSpoolRepository(
+class OfflineSpoolRepository @Inject constructor(
     private val spoolDao: SpoolDao
 ) : SpoolRepository {
     override suspend fun insertSpool(filament: Filament) {

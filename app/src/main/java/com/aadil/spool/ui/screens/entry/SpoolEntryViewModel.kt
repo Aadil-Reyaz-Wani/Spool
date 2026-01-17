@@ -5,12 +5,15 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.aadil.spool.data.entity.Filament
 import com.aadil.spool.data.repository.SpoolRepository
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-class SpoolEntryViewModel(
+@HiltViewModel
+class SpoolEntryViewModel @Inject constructor(
     private val spoolRepository: SpoolRepository
 ) : ViewModel() {
     private val _spoolEntryUiState = MutableStateFlow(SpoolEntryUiState())

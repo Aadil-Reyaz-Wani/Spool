@@ -366,7 +366,7 @@ fun MainDetailsCard(
                 // This warns the users of low stock for a particular filament/spool
                 if (percentage < 20) {
                     SpoolTag(
-                        text = stringResource(R.string.low_stock),
+                        text = if (percentage > 0) stringResource(R.string.low_stock) else stringResource(R.string.empty_spool),
                         textColor = MaterialTheme.colorScheme.error,
                         surfaceColor = MaterialTheme.colorScheme.errorContainer,
                         isIconicTag = true

@@ -71,11 +71,12 @@
 
 
     <string name="low_stock">Critical Level</string>
+    <string name="empty_spool">Time to Restock</string>
 
 
 
 
-    <string name="version_number">v1.0.0 • Initializing</string>
+    <string name="version_number">v1.0.1 • Initializing</string>
 
 
 
