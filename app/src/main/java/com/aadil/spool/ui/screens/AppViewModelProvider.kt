@@ -10,27 +10,27 @@ import com.aadil.spool.ui.screens.details.SpoolDetailsViewModel
 import com.aadil.spool.ui.screens.entry.SpoolEntryViewModel
 
 
-object AppViewModelProvider {
-    val Factory = viewModelFactory {
-        initializer {
-            DashboardViewModel(
-                toSpoolApplication().container.spoolRepository
-            )
-        }
-
-        initializer {
-            SpoolEntryViewModel(
-                toSpoolApplication().container.spoolRepository
-            )
-        }
-
-        initializer {
-            SpoolDetailsViewModel(
-                toSpoolApplication().container.spoolRepository
-            )
-        }
-    }
-}
-
-fun CreationExtras.toSpoolApplication() : SpoolApplication =
-    (this[ViewModelProvider.AndroidViewModelFactory.APPLICATION_KEY] as SpoolApplication)
+//object AppViewModelProvider {
+//    val Factory = viewModelFactory {
+//        initializer {
+//            DashboardViewModel(
+//                toSpoolApplication().container.spoolRepository
+//            )
+//        }
+//
+////        initializer {
+////            SpoolEntryViewModel(
+////                toSpoolApplication().container.spoolRepository
+////            )
+////        }
+//
+//        initializer {
+//            SpoolDetailsViewModel(
+//                toSpoolApplication().container.spoolRepository
+//            )
+//        }
+//    }
+//}
+//
+//fun CreationExtras.toSpoolApplication() : SpoolApplication =
+//    (this[ViewModelProvider.AndroidViewModelFactory.APPLICATION_KEY] as SpoolApplication)

@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.aadil.spool.data.entity.Filament
 import com.aadil.spool.data.repository.SpoolRepository
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -16,8 +17,10 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-class SpoolDetailsViewModel(
+@HiltViewModel
+class SpoolDetailsViewModel @Inject constructor(
     private val spoolRepository: SpoolRepository
 ) : ViewModel() {
 
@@ -73,7 +76,7 @@ class SpoolDetailsViewModel(
                 val newCurrentWeight = weight - deductedWeight.toDouble()
                 viewModelScope.launch {
                     try {
-                        if (newCurrentWeight > 0) {
+                        if (newCurrentWeight >= 0) {
                             spoolRepository.updateCurrentWeight(id, newCurrentWeight)
                             _printWeight.value = ""
                         }

@@ -18,22 +18,4 @@ import kotlin.concurrent.Volatile
 )
 abstract class SpoolDatabase : RoomDatabase() {
     abstract fun spoolDao(): SpoolDao
-
-
-    companion object {
-        @Volatile
-        var Instance: SpoolDatabase? = null
-
-        fun getDatabase(context: Context): SpoolDatabase {
-            return Instance ?: synchronized(this) {
-                Room.databaseBuilder(
-                    context = context,
-                    klass = SpoolDatabase::class.java,
-                    name = "spool_database"
-                )
-                    .build()
-                    .also { Instance = it }
-            }
-        }
-    }
 }

@@ -5,13 +5,14 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
-import com.aadil.spool.ui.screens.AppViewModelProvider
+//import com.aadil.spool.ui.screens.AppViewModelProvider
 import com.aadil.spool.ui.screens.dashboard.DashboardScreen
 import com.aadil.spool.ui.screens.dashboard.DashboardViewModel
 import com.aadil.spool.ui.screens.details.SpoolDetailsScreen
@@ -19,14 +20,14 @@ import com.aadil.spool.ui.screens.details.SpoolDetailsViewModel
 import com.aadil.spool.ui.screens.entry.SpoolEntryScreen
 import com.aadil.spool.ui.screens.entry.SpoolEntryViewModel
 import com.aadil.spool.ui.screens.splash.SplashScreen
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
 
 @Composable
 fun MySpoolApp(modifier: Modifier = Modifier) {
-    val dashboardViewModel: DashboardViewModel = viewModel(factory = AppViewModelProvider.Factory)
-    val spoolEntryViewModel: SpoolEntryViewModel = viewModel(factory = AppViewModelProvider.Factory)
-    val spoolDetailsViewModel: SpoolDetailsViewModel =
-        viewModel(factory = AppViewModelProvider.Factory)
+    val dashboardViewModel: DashboardViewModel = hiltViewModel()
+    val spoolEntryViewModel : SpoolEntryViewModel = hiltViewModel()
+    val spoolDetailsViewModel: SpoolDetailsViewModel = hiltViewModel()
 
 
     val listOfSpools by dashboardViewModel.getAllSpool.collectAsState()
@@ -34,7 +35,6 @@ fun MySpoolApp(modifier: Modifier = Modifier) {
 
     val spoolEntryUiState by spoolEntryViewModel.spoolEntryUiState.collectAsState()
     val isError by spoolEntryViewModel.isError.collectAsState()
-//    val isWeightValid by spoolEntryViewModel.isWeightValid.collectAsState()
 
     val spoolDetails by spoolDetailsViewModel.spoolDetails.collectAsState()
     val printWeight by spoolDetailsViewModel.printWeight.collectAsState()
