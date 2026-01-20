@@ -7,6 +7,7 @@ import androidx.room.OnConflictStrategy.Companion.IGNORE
 import androidx.room.Query
 import androidx.room.Update
 import com.aadil.spool.data.entity.Filament
+import com.aadil.spool.data.entity.UsageLog
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -32,4 +33,20 @@ interface SpoolDao {
 
     @Query("UPDATE filaments SET current_weight = :currentWeight WHERE id = :id")
     suspend fun updateCurrentWeight(id: Int, currentWeight: Double)
+
+
+    // Usage Log
+    @Insert
+    suspend fun insertUsageLog(log: UsageLog)
+
+    @Query("SELECT * FROM usage_log WHERE spoolId = :spoolId ORDER BY timestamp")
+    fun getSpoolUsage(spoolId: Int) : Flow<List<UsageLog>>
+
+
+
+
+
+
+
+
 }

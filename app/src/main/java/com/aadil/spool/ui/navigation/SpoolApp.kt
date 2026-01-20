@@ -6,7 +6,6 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
@@ -20,13 +19,12 @@ import com.aadil.spool.ui.screens.details.SpoolDetailsViewModel
 import com.aadil.spool.ui.screens.entry.SpoolEntryScreen
 import com.aadil.spool.ui.screens.entry.SpoolEntryViewModel
 import com.aadil.spool.ui.screens.splash.SplashScreen
-import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
 
 @Composable
 fun MySpoolApp(modifier: Modifier = Modifier) {
     val dashboardViewModel: DashboardViewModel = hiltViewModel()
-    val spoolEntryViewModel : SpoolEntryViewModel = hiltViewModel()
+    val spoolEntryViewModel: SpoolEntryViewModel = hiltViewModel()
     val spoolDetailsViewModel: SpoolDetailsViewModel = hiltViewModel()
 
 
@@ -37,8 +35,7 @@ fun MySpoolApp(modifier: Modifier = Modifier) {
     val isError by spoolEntryViewModel.isError.collectAsState()
 
     val spoolDetails by spoolDetailsViewModel.spoolDetails.collectAsState()
-    val printWeight by spoolDetailsViewModel.printWeight.collectAsState()
-
+    val printUiState by spoolDetailsViewModel.printObjectUiState.collectAsState()
 
 
     val backStack = rememberNavBackStack(Routes.Splash)
@@ -149,7 +146,7 @@ fun MySpoolApp(modifier: Modifier = Modifier) {
                             newNote = spoolEntryUiState.note
                         )
                     },
-                    onCurrentWeightValueChange = {newValue ->
+                    onCurrentWeightValueChange = { newValue ->
                         spoolEntryViewModel.updateTextField(
                             newBrand = spoolEntryUiState.brand,
                             newMaterial = spoolEntryUiState.material,
@@ -162,7 +159,7 @@ fun MySpoolApp(modifier: Modifier = Modifier) {
                             newNote = spoolEntryUiState.note
                         )
                     },
-                    onNozzleTempValueChange = {newValue ->
+                    onNozzleTempValueChange = { newValue ->
                         spoolEntryViewModel.updateTextField(
                             newBrand = spoolEntryUiState.brand,
                             newMaterial = spoolEntryUiState.material,
@@ -175,7 +172,7 @@ fun MySpoolApp(modifier: Modifier = Modifier) {
                             newNote = spoolEntryUiState.note
                         )
                     },
-                    onBedTempValueChange = {newValue ->
+                    onBedTempValueChange = { newValue ->
                         spoolEntryViewModel.updateTextField(
                             newBrand = spoolEntryUiState.brand,
                             newMaterial = spoolEntryUiState.material,
@@ -188,7 +185,7 @@ fun MySpoolApp(modifier: Modifier = Modifier) {
                             newNote = spoolEntryUiState.note
                         )
                     },
-                    onNoteValueChange = {newValue ->
+                    onNoteValueChange = { newValue ->
                         spoolEntryViewModel.updateTextField(
                             newBrand = spoolEntryUiState.brand,
                             newMaterial = spoolEntryUiState.material,
@@ -232,11 +229,29 @@ fun MySpoolApp(modifier: Modifier = Modifier) {
                         spoolDetailsViewModel.deleteSpool(filament)
                         backStack.removeLastOrNull()
                     },
-                    printWeight = printWeight,
-                    onPrintWeightValueChange = { newValue->
-                        spoolDetailsViewModel.quickDeductionUpdateField(newValue = newValue)
+                    uiState = printUiState,
+                    onPrintWeightValueChange = { newGramsUsed ->
+                        spoolDetailsViewModel.quickDeductionUpdateField(
+                            gramsUsed = newGramsUsed,
+                            printTitle = printUiState.printTitle,
+                            isFailed = printUiState.isFailed,
+                        )
                     },
-                    onPrintWeightClick = {id, weight ->
+                    onPrintTitleValueChange = { newPrintTitle ->
+                        spoolDetailsViewModel.quickDeductionUpdateField(
+                            gramsUsed = printUiState.gramsUsed,
+                            printTitle = newPrintTitle,
+                            isFailed = printUiState.isFailed
+                        )
+                    },
+                    onCheckedChange = { newChecked ->
+                        spoolDetailsViewModel.quickDeductionUpdateField(
+                            gramsUsed = printUiState.gramsUsed,
+                            printTitle = printUiState.printTitle,
+                            isFailed = newChecked
+                        )
+                    },
+                    onPrintWeightClick = { id, weight ->
                         spoolDetailsViewModel.deductCurrentWeight(id, weight)
                     }
                 )

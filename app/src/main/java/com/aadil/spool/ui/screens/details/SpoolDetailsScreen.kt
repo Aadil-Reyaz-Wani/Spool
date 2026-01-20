@@ -69,9 +69,11 @@ fun SpoolDetailsScreen(
     navigateUp: () -> Unit,
     onUpdateClick: (Int) -> Unit,
     onConfirmDelete: (Filament) -> Unit,
-    printWeight: String,
+    uiState: PrintObjectUiState,
     onPrintWeightValueChange: (String) -> Unit,
+    onPrintTitleValueChange: (String) -> Unit,
     onPrintWeightClick: (Int, String) -> Unit,
+    onCheckedChange: (Boolean) -> Unit,
     modifier: Modifier = Modifier
 ) {
     Scaffold(
@@ -97,9 +99,11 @@ fun SpoolDetailsScreen(
             note = spoolDetails.note,
             onEditClick = { onUpdateClick(spoolDetails.id) },
             onConfirmDelete = { onConfirmDelete(spoolDetails) },
-            printWeight = printWeight,
+            uiState = uiState,
             onPrintWeightValueChange = onPrintWeightValueChange,
-            onPrintWeightClick = { onPrintWeightClick(spoolDetails.id, printWeight) },
+            onPrintTitleValueChange = onPrintTitleValueChange,
+            onPrintWeightClick = { onPrintWeightClick(spoolDetails.id, uiState.gramsUsed) },
+            onCheckedChange = onCheckedChange,
             modifier = Modifier.padding(paddingValues = paddingValues)
         )
     }
@@ -118,9 +122,11 @@ fun DetailsScreen(
     note: String,
     onEditClick: () -> Unit,
     onConfirmDelete: () -> Unit,
-    printWeight: String,
+    uiState: PrintObjectUiState,
     onPrintWeightValueChange: (String) -> Unit,
+    onPrintTitleValueChange: (String) -> Unit,
     onPrintWeightClick: (String) -> Unit,
+    onCheckedChange: (Boolean) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val scrollState = rememberScrollState()
@@ -172,9 +178,11 @@ fun DetailsScreen(
                 .padding(Dimens.PaddingMedium)
         ) {
             PrintCard(
-                printWeight = printWeight,
+                uiState = uiState,
                 onPrintWeightValueChange = onPrintWeightValueChange,
-                onPrintClick = onPrintWeightClick
+                onPrintTitleValueChange = onPrintTitleValueChange,
+                onPrintClick = onPrintWeightClick,
+                onCheckedChange = onCheckedChange
             )
             Spacer(modifier = Modifier.height(Dimens.PaddingMedium))
             Row(
@@ -237,8 +245,10 @@ fun DetailsScreenPreview() {
         onEditClick = {},
         onConfirmDelete = {},
         onPrintWeightValueChange = {},
-        printWeight = "",
-        onPrintWeightClick = {}
+        onPrintTitleValueChange = {},
+        uiState = PrintObjectUiState(),
+        onPrintWeightClick = {},
+        onCheckedChange = {}
     )
 }
 
@@ -414,8 +424,10 @@ fun MainDetailsCard(
 
 @Composable
 fun PrintCard(
-    printWeight: String,
+    uiState: PrintObjectUiState,
     onPrintWeightValueChange: (String) -> Unit,
+    onPrintTitleValueChange: (String) -> Unit,
+    onCheckedChange: (Boolean) -> Unit,
     onPrintClick: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -441,14 +453,16 @@ fun PrintCard(
 
         if (showPrintField) {
             InputAlertDialog(
-                printWeight = printWeight,
-                onValueChange = onPrintWeightValueChange,
+                uiState = uiState,
+                onGramsUsedValueChange = onPrintWeightValueChange,
+                onPrintTitleValueChange = onPrintTitleValueChange,
                 onConfirm = { weight ->
                     onPrintClick(weight)
                 },
                 onDismissRequest = {
                     showPrintField = false
                 },
+                onCheckedChange = onCheckedChange,
                 modifier = Modifier.fillMaxWidth()
             )
         }

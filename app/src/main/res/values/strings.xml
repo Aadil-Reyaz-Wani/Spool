@@ -49,6 +49,7 @@
     <string name="missing_notes">Add print notes or observations</string>
     <string name="label_note">Note</string>
     <string name="label_deduct_weight">Deduct Weight (g)</string>
+    <string name="label_print_title">Print Title</string>
 
     <string name="unit_grams">g</string>
 
@@ -61,6 +62,7 @@
     <string name="hint_material">e.g. PLA</string>
     <string name="hint_color">e.g. Vertigo Grey</string>
     <string name="hint_total_wight">e.g. 1000</string>
+    <string name="hint_print_title">e.g. Iron Man Helmet</string>
 
 
 
@@ -74,9 +76,12 @@
     <string name="empty_spool">Time to Restock</string>
 
 
+    <string name="check_failure">Mark as Failed Print</string>
 
 
-    <string name="version_number">v1.0.1 • Initializing</string>
+
+
+    <string name="version_number">v1.0.2 • Initializing</string>
 
 
 

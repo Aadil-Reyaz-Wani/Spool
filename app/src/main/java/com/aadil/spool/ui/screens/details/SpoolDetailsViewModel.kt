@@ -5,6 +5,7 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.aadil.spool.data.entity.Filament
+import com.aadil.spool.data.entity.UsageLog
 import com.aadil.spool.data.repository.SpoolRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -24,11 +25,15 @@ class SpoolDetailsViewModel @Inject constructor(
     private val spoolRepository: SpoolRepository
 ) : ViewModel() {
 
-    private val _printWeight = MutableStateFlow("")
-    var printWeight = _printWeight.asStateFlow()
+    private val _printObjectUiState = MutableStateFlow(PrintObjectUiState())
+    val printObjectUiState = _printObjectUiState.asStateFlow()
 
-    fun quickDeductionUpdateField(newValue: String) {
-        _printWeight.value = newValue
+    fun quickDeductionUpdateField(gramsUsed: String, printTitle: String, isFailed: Boolean) {
+        _printObjectUiState.value = _printObjectUiState.value.copy(
+            gramsUsed = gramsUsed,
+            printTitle = printTitle,
+            isFailed = isFailed
+        )
     }
 
 
@@ -71,6 +76,7 @@ class SpoolDetailsViewModel @Inject constructor(
     // Subtract weight from current weight
     @SuppressLint("SuspiciousIndentation")
     fun deductCurrentWeight(id: Int, deductedWeight: String) {
+        val newUsageLog = _printObjectUiState.value.toUsageLog().copy(spoolId = id)
         val weight = spoolDetails.value.currentWeight
             if (deductedWeight.isNotBlank()) {
                 val newCurrentWeight = weight - deductedWeight.toDouble()
@@ -78,7 +84,8 @@ class SpoolDetailsViewModel @Inject constructor(
                     try {
                         if (newCurrentWeight >= 0) {
                             spoolRepository.updateCurrentWeight(id, newCurrentWeight)
-                            _printWeight.value = ""
+                            spoolRepository.insertSpoolUsageLog(newUsageLog)
+                            _printObjectUiState.value = PrintObjectUiState()
                         }
                     } catch (ae: ArithmeticException) {
                         println("Please enter the valid number")
@@ -95,7 +102,24 @@ class SpoolDetailsViewModel @Inject constructor(
 }
 
 
+data class PrintObjectUiState(
+    val id: Int = 0,
+    val spoolId: Int = 0,
+    val gramsUsed: String = "",
+    val printTitle: String = "",
+    val isFailed: Boolean = false
+)
 
+fun PrintObjectUiState.toUsageLog() : UsageLog{
+    return UsageLog(
+        id = id,
+        spoolId= spoolId,
+        gramsUsed = gramsUsed.toDoubleOrNull() ?: 0.0,
+        title = printTitle,
+        isFailure = isFailed,
+        timestamp = System.currentTimeMillis(),
+    )
+}
 
 
 

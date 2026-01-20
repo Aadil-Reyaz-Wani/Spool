@@ -1,6 +1,7 @@
 package com.aadil.spool.data.repository
 
 import com.aadil.spool.data.entity.Filament
+import com.aadil.spool.data.entity.UsageLog
 import kotlinx.coroutines.flow.Flow
 
 interface SpoolRepository {
@@ -12,5 +13,10 @@ interface SpoolRepository {
     fun getSpoolStream(id: Int): Flow<Filament?>
     fun getCurrentWeightStream(id: Int) : Double
     suspend fun updateCurrentWeight(id: Int, currentWeight: Double)
+
+    // Usage Log
+    suspend fun insertSpoolUsageLog(log: UsageLog)
+
+    fun getSpoolUsageStream(spoolId: Int) : Flow<List<UsageLog>>
 
 }
