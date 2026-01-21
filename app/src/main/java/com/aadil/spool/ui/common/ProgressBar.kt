@@ -27,7 +27,7 @@ fun WeightProgressBar(
     Column(
         modifier = modifier
     ) {
-        Spacer(modifier = Modifier.height(Dimens.gapHeight))
+        Spacer(modifier = Modifier.height(Dimens.HeightOrWidth))
         Row(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.Bottom
@@ -53,7 +53,7 @@ fun WeightProgressBar(
 
             )
         }
-        Spacer(modifier = Modifier.height(Dimens.gapHeight))
+        Spacer(modifier = Modifier.height(Dimens.HeightOrWidth))
 
         SpoolProgressBar(
             percentage = percentage,

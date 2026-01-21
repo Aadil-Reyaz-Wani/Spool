@@ -11,6 +11,7 @@
     <string name="title_new_spool">New Spool</string>
     <string name="title_update_spool">Update Spool</string>
     <string name="spool_details">Spool Details</string>
+    <string name="spool_history">Print History</string>
 
     <string name="label_brand">Brand</string>
 
@@ -77,6 +78,11 @@
 
 
     <string name="check_failure">Mark as Failed Print</string>
+
+
+    <string name="print_history">Print history</string>
+
+
 
 
 

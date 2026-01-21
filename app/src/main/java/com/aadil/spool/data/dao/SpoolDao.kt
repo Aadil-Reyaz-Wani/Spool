@@ -39,7 +39,7 @@ interface SpoolDao {
     @Insert
     suspend fun insertUsageLog(log: UsageLog)
 
-    @Query("SELECT * FROM usage_log WHERE spoolId = :spoolId ORDER BY timestamp")
+    @Query("SELECT * FROM usage_log WHERE spoolId = :spoolId ORDER BY timestamp DESC")
     fun getSpoolUsage(spoolId: Int) : Flow<List<UsageLog>>
 
 

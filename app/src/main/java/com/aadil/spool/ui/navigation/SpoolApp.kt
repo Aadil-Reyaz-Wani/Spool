@@ -6,6 +6,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
@@ -18,24 +19,35 @@ import com.aadil.spool.ui.screens.details.SpoolDetailsScreen
 import com.aadil.spool.ui.screens.details.SpoolDetailsViewModel
 import com.aadil.spool.ui.screens.entry.SpoolEntryScreen
 import com.aadil.spool.ui.screens.entry.SpoolEntryViewModel
+import com.aadil.spool.ui.screens.history.PrintHistoryScreen
+import com.aadil.spool.ui.screens.history.PrintHistoryViewModel
 import com.aadil.spool.ui.screens.splash.SplashScreen
 import kotlinx.coroutines.delay
 
 @Composable
 fun MySpoolApp(modifier: Modifier = Modifier) {
+
+    // Define ViewModels
     val dashboardViewModel: DashboardViewModel = hiltViewModel()
     val spoolEntryViewModel: SpoolEntryViewModel = hiltViewModel()
     val spoolDetailsViewModel: SpoolDetailsViewModel = hiltViewModel()
+    val printHistoryViewModel: PrintHistoryViewModel = hiltViewModel()
 
-
+    // Dashboard
     val listOfSpools by dashboardViewModel.getAllSpool.collectAsState()
 
-
+    // Entry
     val spoolEntryUiState by spoolEntryViewModel.spoolEntryUiState.collectAsState()
     val isError by spoolEntryViewModel.isError.collectAsState()
 
+    // Details
     val spoolDetails by spoolDetailsViewModel.spoolDetails.collectAsState()
     val printUiState by spoolDetailsViewModel.printObjectUiState.collectAsState()
+    val isPrintErrorState by spoolDetailsViewModel.isError.collectAsStateWithLifecycle()
+
+
+    // Print History
+    val spoolPrintUsageHistoryDetails by printHistoryViewModel.spoolPrintUsageHistoryDetails.collectAsState()
 
 
     val backStack = rememberNavBackStack(Routes.Splash)
@@ -253,7 +265,20 @@ fun MySpoolApp(modifier: Modifier = Modifier) {
                     },
                     onPrintWeightClick = { id, weight ->
                         spoolDetailsViewModel.deductCurrentWeight(id, weight)
+                        spoolDetailsViewModel.validateInputErrorsOfPrintObjectUiState()
+                    },
+                    isPrintErrorState = isPrintErrorState,
+                    onPrintHistoryClick = {
+                        backStack.add(Routes.PrintHistory(entry.id))
+                        printHistoryViewModel.triggerId(entry.id)
                     }
+                )
+            }
+
+            entry<Routes.PrintHistory> {
+                PrintHistoryScreen(
+                    navigateUp = { backStack.removeLastOrNull() },
+                    usageLog = spoolPrintUsageHistoryDetails
                 )
             }
 
