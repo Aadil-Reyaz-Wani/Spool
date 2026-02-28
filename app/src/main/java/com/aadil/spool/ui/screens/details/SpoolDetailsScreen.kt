@@ -77,10 +77,10 @@ fun SpoolDetailsScreen(
     navigateUp: () -> Unit,
     onUpdateClick: (Int) -> Unit,
     onConfirmDelete: (Filament) -> Unit,
-    uiState: PrintObjectUiState,
     onPrintWeightValueChange: (String) -> Unit,
     onPrintTitleValueChange: (String) -> Unit,
     onPrintWeightClick: (Int, String) -> Unit,
+    uiState: PrintObjectUiState,
     onCheckedChange: (Boolean) -> Unit,
     isPrintErrorState: String?,
     onPrintHistoryClick: () -> Unit,
@@ -435,7 +435,7 @@ fun MainDetailsCard(
                 )
             }
 
-            HorizontalDivider(modifier = Modifier.padding(top  = Dimens.PaddingMedium))
+            HorizontalDivider(modifier = Modifier.padding(top = Dimens.PaddingMedium))
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.End
@@ -459,12 +459,14 @@ fun MainDetailsCard(
                         ) {
                             Text(
                                 text = stringResource(R.string.print_history),
-                                style = MaterialTheme.typography.bodySmall
+                                style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Bold),
+                                color = MaterialTheme.colorScheme.onSecondaryContainer
                             )
 
                             Icon(
                                 imageVector = Icons.AutoMirrored.Outlined.ArrowForward,
                                 contentDescription = null,
+                                tint = MaterialTheme.colorScheme.onSecondaryContainer,
                                 modifier = Modifier.size(Dimens.IconSmall)
                             )
                         }
@@ -508,6 +510,9 @@ fun PrintCard(
 
         if (showPrintField) {
             InputAlertDialog(
+//                gramsUsed = uiState.gramsUsed,
+//                printTitle = uiState.printTitle,
+//                isFailed = uiState.isFailed,
                 uiState = uiState,
                 onGramsUsedValueChange = onPrintWeightValueChange,
                 onPrintTitleValueChange = onPrintTitleValueChange,

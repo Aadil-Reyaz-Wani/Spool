@@ -36,17 +36,15 @@ interface SpoolDao {
 
 
     // Usage Log
-    @Insert
+    @Insert(onConflict = IGNORE)
     suspend fun insertUsageLog(log: UsageLog)
+
+    @Delete
+    suspend fun deleteUsageLog(log: UsageLog)
+
+    @Update
+    suspend fun updateUsageLog(log: UsageLog)
 
     @Query("SELECT * FROM usage_log WHERE spoolId = :spoolId ORDER BY timestamp DESC")
     fun getSpoolUsage(spoolId: Int) : Flow<List<UsageLog>>
-
-
-
-
-
-
-
-
 }

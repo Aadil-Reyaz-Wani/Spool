@@ -41,6 +41,14 @@ class OfflineSpoolRepository @Inject constructor(
         return spoolDao.insertUsageLog(log = log)
     }
 
+    override suspend fun deleteSpoolUsageLog(log: UsageLog) {
+        return spoolDao.deleteUsageLog(log = log)
+    }
+
+    override suspend fun updateSpoolUsageLog(log: UsageLog) {
+        spoolDao.updateUsageLog(log = log)
+    }
+
     override fun getSpoolUsageStream(spoolId: Int): Flow<List<UsageLog>> {
         return spoolDao.getSpoolUsage(spoolId = spoolId)
     }

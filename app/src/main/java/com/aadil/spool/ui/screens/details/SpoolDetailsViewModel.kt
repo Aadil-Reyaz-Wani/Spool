@@ -7,6 +7,7 @@ import androidx.lifecycle.viewModelScope
 import com.aadil.spool.data.entity.Filament
 import com.aadil.spool.data.entity.UsageLog
 import com.aadil.spool.data.repository.SpoolRepository
+import com.aadil.spool.ui.screens.entry.SpoolEntryUiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -111,6 +112,16 @@ class SpoolDetailsViewModel @Inject constructor(
         } else {
             return
         }
+    }
+
+
+    // Working...
+    fun isPrintEditMode(id: Int): Boolean {
+        return (id > 0)
+    }
+
+    fun resetState() {
+        _printObjectUiState.value = PrintObjectUiState()
     }
 }
 

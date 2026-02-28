@@ -98,8 +98,6 @@ fun EntryFields(
             keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words)
         )
         Spacer(modifier = Modifier.height(Dimens.PaddingTiny))
-
-        // Here is ongoing work on dropdown menu
         SpoolDropDownMenu(
             value = uiState.material,
             onValueChange = onMaterialValueChange,

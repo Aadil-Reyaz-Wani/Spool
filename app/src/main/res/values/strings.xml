@@ -81,6 +81,7 @@
 
 
     <string name="print_history">Print history</string>
+    <string name="print_history_empty">No print found.\nTap Log Print button to print.</string>
 
 
 

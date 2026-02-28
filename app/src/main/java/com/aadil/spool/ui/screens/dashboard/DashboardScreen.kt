@@ -104,7 +104,7 @@ fun DashboardScreen(
                 modifier = Modifier
                     .padding(paddingValues = paddingValues)
                     .fillMaxWidth(),
-                columns = GridCells.Adaptive(adaptiveMinSize),
+                columns = GridCells.Fixed(2),
                 contentPadding = PaddingValues(bottom = 72.dp)
             ) {
                 items(listOfSpools, key = { it.id }) { spool ->

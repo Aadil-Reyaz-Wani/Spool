@@ -16,7 +16,8 @@ interface SpoolRepository {
 
     // Usage Log
     suspend fun insertSpoolUsageLog(log: UsageLog)
-
+    suspend fun deleteSpoolUsageLog(log: UsageLog)
+    suspend fun updateSpoolUsageLog(log: UsageLog)
     fun getSpoolUsageStream(spoolId: Int) : Flow<List<UsageLog>>
 
 }

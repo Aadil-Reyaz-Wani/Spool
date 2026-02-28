@@ -2,7 +2,6 @@ package com.aadil.spool.ui.navigation
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -12,7 +11,6 @@ import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
-//import com.aadil.spool.ui.screens.AppViewModelProvider
 import com.aadil.spool.ui.screens.dashboard.DashboardScreen
 import com.aadil.spool.ui.screens.dashboard.DashboardViewModel
 import com.aadil.spool.ui.screens.details.SpoolDetailsScreen
@@ -34,20 +32,20 @@ fun MySpoolApp(modifier: Modifier = Modifier) {
     val printHistoryViewModel: PrintHistoryViewModel = hiltViewModel()
 
     // Dashboard
-    val listOfSpools by dashboardViewModel.getAllSpool.collectAsState()
+    val listOfSpools by dashboardViewModel.getAllSpool.collectAsStateWithLifecycle()
 
     // Entry
-    val spoolEntryUiState by spoolEntryViewModel.spoolEntryUiState.collectAsState()
-    val isError by spoolEntryViewModel.isError.collectAsState()
+    val spoolEntryUiState by spoolEntryViewModel.spoolEntryUiState.collectAsStateWithLifecycle()
+    val isError by spoolEntryViewModel.isError.collectAsStateWithLifecycle()
 
     // Details
-    val spoolDetails by spoolDetailsViewModel.spoolDetails.collectAsState()
-    val printUiState by spoolDetailsViewModel.printObjectUiState.collectAsState()
+    val spoolDetails by spoolDetailsViewModel.spoolDetails.collectAsStateWithLifecycle()
+    val printUiState by spoolDetailsViewModel.printObjectUiState.collectAsStateWithLifecycle()
     val isPrintErrorState by spoolDetailsViewModel.isError.collectAsStateWithLifecycle()
 
 
     // Print History
-    val spoolPrintUsageHistoryDetails by printHistoryViewModel.spoolPrintUsageHistoryDetails.collectAsState()
+    val spoolPrintUsageHistoryDetails by printHistoryViewModel.spoolPrintUsageHistoryDetails.collectAsStateWithLifecycle()
 
 
     val backStack = rememberNavBackStack(Routes.Splash)
@@ -278,7 +276,38 @@ fun MySpoolApp(modifier: Modifier = Modifier) {
             entry<Routes.PrintHistory> {
                 PrintHistoryScreen(
                     navigateUp = { backStack.removeLastOrNull() },
-                    usageLog = spoolPrintUsageHistoryDetails
+                    usageLog = spoolPrintUsageHistoryDetails,
+                    onEditClick = { log ->
+                    },
+                    onDeleteClick = { log ->
+                        printHistoryViewModel.deletePrintItem(log)
+                    },
+                    uiState = printUiState,
+                    onGramsUsedValueChange = { newGramsUsed ->
+                        spoolDetailsViewModel.quickDeductionUpdateField(
+                            gramsUsed = newGramsUsed,
+                            printTitle = printUiState.printTitle,
+                            isFailed = printUiState.isFailed,
+                        )
+                    },
+                    onPrintTitleValueChange = { newPrintTitle ->
+                        spoolDetailsViewModel.quickDeductionUpdateField(
+                            gramsUsed = printUiState.gramsUsed,
+                            printTitle = newPrintTitle,
+                            isFailed = printUiState.isFailed
+                        )
+                    },
+                    onCheckedChange = { newChecked ->
+                        spoolDetailsViewModel.quickDeductionUpdateField(
+                            gramsUsed = printUiState.gramsUsed,
+                            printTitle = printUiState.printTitle,
+                            isFailed = newChecked
+                        )
+                    },
+                    isPrintErrorState = isPrintErrorState,
+                    onConfirm = {spoolId, log ->
+                        printHistoryViewModel.updatePrintItem(log)
+                    },
                 )
             }
 

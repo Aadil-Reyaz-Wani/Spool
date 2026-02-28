@@ -26,6 +26,7 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -133,8 +134,13 @@ fun InputAlertDialog(
     onDismissRequest: () -> Unit,
     onCheckedChange: (Boolean) -> Unit,
     isPrintErrorState: String?,
+//    isPrintEditMode: Boolean,
+//    resetState: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+//    LaunchedEffect(Unit) {
+//        if (!isPrintEditMode) resetState()
+//    }
     AlertDialog(
         modifier = modifier
             .background(
@@ -246,16 +252,16 @@ fun InputAlertDialog(
     )
 }
 
-@Preview
-@Composable
-private fun InsertDialogPrev() {
-    InputAlertDialog(
-        uiState = PrintObjectUiState(),
-        onGramsUsedValueChange = {},
-        onPrintTitleValueChange = {},
-        onConfirm = {},
-        onDismissRequest = {},
-        onCheckedChange = {},
-        isPrintErrorState = ""
-    )
-}
+//@Preview
+//@Composable
+//private fun InsertDialogPrev() {
+//    InputAlertDialog(
+//        uiState = PrintObjectUiState(),
+//        onGramsUsedValueChange = {},
+//        onPrintTitleValueChange = {},
+//        onConfirm = {},
+//        onDismissRequest = {},
+//        onCheckedChange = {},
+//        isPrintErrorState = "",
+//    )
+//}
