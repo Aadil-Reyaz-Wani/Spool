@@ -53,7 +53,7 @@ fun PrintHistoryScreen(
     navigateUp: () -> Unit,
     usageLog: List<UsageLog>,
     onEditClick: (UsageLog) -> Unit,
-    onDeleteClick: (UsageLog) -> Unit,
+    onDeleteClick: (usageLog: UsageLog) -> Unit,
     modifier: Modifier = Modifier,
     // Working...
     onGramsUsedValueChange: (String) -> Unit,
@@ -94,7 +94,7 @@ fun PrintHistoryScreen(
                     PrintItemViewCard(
                         uiState = uiState,
                         onEditClick = { onEditClick(log) },
-                        onDeleteClick = { onDeleteClick(log) },
+                        onDeleteClick = { onDeleteClick(log) }, // Here we are right now
                         title = log.title,
                         date = log.timestamp,
                         usedGrams = log.gramsUsed.toString(),

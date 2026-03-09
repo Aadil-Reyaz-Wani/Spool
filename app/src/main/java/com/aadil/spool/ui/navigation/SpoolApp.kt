@@ -279,8 +279,8 @@ fun MySpoolApp(modifier: Modifier = Modifier) {
                     usageLog = spoolPrintUsageHistoryDetails,
                     onEditClick = { log ->
                     },
-                    onDeleteClick = { log ->
-                        printHistoryViewModel.deletePrintItem(log)
+                    onDeleteClick = {usageLog ->
+                        printHistoryViewModel.deletePrintItem(usageLog)
                     },
                     uiState = printUiState,
                     onGramsUsedValueChange = { newGramsUsed ->

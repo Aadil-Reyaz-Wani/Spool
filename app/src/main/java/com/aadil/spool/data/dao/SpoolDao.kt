@@ -5,6 +5,7 @@ import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy.Companion.IGNORE
 import androidx.room.Query
+import androidx.room.Transaction
 import androidx.room.Update
 import com.aadil.spool.data.entity.Filament
 import com.aadil.spool.data.entity.UsageLog
@@ -29,13 +30,13 @@ interface SpoolDao {
     fun getSpool(id: Int) : Flow<Filament?>
 
     @Query("SELECT current_weight FROM filaments WHERE id = :id")
-    fun getCurrentWeight(id: Int) : Double
+    suspend fun getCurrentWeight(id: Int) : Double
 
     @Query("UPDATE filaments SET current_weight = :currentWeight WHERE id = :id")
     suspend fun updateCurrentWeight(id: Int, currentWeight: Double)
 
 
-    // Usage Log
+    // Usage Log - Print History
     @Insert(onConflict = IGNORE)
     suspend fun insertUsageLog(log: UsageLog)
 
@@ -47,4 +48,15 @@ interface SpoolDao {
 
     @Query("SELECT * FROM usage_log WHERE spoolId = :spoolId ORDER BY timestamp DESC")
     fun getSpoolUsage(spoolId: Int) : Flow<List<UsageLog>>
+
+    @Transaction
+    suspend fun deleteLogAndRestoreCurrentWeight(usageLog: UsageLog) {
+        val currentWeight = getCurrentWeight(usageLog.spoolId)
+
+        val restoredCurrentWeight = currentWeight + usageLog.gramsUsed
+
+        updateCurrentWeight(usageLog.spoolId, restoredCurrentWeight)
+
+        deleteUsageLog(usageLog)
+    }
 }

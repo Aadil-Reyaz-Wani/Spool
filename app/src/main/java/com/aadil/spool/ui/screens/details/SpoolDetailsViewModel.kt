@@ -56,6 +56,7 @@ class SpoolDetailsViewModel @Inject constructor(
 
     @OptIn(ExperimentalCoroutinesApi::class)
     val spoolDetails: StateFlow<Filament> = _idTrigger
+
         .flatMapLatest { id ->
             if (id == 0) {
                 flowOf(emptyFilament)
@@ -82,18 +83,21 @@ class SpoolDetailsViewModel @Inject constructor(
         val newUsageLog = _printObjectUiState.value.toUsageLog().copy(spoolId = id)
         val weight = spoolDetails.value.currentWeight
         if (deductedWeight.isNotBlank()) {
-            val newCurrentWeight = weight - deductedWeight.toDouble()
+            val parsedDeductedWeight = deductedWeight.toDouble()
+            val newCurrentWeight = weight - parsedDeductedWeight
             viewModelScope.launch {
-                try {
                     if (newCurrentWeight >= 0 && _printObjectUiState.value.printTitle.isNotBlank()) {
-                        spoolRepository.updateCurrentWeight(id, newCurrentWeight)
-                        spoolRepository.insertSpoolUsageLog(newUsageLog)
-                        _printObjectUiState.value = PrintObjectUiState()
+                        try {
+                            spoolRepository.updateCurrentWeight(id, newCurrentWeight)
+                            if (parsedDeductedWeight > 0) {
+                                spoolRepository.insertSpoolUsageLog(newUsageLog)
+                                _printObjectUiState.value = PrintObjectUiState()
+                            }
+                        }catch (ae: Exception) {
+                            println("Please enter the valid number")
+                            Log.e("ERROR", ae.message.toString())
+                        }
                     }
-                } catch (ae: ArithmeticException) {
-                    println("Please enter the valid number")
-                    Log.e("ERROR", ae.message.toString())
-                }
             }
         }
     }

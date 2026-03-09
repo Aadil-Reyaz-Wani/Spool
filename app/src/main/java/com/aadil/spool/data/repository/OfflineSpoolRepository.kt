@@ -3,7 +3,9 @@ package com.aadil.spool.data.repository
 import com.aadil.spool.data.dao.SpoolDao
 import com.aadil.spool.data.entity.Filament
 import com.aadil.spool.data.entity.UsageLog
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 class OfflineSpoolRepository @Inject constructor(
@@ -29,7 +31,7 @@ class OfflineSpoolRepository @Inject constructor(
         return spoolDao.getSpool(id = id)
     }
 
-    override fun getCurrentWeightStream(id: Int): Double {
+    override suspend fun getCurrentWeightStream(id: Int): Double {
         return spoolDao.getCurrentWeight(id = id)
     }
 
@@ -51,5 +53,11 @@ class OfflineSpoolRepository @Inject constructor(
 
     override fun getSpoolUsageStream(spoolId: Int): Flow<List<UsageLog>> {
         return spoolDao.getSpoolUsage(spoolId = spoolId)
+    }
+
+    override suspend fun deleteLogAndRestoreCurrentWeight(usageLog: UsageLog) {
+        withContext(Dispatchers.IO) {
+            return@withContext spoolDao.deleteLogAndRestoreCurrentWeight(usageLog = usageLog)
+        }
     }
 }
