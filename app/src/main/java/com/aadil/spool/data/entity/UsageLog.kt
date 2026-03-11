@@ -28,7 +28,7 @@ data class UsageLog(
     @ColumnInfo(name = "timestamp")
     val timestamp: Long,
     @ColumnInfo(name = "is_failure")
-    val isFailure: Boolean
-
-
+    val isFailure: Boolean,
+    @ColumnInfo(name = "price_per_print", defaultValue = "0.0")
+    val pricePerPrint: Double = 0.0
 )

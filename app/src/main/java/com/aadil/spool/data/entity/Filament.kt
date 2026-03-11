@@ -24,4 +24,6 @@ data class Filament(
     val tempBed: Int = 0,
     @ColumnInfo(name = "note", defaultValue = "")
     val note: String,
+    @ColumnInfo(name = "price", defaultValue = "0")
+    val price: Double = 0.0
 )

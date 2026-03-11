@@ -11,6 +11,7 @@ import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
+import com.aadil.spool.data.entity.UsageLog
 import com.aadil.spool.ui.screens.dashboard.DashboardScreen
 import com.aadil.spool.ui.screens.dashboard.DashboardViewModel
 import com.aadil.spool.ui.screens.details.SpoolDetailsScreen
@@ -95,6 +96,7 @@ fun MySpoolApp(modifier: Modifier = Modifier) {
                         spoolEntryViewModel.updateTextField(
                             newBrand = newValue,
                             newMaterial = spoolEntryUiState.material,
+                            newPrice = spoolEntryUiState.price,
                             newTotalWeight = spoolEntryUiState.totalWeight,
                             newColorHex = spoolEntryUiState.colorHex,
                             newColorName = spoolEntryUiState.colorName,
@@ -108,6 +110,21 @@ fun MySpoolApp(modifier: Modifier = Modifier) {
                         spoolEntryViewModel.updateTextField(
                             newBrand = spoolEntryUiState.brand,
                             newMaterial = newValue,
+                            newPrice = spoolEntryUiState.price,
+                            newTotalWeight = spoolEntryUiState.totalWeight,
+                            newColorHex = spoolEntryUiState.colorHex,
+                            newColorName = spoolEntryUiState.colorName,
+                            newCurrentWeight = spoolEntryUiState.currentWeight,
+                            newTempNozzle = spoolEntryUiState.tempNozzle,
+                            newTempBed = spoolEntryUiState.tempBed,
+                            newNote = spoolEntryUiState.note
+                        )
+                    },
+                    onPriceValueChange = {newValue ->
+                        spoolEntryViewModel.updateTextField(
+                            newBrand = spoolEntryUiState.brand,
+                            newMaterial = spoolEntryUiState.material,
+                            newPrice = newValue,
                             newTotalWeight = spoolEntryUiState.totalWeight,
                             newColorHex = spoolEntryUiState.colorHex,
                             newColorName = spoolEntryUiState.colorName,
@@ -121,6 +138,7 @@ fun MySpoolApp(modifier: Modifier = Modifier) {
                         spoolEntryViewModel.updateTextField(
                             newBrand = spoolEntryUiState.brand,
                             newMaterial = spoolEntryUiState.material,
+                            newPrice = spoolEntryUiState.price,
                             newTotalWeight = newValue,
                             newColorHex = spoolEntryUiState.colorHex,
                             newColorName = spoolEntryUiState.colorName,
@@ -134,6 +152,7 @@ fun MySpoolApp(modifier: Modifier = Modifier) {
                         spoolEntryViewModel.updateTextField(
                             newBrand = spoolEntryUiState.brand,
                             newMaterial = spoolEntryUiState.material,
+                            newPrice = spoolEntryUiState.price,
                             newTotalWeight = spoolEntryUiState.totalWeight,
                             newColorHex = spoolEntryUiState.colorHex,
                             newColorName = newValue,
@@ -147,6 +166,7 @@ fun MySpoolApp(modifier: Modifier = Modifier) {
                         spoolEntryViewModel.updateTextField(
                             newBrand = spoolEntryUiState.brand,
                             newMaterial = spoolEntryUiState.material,
+                            newPrice = spoolEntryUiState.price,
                             newTotalWeight = spoolEntryUiState.totalWeight,
                             newColorHex = newValue,
                             newColorName = spoolEntryUiState.colorName,
@@ -160,6 +180,7 @@ fun MySpoolApp(modifier: Modifier = Modifier) {
                         spoolEntryViewModel.updateTextField(
                             newBrand = spoolEntryUiState.brand,
                             newMaterial = spoolEntryUiState.material,
+                            newPrice = spoolEntryUiState.price,
                             newTotalWeight = spoolEntryUiState.totalWeight,
                             newColorHex = spoolEntryUiState.colorHex,
                             newColorName = spoolEntryUiState.colorName,
@@ -173,6 +194,7 @@ fun MySpoolApp(modifier: Modifier = Modifier) {
                         spoolEntryViewModel.updateTextField(
                             newBrand = spoolEntryUiState.brand,
                             newMaterial = spoolEntryUiState.material,
+                            newPrice = spoolEntryUiState.price,
                             newTotalWeight = spoolEntryUiState.totalWeight,
                             newColorHex = spoolEntryUiState.colorHex,
                             newColorName = spoolEntryUiState.colorName,
@@ -186,6 +208,7 @@ fun MySpoolApp(modifier: Modifier = Modifier) {
                         spoolEntryViewModel.updateTextField(
                             newBrand = spoolEntryUiState.brand,
                             newMaterial = spoolEntryUiState.material,
+                            newPrice = spoolEntryUiState.price,
                             newTotalWeight = spoolEntryUiState.totalWeight,
                             newColorHex = spoolEntryUiState.colorHex,
                             newColorName = spoolEntryUiState.colorName,
@@ -199,6 +222,7 @@ fun MySpoolApp(modifier: Modifier = Modifier) {
                         spoolEntryViewModel.updateTextField(
                             newBrand = spoolEntryUiState.brand,
                             newMaterial = spoolEntryUiState.material,
+                            newPrice = spoolEntryUiState.price,
                             newTotalWeight = spoolEntryUiState.totalWeight,
                             newColorHex = spoolEntryUiState.colorHex,
                             newColorName = spoolEntryUiState.colorName,

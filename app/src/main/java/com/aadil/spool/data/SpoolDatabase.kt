@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.room.AutoMigration
 import androidx.room.Database
 import androidx.room.DeleteColumn
+import androidx.room.Insert
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.migration.AutoMigrationSpec
@@ -14,9 +15,11 @@ import kotlin.concurrent.Volatile
 
 @Database(
     entities = [Filament::class, UsageLog::class],
-    version = 11,
+    version = 13,
     autoMigrations = [
-        AutoMigration(from = 10, to = 11)
+        AutoMigration(from = 10, to = 11),
+        AutoMigration(from = 11, to = 12),
+        AutoMigration(from = 12, to = 13),
     ],
     exportSchema = true
 )

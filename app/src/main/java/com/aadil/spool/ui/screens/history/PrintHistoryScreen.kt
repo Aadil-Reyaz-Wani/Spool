@@ -98,7 +98,7 @@ fun PrintHistoryScreen(
                         title = log.title,
                         date = log.timestamp,
                         usedGrams = log.gramsUsed.toString(),
-                        price = "0.25",
+                        price = log.pricePerPrint.toString(),
                         status = log.isFailure,
                         modifier = Modifier.padding(
                             horizontal = Dimens.PaddingMedium,

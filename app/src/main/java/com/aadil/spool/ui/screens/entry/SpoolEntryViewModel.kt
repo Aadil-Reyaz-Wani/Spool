@@ -31,7 +31,8 @@ class SpoolEntryViewModel @Inject constructor(
         newCurrentWeight: String,
         newTempNozzle: String,
         newTempBed: String,
-        newNote: String
+        newNote: String,
+        newPrice: String,
     ) {
 
         _spoolEntryUiState.value = _spoolEntryUiState.value.copy(
@@ -43,7 +44,8 @@ class SpoolEntryViewModel @Inject constructor(
             colorHex = newColorHex,
             tempNozzle = newTempNozzle,
             tempBed = newTempBed,
-            note = newNote
+            note = newNote,
+            price = newPrice
         )
     }
 
@@ -96,8 +98,8 @@ class SpoolEntryViewModel @Inject constructor(
                     } else {
                         isError.value = true
                     }
-                } catch (e: ArithmeticException) {
-                    Log.d("ENTER", "${e.message}")
+                } catch (e: Exception) {
+                    Log.e("ENTER", "${e.message}")
                 }
             }
 
@@ -138,7 +140,8 @@ data class SpoolEntryUiState(
     val currentWeight: String = "",
     val tempNozzle: String = "",
     val tempBed: String = "",
-    val note: String = ""
+    val note: String = "",
+    val price: String = ""
 )
 
 fun SpoolEntryUiState.toFilament(): Filament {
@@ -152,7 +155,8 @@ fun SpoolEntryUiState.toFilament(): Filament {
         colorName = colorName,
         tempNozzle = tempNozzle.toIntOrNull() ?: 0,
         tempBed = tempBed.toIntOrNull() ?: 0,
-        note = note
+        note = note,
+        price = price.toDoubleOrNull() ?: 0.0
     )
 }
 
@@ -167,6 +171,7 @@ fun Filament.toSpoolEntryUiState(): SpoolEntryUiState {
         colorName = colorName,
         tempNozzle = tempNozzle.toString(),
         tempBed = tempBed.toString(),
-        note = note
+        note = note,
+        price = price.toString()
     )
 }

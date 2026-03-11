@@ -11,6 +11,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -45,8 +46,8 @@ class PrintHistoryViewModel @Inject constructor(
         _spoolId
             .filterNotNull() // Don't even talk to the DB until we have a real ID
             .flatMapLatest { spoolId ->
-            spoolRepository.getSpoolUsageStream(spoolId)
-        }
+                spoolRepository.getSpoolUsageStream(spoolId)
+            }
             .stateIn(
                 scope = viewModelScope,
                 started = SharingStarted.WhileSubscribed(5000),

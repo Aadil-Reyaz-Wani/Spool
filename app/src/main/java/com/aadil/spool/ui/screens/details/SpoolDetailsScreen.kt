@@ -59,6 +59,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import com.aadil.spool.R
 import com.aadil.spool.data.entity.Filament
+import com.aadil.spool.data.entity.UsageLog
 import com.aadil.spool.ui.common.GhostCard
 import com.aadil.spool.ui.common.SpoolAppBar
 import com.aadil.spool.ui.components.DeleteConfirmationAlertDialog
@@ -112,7 +113,8 @@ fun SpoolDetailsScreen(
             uiState = uiState,
             onPrintWeightValueChange = onPrintWeightValueChange,
             onPrintTitleValueChange = onPrintTitleValueChange,
-            onPrintWeightClick = { onPrintWeightClick(spoolDetails.id, uiState.gramsUsed) },
+            onPrintWeightClick = {
+                onPrintWeightClick(spoolDetails.id, uiState.gramsUsed) },
             onCheckedChange = onCheckedChange,
             isPrintErrorState = isPrintErrorState,
             onPrintHistoryClick = onPrintHistoryClick,

@@ -15,6 +15,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.stateIn
@@ -78,10 +79,11 @@ class SpoolDetailsViewModel @Inject constructor(
     }
 
     // Subtract weight from current weight
-    @SuppressLint("SuspiciousIndentation")
     fun deductCurrentWeight(id: Int, deductedWeight: String) {
-        val newUsageLog = _printObjectUiState.value.toUsageLog().copy(spoolId = id)
         val weight = spoolDetails.value.currentWeight
+        val pricePerGram = spoolDetails.value.price.div(spoolDetails.value.totalWeight)
+        val totalCostPerPrint = pricePerGram.times(deductedWeight.toDoubleOrNull() ?: 0.0)
+        val newUsageLog = _printObjectUiState.value.toUsageLog().copy(spoolId = id, pricePerPrint = totalCostPerPrint)
         if (deductedWeight.isNotBlank()) {
             val parsedDeductedWeight = deductedWeight.toDouble()
             val newCurrentWeight = weight - parsedDeductedWeight

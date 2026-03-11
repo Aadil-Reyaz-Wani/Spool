@@ -18,6 +18,7 @@ import androidx.compose.material.icons.outlined.AddBox
 import androidx.compose.material.icons.outlined.Circle
 import androidx.compose.material.icons.outlined.ColorLens
 import androidx.compose.material.icons.outlined.Colorize
+import androidx.compose.material.icons.outlined.CurrencyExchange
 import androidx.compose.material.icons.outlined.EditNote
 import androidx.compose.material.icons.outlined.Factory
 import androidx.compose.material.icons.outlined.LineWeight
@@ -54,6 +55,7 @@ fun EntryFields(
     uiState: SpoolEntryUiState,
     onBrandValueChange: (String) -> Unit,
     onMaterialValueChange: (String) -> Unit,
+    onPriceValueChange: (String) -> Unit,
     onInitialWeightValueChange: (String) -> Unit,
     onColorNameChange: (String) -> Unit,
     onColorValueChange: (Long) -> Unit,
@@ -106,6 +108,18 @@ fun EntryFields(
             leadingIcon = Icons.Outlined.Circle,
             isError = isFieldsFilled,
             supportingText = stringResource(R.string.material_error_message),
+        )
+        // Price
+        Spacer(modifier = Modifier.height(Dimens.PaddingMedium))
+        SpoolOutlinedTextField(
+            value = uiState.price,
+            onValueChange = onPriceValueChange,
+            label = stringResource(R.string.label_spool_price),
+            placeholder = stringResource(R.string.hint_price),
+            leadingIcon = Icons.Outlined.CurrencyExchange,
+//            isError = isFieldsFilled,
+//            supportingText = stringResource(R.string.brand_error_message),
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
         )
         Spacer(modifier = Modifier.height(Dimens.PaddingLarge))
         HorizontalDivider()
@@ -245,6 +259,7 @@ fun EntryFieldsPreview() {
         uiState = uiState,
         onBrandValueChange = {},
         onMaterialValueChange = {},
+        onPriceValueChange = {},
         onInitialWeightValueChange = {},
         onColorNameChange = {},
         onColorValueChange = {},
