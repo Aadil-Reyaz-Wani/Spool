@@ -32,6 +32,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.ModifierLocalBeyondBoundsLayout
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -46,6 +47,7 @@ import com.aadil.spool.ui.components.InputAlertDialog
 import com.aadil.spool.ui.components.SpoolTag
 import com.aadil.spool.ui.screens.details.PrintObjectUiState
 import com.aadil.spool.ui.theme.Dimens
+import com.aadil.spool.utils.toReadableDate
 
 @Composable
 fun PrintHistoryScreen(
@@ -96,7 +98,7 @@ fun PrintHistoryScreen(
                         onEditClick = { onEditClick(log) },
                         onDeleteClick = { onDeleteClick(log) }, // Here we are right now
                         title = log.title,
-                        date = log.timestamp,
+                        date = log.timestamp.toReadableDate(),
                         usedGrams = log.gramsUsed.toString(),
                         price = log.pricePerPrint.toString(),
                         status = log.isFailure,
@@ -122,7 +124,7 @@ fun PrintItemViewCard(
     onEditClick: () -> Unit,
     onDeleteClick: () -> Unit,
     title: String,
-    date: Long,
+    date: String,
     usedGrams: String,
     price: String,
     status: Boolean,
@@ -144,20 +146,34 @@ fun PrintItemViewCard(
                 .padding(Dimens.PaddingMedium)
         ) {
 
-            SpoolTag(
-                text = if (!status) "Success" else "Failed",
-                surfaceColor = if (!status) {
-                    MaterialTheme.colorScheme.secondaryContainer
-                } else {
-                    MaterialTheme.colorScheme.errorContainer
-                },
-                textColor = if (!status) {
-                    MaterialTheme.colorScheme.onSecondaryContainer
-                } else {
-                    MaterialTheme.colorScheme.onErrorContainer
-                }
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                SpoolTag(
+                    text = if (!status) "Success" else "Failed",
+                    surfaceColor = if (!status) {
+                        MaterialTheme.colorScheme.secondaryContainer
+                    } else {
+                        MaterialTheme.colorScheme.errorContainer
+                    },
+                    textColor = if (!status) {
+                        MaterialTheme.colorScheme.onSecondaryContainer
+                    } else {
+                        MaterialTheme.colorScheme.onErrorContainer
+                    }
+                )
 
-            )
+                Text(
+                    text = date,
+                    style = MaterialTheme.typography.bodySmall,
+                    fontStyle = FontStyle.Italic,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+
+
             Spacer(modifier = Modifier.height(Dimens.HeightOrWidth))
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -168,15 +184,10 @@ fun PrintItemViewCard(
                     text = title,
                     style = MaterialTheme.typography.titleMedium,
                     color = MaterialTheme.colorScheme.onSurface,
-                    fontWeight = FontWeight.Bold
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier
+                        .fillMaxWidth()
                 )
-
-//                Text(
-//                    text = date.toString(),
-//                    style = MaterialTheme.typography.bodySmall,
-//                    fontStyle = FontStyle.Italic,
-//                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-//                )
             }
             Spacer(modifier = Modifier.height(Dimens.HeightOrWidth))
             Row(
@@ -193,12 +204,14 @@ fun PrintItemViewCard(
                     style = MaterialTheme.typography.bodyMedium,
                     fontWeight = FontWeight.Bold
                 )
-                Spacer(modifier = Modifier.width(Dimens.HeightOrWidth))
-                Text(
-                    text = "($$price)",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
+                if (price.toDouble() > 0) {
+                    Spacer(modifier = Modifier.width(Dimens.HeightOrWidth))
+                    Text(
+                        text = "($$price)",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
             }
             Spacer(modifier = Modifier.height(Dimens.HeightOrWidth))
             HorizontalDivider(modifier = Modifier.height(Dimens.PaddingMedium))
@@ -284,7 +297,7 @@ private fun PrintItemViewCardPrev() {
         onEditClick = {},
         onDeleteClick = {},
         title = "Iron Man Helmet",
-        date = 231243521,
+        date = "231243521",
         usedGrams = "100",
         price = "0.25",
         status = true,

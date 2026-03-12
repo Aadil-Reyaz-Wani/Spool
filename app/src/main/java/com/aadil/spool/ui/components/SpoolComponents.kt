@@ -128,7 +128,7 @@ fun SpoolOutlinedTextField(
     placeholder: String = "",
     isError: Boolean = false,
     leadingIcon: ImageVector,
-    trailingIcon: ImageVector? = null,  // Keep eye on this
+    trailingIcon: ImageVector? = null,
     singleLine: Boolean = true,
     supportingText: String? = "",
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,

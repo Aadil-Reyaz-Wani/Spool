@@ -1,13 +1,11 @@
 package com.aadil.spool.ui.screens.details
 
-import android.annotation.SuppressLint
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.aadil.spool.data.entity.Filament
-import com.aadil.spool.data.entity.UsageLog
+import com.aadil.spool.data.mapper.toUsageLog
 import com.aadil.spool.data.repository.SpoolRepository
-import com.aadil.spool.ui.screens.entry.SpoolEntryUiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -15,12 +13,20 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.filterNotNull
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+
+data class PrintObjectUiState(
+    val id: Int = 0,
+    val spoolId: Int = 0,
+    val gramsUsed: String = "",
+    val printTitle: String = "",
+    val isFailed: Boolean = false
+)
 
 @HiltViewModel
 class SpoolDetailsViewModel @Inject constructor(
@@ -33,11 +39,13 @@ class SpoolDetailsViewModel @Inject constructor(
     val isError = _isError.asStateFlow()
 
     fun quickDeductionUpdateField(gramsUsed: String, printTitle: String, isFailed: Boolean) {
-        _printObjectUiState.value = _printObjectUiState.value.copy(
-            gramsUsed = gramsUsed,
-            printTitle = printTitle,
-            isFailed = isFailed
-        )
+        _printObjectUiState.update {
+            it.copy(
+                gramsUsed = gramsUsed,
+                printTitle = printTitle,
+                isFailed = isFailed
+            )
+        }
     }
 
 
@@ -78,28 +86,28 @@ class SpoolDetailsViewModel @Inject constructor(
         }
     }
 
-    // Subtract weight from current weight
-    fun deductCurrentWeight(id: Int, deductedWeight: String) {
+    // Deduct weight from current weight
+    fun deductCurrentWeight(id: Int, inputWeight: String) {
         val weight = spoolDetails.value.currentWeight
         val pricePerGram = spoolDetails.value.price.div(spoolDetails.value.totalWeight)
-        val totalCostPerPrint = pricePerGram.times(deductedWeight.toDoubleOrNull() ?: 0.0)
-        val newUsageLog = _printObjectUiState.value.toUsageLog().copy(spoolId = id, pricePerPrint = totalCostPerPrint)
-        if (deductedWeight.isNotBlank()) {
-            val parsedDeductedWeight = deductedWeight.toDouble()
+        val totalCostPerPrint = pricePerGram.times(inputWeight.toDoubleOrNull() ?: 0.0)
+        val newUsageLog = _printObjectUiState.value.toUsageLog()
+            .copy(spoolId = id, pricePerPrint = totalCostPerPrint)
+        if (inputWeight.isNotBlank()) {
+            val parsedDeductedWeight = inputWeight.toDouble()
             val newCurrentWeight = weight - parsedDeductedWeight
             viewModelScope.launch {
-                    if (newCurrentWeight >= 0 && _printObjectUiState.value.printTitle.isNotBlank()) {
-                        try {
-                            spoolRepository.updateCurrentWeight(id, newCurrentWeight)
-                            if (parsedDeductedWeight > 0) {
-                                spoolRepository.insertSpoolUsageLog(newUsageLog)
-                                _printObjectUiState.value = PrintObjectUiState()
-                            }
-                        }catch (ae: Exception) {
-                            println("Please enter the valid number")
-                            Log.e("ERROR", ae.message.toString())
+                if (newCurrentWeight >= 0 && _printObjectUiState.value.printTitle.isNotBlank()) {
+                    try {
+                        spoolRepository.updateCurrentWeight(id, newCurrentWeight)
+                        if (parsedDeductedWeight > 0) {
+                            spoolRepository.insertSpoolUsageLog(newUsageLog)
+                            _printObjectUiState.update { PrintObjectUiState() }
                         }
+                    } catch (ae: Exception) {
+                        Log.e("ERROR", ae.message.toString())
                     }
+                }
             }
         }
     }
@@ -109,7 +117,7 @@ class SpoolDetailsViewModel @Inject constructor(
     }
 
     fun validateInputErrorsOfPrintObjectUiState() {
-        if (_printObjectUiState.value.gramsUsed.isNotBlank()){
+        if (_printObjectUiState.value.gramsUsed.isNotBlank()) {
             if (_printObjectUiState.value.printTitle.isBlank()) {
                 _isError.value = "This field cannot be blank"
             } else {
@@ -119,47 +127,7 @@ class SpoolDetailsViewModel @Inject constructor(
             return
         }
     }
-
-
-    // Working...
-    fun isPrintEditMode(id: Int): Boolean {
-        return (id > 0)
-    }
-
-    fun resetState() {
-        _printObjectUiState.value = PrintObjectUiState()
-    }
 }
-
-
-data class PrintObjectUiState(
-    val id: Int = 0,
-    val spoolId: Int = 0,
-    val gramsUsed: String = "",
-    val printTitle: String = "",
-    val isFailed: Boolean = false
-)
-
-fun PrintObjectUiState.toUsageLog(): UsageLog {
-    return UsageLog(
-        id = id,
-        spoolId = spoolId,
-        gramsUsed = gramsUsed.toDoubleOrNull() ?: 0.0,
-        title = printTitle,
-        isFailure = isFailed,
-        timestamp = System.currentTimeMillis(),
-    )
-}
-
-
-
-
-
-
-
-
-
-
 
 
 
