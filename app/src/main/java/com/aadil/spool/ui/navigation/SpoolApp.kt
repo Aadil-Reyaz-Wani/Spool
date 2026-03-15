@@ -1,9 +1,13 @@
 package com.aadil.spool.ui.navigation
 
+import android.annotation.SuppressLint
+import android.app.Activity
+import androidx.activity.compose.BackHandler
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
@@ -22,6 +26,7 @@ import com.aadil.spool.ui.screens.history.PrintHistoryViewModel
 import com.aadil.spool.ui.screens.splash.SplashScreen
 import kotlinx.coroutines.delay
 
+@SuppressLint("ContextCastToActivity")
 @Composable
 fun MySpoolApp(modifier: Modifier = Modifier) {
 
@@ -49,6 +54,15 @@ fun MySpoolApp(modifier: Modifier = Modifier) {
 
 
     val backStack = rememberNavBackStack(Routes.Splash)
+
+    // It safely removes the screens from the backstack when the back button is pressed.
+    // without the crash if the user presses the back button twice.
+    val safePopBackStack: () -> Unit = {
+        if (backStack.size > 1) {
+            backStack.removeLastOrNull()
+        }
+    }
+
     NavDisplay(
         backStack = backStack,
         modifier = modifier,
@@ -70,6 +84,19 @@ fun MySpoolApp(modifier: Modifier = Modifier) {
 
             // Dashboard Screen Entry
             entry<Routes.Dashboard> {
+
+                // Get the current context and cast it to an activity
+                val activity = LocalContext.current as? Activity
+
+                // Intercept the system back button press/swipe gesture,
+                // it is enabled only when the back stack size is exactly 1 to avoid
+                // removal of the dashboard from the screen which is on top of
+                // the stack (top of the DashboardScreen).
+                BackHandler(enabled = backStack.size == 1) {
+                    // Minimize the app instead of popping the back stack
+                    activity?.moveTaskToBack(true)
+                }
+
                 DashboardScreen(
                     onFabClick = {
                         backStack.add(Routes.SpoolEntry(id = 0))
@@ -88,7 +115,7 @@ fun MySpoolApp(modifier: Modifier = Modifier) {
                 }
                 SpoolEntryScreen(
                     onNavigateUp = {
-                        backStack.removeLastOrNull()
+                        safePopBackStack()
                     },
                     uiState = spoolEntryUiState,
                     onBrandValueChange = { newValue ->
@@ -234,7 +261,7 @@ fun MySpoolApp(modifier: Modifier = Modifier) {
                     onSaveOrUpdateClick = {
                         spoolEntryViewModel.saveOrUpdateSpool(entry.id)
                         if (spoolEntryViewModel.isValid()) {
-                            backStack.removeLastOrNull()
+                            safePopBackStack()
                         }
                     },
                     selectedColor = spoolEntryUiState.colorHex,
@@ -253,14 +280,14 @@ fun MySpoolApp(modifier: Modifier = Modifier) {
                 SpoolDetailsScreen(
                     spoolDetails = spoolDetails,
                     navigateUp = {
-                        backStack.removeLastOrNull()
+                        safePopBackStack()
                     },
                     onUpdateClick = { id ->
                         backStack.add(Routes.SpoolEntry(id = id))
                     },
                     onConfirmDelete = { filament ->
                         spoolDetailsViewModel.deleteSpool(filament)
-                        backStack.removeLastOrNull()
+                        safePopBackStack()
                     },
                     uiState = printUiState,
                     onPrintWeightValueChange = { newGramsUsed ->
@@ -298,7 +325,7 @@ fun MySpoolApp(modifier: Modifier = Modifier) {
 
             entry<Routes.PrintHistory> { entry ->
                 PrintHistoryScreen(
-                    navigateUp = { backStack.removeLastOrNull() },
+                    navigateUp = { safePopBackStack() },
                     usageLog = spoolPrintUsageHistoryDetails,
                     onEditClick = { log ->
                         spoolDetailsViewModel.prepareEditLog(log)

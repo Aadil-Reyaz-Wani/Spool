@@ -45,6 +45,7 @@ import com.aadil.spool.ui.components.SpoolTag
 import com.aadil.spool.ui.screens.details.PrintObjectUiState
 import com.aadil.spool.ui.theme.Dimens
 import com.aadil.spool.utils.toReadableDate
+import java.util.Locale
 
 @Composable
 fun PrintHistoryScreen(
@@ -203,8 +204,9 @@ fun PrintItemViewCard(
                 )
                 if (price.toDouble() > 0) {
                     Spacer(modifier = Modifier.width(Dimens.HeightOrWidth))
+                    val formattedPrice = String.format(Locale.ROOT,"%.2f", price.toDouble())
                     Text(
-                        text = "($$price)",
+                        text = "($$formattedPrice)",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
