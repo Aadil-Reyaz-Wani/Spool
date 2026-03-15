@@ -512,9 +512,6 @@ fun PrintCard(
 
         if (showPrintField) {
             InputAlertDialog(
-//                gramsUsed = uiState.gramsUsed,
-//                printTitle = uiState.printTitle,
-//                isFailed = uiState.isFailed,
                 uiState = uiState,
                 onGramsUsedValueChange = onPrintWeightValueChange,
                 onPrintTitleValueChange = onPrintTitleValueChange,

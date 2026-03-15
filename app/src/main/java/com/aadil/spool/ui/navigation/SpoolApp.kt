@@ -11,7 +11,6 @@ import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
-import com.aadil.spool.data.entity.UsageLog
 import com.aadil.spool.ui.screens.dashboard.DashboardScreen
 import com.aadil.spool.ui.screens.dashboard.DashboardViewModel
 import com.aadil.spool.ui.screens.details.SpoolDetailsScreen
@@ -120,7 +119,7 @@ fun MySpoolApp(modifier: Modifier = Modifier) {
                             newNote = spoolEntryUiState.note
                         )
                     },
-                    onPriceValueChange = {newValue ->
+                    onPriceValueChange = { newValue ->
                         spoolEntryViewModel.updateTextField(
                             newBrand = spoolEntryUiState.brand,
                             newMaterial = spoolEntryUiState.material,
@@ -286,8 +285,8 @@ fun MySpoolApp(modifier: Modifier = Modifier) {
                         )
                     },
                     onPrintWeightClick = { id, weight ->
-                        spoolDetailsViewModel.deductCurrentWeight(id, weight)
                         spoolDetailsViewModel.validateInputErrorsOfPrintObjectUiState()
+                        spoolDetailsViewModel.deductCurrentWeight(id, weight)
                     },
                     isPrintErrorState = isPrintErrorState,
                     onPrintHistoryClick = {
@@ -297,13 +296,14 @@ fun MySpoolApp(modifier: Modifier = Modifier) {
                 )
             }
 
-            entry<Routes.PrintHistory> {
+            entry<Routes.PrintHistory> { entry ->
                 PrintHistoryScreen(
                     navigateUp = { backStack.removeLastOrNull() },
                     usageLog = spoolPrintUsageHistoryDetails,
                     onEditClick = { log ->
+                        spoolDetailsViewModel.prepareEditLog(log)
                     },
-                    onDeleteClick = {usageLog ->
+                    onDeleteClick = { usageLog ->
                         printHistoryViewModel.deletePrintItem(usageLog)
                     },
                     uiState = printUiState,
@@ -329,8 +329,8 @@ fun MySpoolApp(modifier: Modifier = Modifier) {
                         )
                     },
                     isPrintErrorState = isPrintErrorState,
-                    onConfirm = {spoolId, log ->
-                        printHistoryViewModel.updatePrintItem(log)
+                    onConfirm = { id, weight ->
+                        spoolDetailsViewModel.deductCurrentWeight(id = id, inputWeight = weight)
                     },
                 )
             }

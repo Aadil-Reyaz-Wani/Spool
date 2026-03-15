@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.AddTask
 import androidx.compose.material.icons.outlined.DeleteOutline
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.Print
@@ -26,13 +25,11 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.internal.enableLiveLiterals
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.layout.ModifierLocalBeyondBoundsLayout
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -60,7 +57,7 @@ fun PrintHistoryScreen(
     // Working...
     onGramsUsedValueChange: (String) -> Unit,
     onPrintTitleValueChange: (String) -> Unit,
-    onConfirm: (Int, UsageLog) -> Unit,
+    onConfirm: (Int, String) -> Unit,
     onCheckedChange: (Boolean) -> Unit,
     isPrintErrorState: String?,
 ) {
@@ -88,7 +85,7 @@ fun PrintHistoryScreen(
                     modifier = Modifier.padding(Dimens.PaddingMedium)
                 )
             }
-        }else {
+        } else {
             LazyColumn(
                 modifier = modifier.padding(paddingValues)
             ) {
@@ -96,7 +93,7 @@ fun PrintHistoryScreen(
                     PrintItemViewCard(
                         uiState = uiState,
                         onEditClick = { onEditClick(log) },
-                        onDeleteClick = { onDeleteClick(log) }, // Here we are right now
+                        onDeleteClick = { onDeleteClick(log) },
                         title = log.title,
                         date = log.timestamp.toReadableDate(),
                         usedGrams = log.gramsUsed.toString(),
@@ -108,7 +105,7 @@ fun PrintHistoryScreen(
                         ),
                         onGramsUsedValueChange = onGramsUsedValueChange,
                         onPrintTitleValueChange = onPrintTitleValueChange,
-                        onConfirm = { onConfirm(log.spoolId, log) },
+                        onConfirm = { onConfirm(log.spoolId, log.gramsUsed.toString()) },
                         onCheckedChange = onCheckedChange,
                         isPrintErrorState = isPrintErrorState
                     )
@@ -215,7 +212,7 @@ fun PrintItemViewCard(
             }
             Spacer(modifier = Modifier.height(Dimens.HeightOrWidth))
             HorizontalDivider(modifier = Modifier.height(Dimens.PaddingMedium))
-            var showDialog by rememberSaveable { mutableStateOf(false) }
+            var showDeleteDialog by rememberSaveable { mutableStateOf(false) }
             var showPrintDialog by rememberSaveable { mutableStateOf(false) }
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -224,7 +221,10 @@ fun PrintItemViewCard(
             ) {
 
                 Surface(
-                    onClick = { showPrintDialog = true},
+                    onClick = {
+                        onEditClick()
+                        showPrintDialog = true
+                    },
                     shape = MaterialTheme.shapes.extraSmall,
                     color = MaterialTheme.colorScheme.secondaryContainer,
                     contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
@@ -241,7 +241,7 @@ fun PrintItemViewCard(
                 )
                 Spacer(modifier = Modifier.padding(Dimens.PaddingTiny))
                 Surface(
-                    onClick = { showDialog = true },
+                    onClick = { showDeleteDialog = true },
                     shape = MaterialTheme.shapes.extraSmall,
                     color = MaterialTheme.colorScheme.errorContainer,
                     contentColor = MaterialTheme.colorScheme.error,
@@ -256,14 +256,14 @@ fun PrintItemViewCard(
                         )
                     }
                 )
-                if (showDialog) {
+                if (showDeleteDialog) {
                     DeleteConfirmationAlertDialog(
                         onConfirmDelete = {
                             onDeleteClick()
-                            showDialog = false
+                            showDeleteDialog = false
                         },
                         onDismiss = {
-                            showDialog = false
+                            showDeleteDialog = false
                         }
                     )
                 }

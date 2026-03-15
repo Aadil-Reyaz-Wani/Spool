@@ -68,18 +68,6 @@ class PrintHistoryViewModel @Inject constructor(
         }
     }
 
-    // Not working right now - Edit Print-History
-    // Update print-history item
-    fun updatePrintItem(usageLog: UsageLog) {
-        viewModelScope.launch {
-            try {
-                spoolRepository.updateSpoolUsageLog(usageLog)
-            } catch (e: Exception) {
-                Log.e("PrintHistoryViewModel", "Error updating print item: $e")
-            }
-        }
-    }
-
     // Helper Function to get the id from the UI
     fun triggerId(spoolId: Int) {
         _spoolId.value = spoolId

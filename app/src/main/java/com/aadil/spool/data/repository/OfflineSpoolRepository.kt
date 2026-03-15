@@ -55,9 +55,18 @@ class OfflineSpoolRepository @Inject constructor(
         return spoolDao.getSpoolUsage(spoolId = spoolId)
     }
 
+    override fun getUsageLogById(id: Int): Flow<UsageLog?> {
+        return spoolDao.getUsageLogById(id = id)
+    }
+
     override suspend fun deleteLogAndRestoreCurrentWeight(usageLog: UsageLog) {
         withContext(Dispatchers.IO) {
             return@withContext spoolDao.deleteLogAndRestoreCurrentWeight(usageLog = usageLog)
         }
     }
+
+    override suspend fun editLogAndRestoreCurrentWeight(usageLog: UsageLog) {
+        return spoolDao.editLogAndRestoreCurrentWeight(usageLog = usageLog)
+    }
+
 }

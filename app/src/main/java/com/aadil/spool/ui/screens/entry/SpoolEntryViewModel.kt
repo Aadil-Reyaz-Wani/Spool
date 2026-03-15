@@ -4,13 +4,31 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.aadil.spool.data.entity.Filament
+import com.aadil.spool.data.mapper.toFilament
+import com.aadil.spool.data.mapper.toSpoolEntryUiState
 import com.aadil.spool.data.repository.SpoolRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+
+// Ui State and Extension Functions
+data class SpoolEntryUiState(
+    val id: Int = 0,
+    val brand: String = "",
+    val material: String = "",
+    val totalWeight: String = "",
+    val colorName: String = "",
+    val colorHex: Long = 0xFF000000,
+    val currentWeight: String = "",
+    val tempNozzle: String = "",
+    val tempBed: String = "",
+    val note: String = "",
+    val price: String = ""
+)
 
 @HiltViewModel
 class SpoolEntryViewModel @Inject constructor(
@@ -60,9 +78,7 @@ class SpoolEntryViewModel @Inject constructor(
             }
 
         }
-
     }
-
 
     // Save Spool to DB
     fun saveOrUpdateSpool(id: Int) {
@@ -102,7 +118,6 @@ class SpoolEntryViewModel @Inject constructor(
                     Log.e("ENTER", "${e.message}")
                 }
             }
-
         }
     }
 
@@ -121,57 +136,8 @@ class SpoolEntryViewModel @Inject constructor(
     fun isEditMode(id: Int): Boolean {
         return (id > 0)
     }
-
     fun resetState() {
-        _spoolEntryUiState.value = SpoolEntryUiState()
+        _spoolEntryUiState.update { SpoolEntryUiState() }
     }
 
-}
-
-
-// Ui State and Extension Functions
-data class SpoolEntryUiState(
-    val id: Int = 0,
-    val brand: String = "",
-    val material: String = "",
-    val totalWeight: String = "",
-    val colorName: String = "",
-    val colorHex: Long = 0xFF000000,
-    val currentWeight: String = "",
-    val tempNozzle: String = "",
-    val tempBed: String = "",
-    val note: String = "",
-    val price: String = ""
-)
-
-fun SpoolEntryUiState.toFilament(): Filament {
-    return Filament(
-        id = id,
-        brand = brand,
-        material = material,
-        totalWeight = totalWeight.toDoubleOrNull() ?: 0.0,
-        currentWeight = currentWeight.toDoubleOrNull() ?: 0.0,
-        colorHex = colorHex,
-        colorName = colorName,
-        tempNozzle = tempNozzle.toIntOrNull() ?: 0,
-        tempBed = tempBed.toIntOrNull() ?: 0,
-        note = note,
-        price = price.toDoubleOrNull() ?: 0.0
-    )
-}
-
-fun Filament.toSpoolEntryUiState(): SpoolEntryUiState {
-    return SpoolEntryUiState(
-        id = id,
-        brand = brand,
-        material = material,
-        totalWeight = totalWeight.toString(),
-        currentWeight = currentWeight.toString(),
-        colorHex = colorHex,
-        colorName = colorName,
-        tempNozzle = tempNozzle.toString(),
-        tempBed = tempBed.toString(),
-        note = note,
-        price = price.toString()
-    )
 }

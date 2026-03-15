@@ -132,7 +132,6 @@ fun EntryFields(
                 text = "Filament Color",
                 icon = Icons.Outlined.ColorLens,
             )
-
                 Icon(
                     imageVector = Icons.Filled.Circle,
                     contentDescription = null,

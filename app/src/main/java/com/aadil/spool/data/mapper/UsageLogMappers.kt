@@ -14,3 +14,13 @@ fun PrintObjectUiState.toUsageLog(): UsageLog {
         timestamp = System.currentTimeMillis(),
     )
 }
+
+fun UsageLog.toPrintObjectUiState(): PrintObjectUiState {
+    return PrintObjectUiState(
+        id = id,
+        spoolId = spoolId,
+        gramsUsed = gramsUsed.toString(),
+        printTitle = title,
+        isFailed = isFailure,
+    )
+}

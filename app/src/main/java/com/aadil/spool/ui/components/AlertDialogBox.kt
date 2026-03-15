@@ -134,13 +134,10 @@ fun InputAlertDialog(
     onDismissRequest: () -> Unit,
     onCheckedChange: (Boolean) -> Unit,
     isPrintErrorState: String?,
-//    isPrintEditMode: Boolean,
+//    isEditMode: Boolean,
 //    resetState: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-//    LaunchedEffect(Unit) {
-//        if (!isPrintEditMode) resetState()
-//    }
     AlertDialog(
         modifier = modifier
             .background(
@@ -174,7 +171,9 @@ fun InputAlertDialog(
                     label = stringResource(R.string.label_deduct_weight),
                     placeholder = stringResource(R.string.hint_total_wight),
                     leadingIcon = Icons.Outlined.MonitorWeight,
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    isError = isPrintErrorState != null,
+                    supportingText = isPrintErrorState
                 )
 
                 SpoolOutlinedTextField(
@@ -212,9 +211,9 @@ fun InputAlertDialog(
             FilledTonalButton(
                 onClick = {
                     onConfirm(uiState.gramsUsed)
-                    onDismissRequest()
-
-
+                    if (isPrintErrorState == null) {
+                        onDismissRequest()
+                    }
                 },
                 shape = MaterialTheme.shapes.small,
                 colors = ButtonDefaults.filledTonalButtonColors(

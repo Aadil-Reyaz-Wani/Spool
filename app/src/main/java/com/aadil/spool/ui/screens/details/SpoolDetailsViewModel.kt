@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.aadil.spool.data.entity.Filament
+import com.aadil.spool.data.entity.UsageLog
 import com.aadil.spool.data.mapper.toUsageLog
 import com.aadil.spool.data.repository.SpoolRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -13,12 +14,14 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+
 
 data class PrintObjectUiState(
     val id: Int = 0,
@@ -86,28 +89,43 @@ class SpoolDetailsViewModel @Inject constructor(
         }
     }
 
-    // Deduct weight from current weight
+    // This function is used to update the current weight from the details as well as from the print-history.
+    // What it actually does is, it updates the current weight when a user deletes or updates the particular log from the print-history
+    // and also update the current weight when a user prints something.
     fun deductCurrentWeight(id: Int, inputWeight: String) {
-        val weight = spoolDetails.value.currentWeight
-        val pricePerGram = spoolDetails.value.price.div(spoolDetails.value.totalWeight)
-        val totalCostPerPrint = pricePerGram.times(inputWeight.toDoubleOrNull() ?: 0.0)
-        val newUsageLog = _printObjectUiState.value.toUsageLog()
-            .copy(spoolId = id, pricePerPrint = totalCostPerPrint)
-        if (inputWeight.isNotBlank()) {
-            val parsedDeductedWeight = inputWeight.toDouble()
-            val newCurrentWeight = weight - parsedDeductedWeight
-            viewModelScope.launch {
-                if (newCurrentWeight >= 0 && _printObjectUiState.value.printTitle.isNotBlank()) {
-                    try {
+        val currentState = _printObjectUiState.value
+        val parsedDeductedWeight = inputWeight.toDoubleOrNull() ?: 0.0
+
+        // Safety check: Don't do anything if title is blank or weight is 0
+        if (parsedDeductedWeight <= 0 || currentState.printTitle.isBlank()) return
+
+        // Calculate cost
+        val filament = spoolDetails.value
+        val pricePerGram = if (filament.totalWeight > 0) filament.price / filament.totalWeight else 0.0
+        val totalCost = pricePerGram * parsedDeductedWeight
+
+        val newUsageLog = currentState.toUsageLog().copy(
+            id = currentState.id,
+            spoolId = id,
+            pricePerPrint = totalCost
+        )
+
+        viewModelScope.launch {
+            try {
+                if (currentState.id == 0) {
+                    val newCurrentWeight = filament.currentWeight - parsedDeductedWeight
+                    if (newCurrentWeight >= 0) {
                         spoolRepository.updateCurrentWeight(id, newCurrentWeight)
-                        if (parsedDeductedWeight > 0) {
-                            spoolRepository.insertSpoolUsageLog(newUsageLog)
-                            _printObjectUiState.update { PrintObjectUiState() }
-                        }
-                    } catch (ae: Exception) {
-                        Log.e("ERROR", ae.message.toString())
+                        spoolRepository.insertSpoolUsageLog(newUsageLog)
                     }
+                } else {
+                    spoolRepository.editLogAndRestoreCurrentWeight(newUsageLog)
                 }
+
+                // Clear the dialog state
+                _printObjectUiState.update { PrintObjectUiState() }
+            } catch (ae: Exception) {
+                Log.e("ERROR", ae.message.toString())
             }
         }
     }
@@ -117,9 +135,10 @@ class SpoolDetailsViewModel @Inject constructor(
     }
 
     fun validateInputErrorsOfPrintObjectUiState() {
-        if (_printObjectUiState.value.gramsUsed.isNotBlank()) {
-            if (_printObjectUiState.value.printTitle.isBlank()) {
-                _isError.value = "This field cannot be blank"
+        val currentState = _printObjectUiState.value
+        if (currentState.gramsUsed.isNotBlank()) {
+            if (currentState.printTitle.isBlank() || currentState.gramsUsed.isBlank()) {
+                _isError.update { "This field cannot be blank" }
             } else {
                 _isError.value = null
             }
@@ -127,11 +146,17 @@ class SpoolDetailsViewModel @Inject constructor(
             return
         }
     }
+
+
+    fun prepareEditLog(log: UsageLog) {
+        _printObjectUiState.update {
+            it.copy(
+                id = log.id,
+                spoolId = log.spoolId,
+                gramsUsed = log.gramsUsed.toString(),
+                printTitle = log.title,
+                isFailed = log.isFailure
+            )
+        }
+    }
 }
-
-
-
-
-
-
-
