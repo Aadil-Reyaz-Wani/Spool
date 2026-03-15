@@ -1,6 +1,7 @@
 package com.aadil.spool.data.repository
 
 import com.aadil.spool.data.entity.Filament
+import com.aadil.spool.data.entity.UsageLog
 import kotlinx.coroutines.flow.Flow
 
 interface SpoolRepository {
@@ -10,7 +11,18 @@ interface SpoolRepository {
     suspend fun deleteSpool(filament: Filament)
     fun getAllSpoolsStream(): Flow<List<Filament>>
     fun getSpoolStream(id: Int): Flow<Filament?>
-    fun getCurrentWeightStream(id: Int) : Double
+    suspend fun getCurrentWeightStream(id: Int) : Double
     suspend fun updateCurrentWeight(id: Int, currentWeight: Double)
+
+    // Usage Log
+    suspend fun insertSpoolUsageLog(log: UsageLog)
+    suspend fun deleteSpoolUsageLog(log: UsageLog)
+    suspend fun updateSpoolUsageLog(log: UsageLog)
+    fun getSpoolUsageStream(spoolId: Int) : Flow<List<UsageLog>>
+
+    fun getUsageLogById(id: Int): Flow<UsageLog?>
+    suspend fun deleteLogAndRestoreCurrentWeight(usageLog: UsageLog)
+
+    suspend fun editLogAndRestoreCurrentWeight(usageLog: UsageLog)
 
 }

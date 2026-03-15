@@ -1,6 +1,7 @@
 package com.aadil.spool.ui.screens.details
 
 import android.annotation.SuppressLint
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -18,20 +19,27 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.ArrowForward
+import androidx.compose.material.icons.automirrored.outlined.ArrowForwardIos
+import androidx.compose.material.icons.automirrored.outlined.CompareArrows
 import androidx.compose.material.icons.automirrored.outlined.Notes
 import androidx.compose.material.icons.automirrored.outlined.StickyNote2
 import androidx.compose.material.icons.outlined.Apps
+import androidx.compose.material.icons.outlined.ArrowForward
 import androidx.compose.material.icons.outlined.Bathtub
 import androidx.compose.material.icons.outlined.DeleteOutline
 import androidx.compose.material.icons.outlined.DeviceThermostat
+import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.Print
 import androidx.compose.material.icons.outlined.Thermostat
 import androidx.compose.material.icons.outlined.Update
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
@@ -51,6 +59,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import com.aadil.spool.R
 import com.aadil.spool.data.entity.Filament
+import com.aadil.spool.data.entity.UsageLog
 import com.aadil.spool.ui.common.GhostCard
 import com.aadil.spool.ui.common.SpoolAppBar
 import com.aadil.spool.ui.components.DeleteConfirmationAlertDialog
@@ -69,9 +78,13 @@ fun SpoolDetailsScreen(
     navigateUp: () -> Unit,
     onUpdateClick: (Int) -> Unit,
     onConfirmDelete: (Filament) -> Unit,
-    printWeight: String,
     onPrintWeightValueChange: (String) -> Unit,
+    onPrintTitleValueChange: (String) -> Unit,
     onPrintWeightClick: (Int, String) -> Unit,
+    uiState: PrintObjectUiState,
+    onCheckedChange: (Boolean) -> Unit,
+    isPrintErrorState: String?,
+    onPrintHistoryClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Scaffold(
@@ -97,9 +110,14 @@ fun SpoolDetailsScreen(
             note = spoolDetails.note,
             onEditClick = { onUpdateClick(spoolDetails.id) },
             onConfirmDelete = { onConfirmDelete(spoolDetails) },
-            printWeight = printWeight,
+            uiState = uiState,
             onPrintWeightValueChange = onPrintWeightValueChange,
-            onPrintWeightClick = { onPrintWeightClick(spoolDetails.id, printWeight) },
+            onPrintTitleValueChange = onPrintTitleValueChange,
+            onPrintWeightClick = {
+                onPrintWeightClick(spoolDetails.id, uiState.gramsUsed) },
+            onCheckedChange = onCheckedChange,
+            isPrintErrorState = isPrintErrorState,
+            onPrintHistoryClick = onPrintHistoryClick,
             modifier = Modifier.padding(paddingValues = paddingValues)
         )
     }
@@ -118,9 +136,13 @@ fun DetailsScreen(
     note: String,
     onEditClick: () -> Unit,
     onConfirmDelete: () -> Unit,
-    printWeight: String,
+    uiState: PrintObjectUiState,
     onPrintWeightValueChange: (String) -> Unit,
+    onPrintTitleValueChange: (String) -> Unit,
     onPrintWeightClick: (String) -> Unit,
+    onCheckedChange: (Boolean) -> Unit,
+    isPrintErrorState: String?,
+    onPrintHistoryClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val scrollState = rememberScrollState()
@@ -136,7 +158,8 @@ fun DetailsScreen(
             colorHex = colorHex,
             brandName = brandName,
             materialType = materialType,
-            colorName = colorName
+            colorName = colorName,
+            onPrintHistoryClick = onPrintHistoryClick
         )
 
         // Temperature Card
@@ -172,9 +195,12 @@ fun DetailsScreen(
                 .padding(Dimens.PaddingMedium)
         ) {
             PrintCard(
-                printWeight = printWeight,
+                uiState = uiState,
                 onPrintWeightValueChange = onPrintWeightValueChange,
-                onPrintClick = onPrintWeightClick
+                onPrintTitleValueChange = onPrintTitleValueChange,
+                onPrintClick = onPrintWeightClick,
+                onCheckedChange = onCheckedChange,
+                isPrintErrorState = isPrintErrorState
             )
             Spacer(modifier = Modifier.height(Dimens.PaddingMedium))
             Row(
@@ -237,8 +263,12 @@ fun DetailsScreenPreview() {
         onEditClick = {},
         onConfirmDelete = {},
         onPrintWeightValueChange = {},
-        printWeight = "",
-        onPrintWeightClick = {}
+        onPrintTitleValueChange = {},
+        uiState = PrintObjectUiState(),
+        onPrintWeightClick = {},
+        onCheckedChange = {},
+        isPrintErrorState = "",
+        onPrintHistoryClick = {}
     )
 }
 
@@ -251,6 +281,7 @@ fun MainDetailsCard(
     brandName: String,
     materialType: String,
     colorName: String,
+    onPrintHistoryClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val remainingPercentage = String.format(
@@ -270,10 +301,7 @@ fun MainDetailsCard(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(
-                    horizontal = Dimens.PaddingMedium,
-                    vertical = Dimens.PaddingMedium
-                )
+                .padding(Dimens.PaddingMedium)
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -366,13 +394,15 @@ fun MainDetailsCard(
                 // This warns the users of low stock for a particular filament/spool
                 if (percentage < 20) {
                     SpoolTag(
-                        text = if (percentage > 0) stringResource(R.string.low_stock) else stringResource(R.string.empty_spool),
+                        text = if (percentage > 0) stringResource(R.string.low_stock) else stringResource(
+                            R.string.empty_spool
+                        ),
                         textColor = MaterialTheme.colorScheme.error,
                         surfaceColor = MaterialTheme.colorScheme.errorContainer,
                         isIconicTag = true
                     )
                 }
-                Spacer(modifier = Modifier.height(Dimens.gapHeight))
+                Spacer(modifier = Modifier.height(Dimens.HeightOrWidth))
                 // Progress Bar
                 SpoolProgressBar(
                     percentage = percentage,
@@ -403,8 +433,46 @@ fun MainDetailsCard(
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
                     textAlign = TextAlign.End,
-
                     modifier = Modifier.weight(1f)
+                )
+            }
+
+            HorizontalDivider(modifier = Modifier.padding(top = Dimens.PaddingMedium))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.End
+            ) {
+                Surface(
+                    shape = MaterialTheme.shapes.extraSmall,
+                    color = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.5f),
+                    contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                    tonalElevation = 0.dp,
+                    shadowElevation = 0.dp,
+                    border = BorderStroke(
+                        width = Dimens.BorderThickness,
+                        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
+                    ),
+                    onClick = onPrintHistoryClick,
+                    content = {
+                        Row(
+                            modifier = Modifier.padding(Dimens.PaddingSmall),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(Dimens.PaddingTiny)
+                        ) {
+                            Text(
+                                text = stringResource(R.string.print_history),
+                                style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Bold),
+                                color = MaterialTheme.colorScheme.onSecondaryContainer
+                            )
+
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Outlined.ArrowForward,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.onSecondaryContainer,
+                                modifier = Modifier.size(Dimens.IconSmall)
+                            )
+                        }
+                    }
                 )
             }
 
@@ -414,9 +482,12 @@ fun MainDetailsCard(
 
 @Composable
 fun PrintCard(
-    printWeight: String,
+    uiState: PrintObjectUiState,
     onPrintWeightValueChange: (String) -> Unit,
+    onPrintTitleValueChange: (String) -> Unit,
+    onCheckedChange: (Boolean) -> Unit,
     onPrintClick: (String) -> Unit,
+    isPrintErrorState: String?,
     modifier: Modifier = Modifier
 ) {
     var showPrintField by rememberSaveable { mutableStateOf(false) }
@@ -441,14 +512,17 @@ fun PrintCard(
 
         if (showPrintField) {
             InputAlertDialog(
-                printWeight = printWeight,
-                onValueChange = onPrintWeightValueChange,
+                uiState = uiState,
+                onGramsUsedValueChange = onPrintWeightValueChange,
+                onPrintTitleValueChange = onPrintTitleValueChange,
                 onConfirm = { weight ->
                     onPrintClick(weight)
                 },
                 onDismissRequest = {
                     showPrintField = false
                 },
+                onCheckedChange = onCheckedChange,
+                isPrintErrorState = isPrintErrorState,
                 modifier = Modifier.fillMaxWidth()
             )
         }
@@ -481,7 +555,7 @@ fun TemperatureDetailsCard(
         ) {
 
             Row(
-                horizontalArrangement = Arrangement.spacedBy(Dimens.gapHeight),
+                horizontalArrangement = Arrangement.spacedBy(Dimens.HeightOrWidth),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 SpoolHeadingText(
@@ -524,7 +598,7 @@ fun TemperatureDetailsCard(
                                 textColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f)
                             )
                         }
-                        Spacer(modifier = Modifier.height(Dimens.gapHeight))
+                        Spacer(modifier = Modifier.height(Dimens.HeightOrWidth))
                         Text(
                             text = "${nozzleTemp}°C",
                             color = if (nozzleTemp.toInt() <= 0) {
@@ -565,7 +639,7 @@ fun TemperatureDetailsCard(
                                 textColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f)
                             )
                         }
-                        Spacer(modifier = Modifier.height(Dimens.gapHeight))
+                        Spacer(modifier = Modifier.height(Dimens.HeightOrWidth))
                         Text(
                             text = "${bedTemp}°C",
                             color = if (bedTemp.toInt() <= 0) {
@@ -614,7 +688,7 @@ fun NotesCard(
                     icon = Icons.AutoMirrored.Outlined.Notes
                 )
             }
-            Spacer(modifier = Modifier.height(Dimens.gapHeight))
+            Spacer(modifier = Modifier.height(Dimens.HeightOrWidth))
             Text(
                 text = note,
                 style = MaterialTheme.typography.titleMedium,

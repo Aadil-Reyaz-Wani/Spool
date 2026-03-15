@@ -19,7 +19,6 @@ import androidx.compose.material.icons.outlined.KeyboardArrowDown
 import androidx.compose.material.icons.outlined.KeyboardArrowUp
 import androidx.compose.material.icons.outlined.Print
 import androidx.compose.material.icons.outlined.TextFields
-import androidx.compose.material.icons.outlined.WarningAmber
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DropdownMenuItem
@@ -94,7 +93,7 @@ fun SpoolButton(
             imageVector = icon,
             contentDescription = contentDescription
         )
-        Spacer(modifier = Modifier.width(Dimens.gapHeight))
+        Spacer(modifier = Modifier.width(Dimens.HeightOrWidth))
         Text(
             text = text,
             style = MaterialTheme.typography.titleMedium,
@@ -129,9 +128,9 @@ fun SpoolOutlinedTextField(
     placeholder: String = "",
     isError: Boolean = false,
     leadingIcon: ImageVector,
-    trailingIcon: ImageVector? = null,  // Keep eye on this
+    trailingIcon: ImageVector? = null,
     singleLine: Boolean = true,
-    supportingText: String = "",
+    supportingText: String? = "",
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
     keyboardActions: KeyboardActions = KeyboardActions.Default
 ) {
@@ -146,10 +145,12 @@ fun SpoolOutlinedTextField(
         isError = isError,
         supportingText = {
             if (isError) {
-                Text(
-                    text = supportingText,
-                    color = MaterialTheme.colorScheme.error
-                )
+                if (supportingText != null) {
+                    Text(
+                        text = supportingText,
+                        color = MaterialTheme.colorScheme.error
+                    )
+                }
             }
         },
         leadingIcon = {
@@ -331,7 +332,7 @@ fun SpoolHeadingText(
 ) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(Dimens.gapHeight)
+        horizontalArrangement = Arrangement.spacedBy(Dimens.HeightOrWidth)
     ) {
         Icon(
             imageVector = icon,
@@ -384,7 +385,7 @@ fun SpoolTag(
                         tint = MaterialTheme.colorScheme.error,
                         modifier = Modifier.size(16.dp)
                     )
-                    Spacer(modifier = Modifier.width(Dimens.gapHeight))
+                    Spacer(modifier = Modifier.width(Dimens.HeightOrWidth))
 
                 }
 
@@ -393,7 +394,6 @@ fun SpoolTag(
                     style = MaterialTheme.typography.labelMedium,
                     fontWeight = FontWeight.Bold,
                     color = textColor,
-//                    modifier = modifier.padding(horizontal = 6.dp, vertical = 2.dp)
 
                 )
             }

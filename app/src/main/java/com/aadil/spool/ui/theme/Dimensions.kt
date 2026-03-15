@@ -28,7 +28,7 @@ object Dimens {
     val ColorDotSizeExtra = 52.dp         // The circle showing filament color
     val ProgressBarHeight = 12.dp    // Thick enough to read easily
     val SpoolCardMinHeight = 80.dp   // Minimum touch target for list items
-    val gapHeight = 4.dp
+    val HeightOrWidth = 4.dp
     val ButtonHeight = 50.dp
 
 
@@ -36,5 +36,8 @@ object Dimens {
 
     //Text Sizes
     val TextInGhostCard = 18.sp
+    val RegularTextSize = 18.sp
+    val SmallTextSize = 14.sp
+    val TinyTextSize = 12.sp
     val LetterSpacing = 1.5.sp
 }

@@ -17,5 +17,8 @@ sealed interface Routes : NavKey {
 
     @Serializable
     data class SpoolDetails(val id: Int) : Routes
+
+    @Serializable
+    data class PrintHistory(val id: Int) : Routes
 }
 

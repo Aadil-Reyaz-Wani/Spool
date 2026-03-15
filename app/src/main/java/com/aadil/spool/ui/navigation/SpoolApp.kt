@@ -2,43 +2,50 @@ package com.aadil.spool.ui.navigation
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
-//import com.aadil.spool.ui.screens.AppViewModelProvider
 import com.aadil.spool.ui.screens.dashboard.DashboardScreen
 import com.aadil.spool.ui.screens.dashboard.DashboardViewModel
 import com.aadil.spool.ui.screens.details.SpoolDetailsScreen
 import com.aadil.spool.ui.screens.details.SpoolDetailsViewModel
 import com.aadil.spool.ui.screens.entry.SpoolEntryScreen
 import com.aadil.spool.ui.screens.entry.SpoolEntryViewModel
+import com.aadil.spool.ui.screens.history.PrintHistoryScreen
+import com.aadil.spool.ui.screens.history.PrintHistoryViewModel
 import com.aadil.spool.ui.screens.splash.SplashScreen
-import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
 
 @Composable
 fun MySpoolApp(modifier: Modifier = Modifier) {
+
+    // Define ViewModels
     val dashboardViewModel: DashboardViewModel = hiltViewModel()
-    val spoolEntryViewModel : SpoolEntryViewModel = hiltViewModel()
+    val spoolEntryViewModel: SpoolEntryViewModel = hiltViewModel()
     val spoolDetailsViewModel: SpoolDetailsViewModel = hiltViewModel()
+    val printHistoryViewModel: PrintHistoryViewModel = hiltViewModel()
+
+    // Dashboard
+    val listOfSpools by dashboardViewModel.getAllSpool.collectAsStateWithLifecycle()
+
+    // Entry
+    val spoolEntryUiState by spoolEntryViewModel.spoolEntryUiState.collectAsStateWithLifecycle()
+    val isError by spoolEntryViewModel.isError.collectAsStateWithLifecycle()
+
+    // Details
+    val spoolDetails by spoolDetailsViewModel.spoolDetails.collectAsStateWithLifecycle()
+    val printUiState by spoolDetailsViewModel.printObjectUiState.collectAsStateWithLifecycle()
+    val isPrintErrorState by spoolDetailsViewModel.isError.collectAsStateWithLifecycle()
 
 
-    val listOfSpools by dashboardViewModel.getAllSpool.collectAsState()
-
-
-    val spoolEntryUiState by spoolEntryViewModel.spoolEntryUiState.collectAsState()
-    val isError by spoolEntryViewModel.isError.collectAsState()
-
-    val spoolDetails by spoolDetailsViewModel.spoolDetails.collectAsState()
-    val printWeight by spoolDetailsViewModel.printWeight.collectAsState()
-
+    // Print History
+    val spoolPrintUsageHistoryDetails by printHistoryViewModel.spoolPrintUsageHistoryDetails.collectAsStateWithLifecycle()
 
 
     val backStack = rememberNavBackStack(Routes.Splash)
@@ -88,6 +95,7 @@ fun MySpoolApp(modifier: Modifier = Modifier) {
                         spoolEntryViewModel.updateTextField(
                             newBrand = newValue,
                             newMaterial = spoolEntryUiState.material,
+                            newPrice = spoolEntryUiState.price,
                             newTotalWeight = spoolEntryUiState.totalWeight,
                             newColorHex = spoolEntryUiState.colorHex,
                             newColorName = spoolEntryUiState.colorName,
@@ -101,6 +109,21 @@ fun MySpoolApp(modifier: Modifier = Modifier) {
                         spoolEntryViewModel.updateTextField(
                             newBrand = spoolEntryUiState.brand,
                             newMaterial = newValue,
+                            newPrice = spoolEntryUiState.price,
+                            newTotalWeight = spoolEntryUiState.totalWeight,
+                            newColorHex = spoolEntryUiState.colorHex,
+                            newColorName = spoolEntryUiState.colorName,
+                            newCurrentWeight = spoolEntryUiState.currentWeight,
+                            newTempNozzle = spoolEntryUiState.tempNozzle,
+                            newTempBed = spoolEntryUiState.tempBed,
+                            newNote = spoolEntryUiState.note
+                        )
+                    },
+                    onPriceValueChange = { newValue ->
+                        spoolEntryViewModel.updateTextField(
+                            newBrand = spoolEntryUiState.brand,
+                            newMaterial = spoolEntryUiState.material,
+                            newPrice = newValue,
                             newTotalWeight = spoolEntryUiState.totalWeight,
                             newColorHex = spoolEntryUiState.colorHex,
                             newColorName = spoolEntryUiState.colorName,
@@ -114,6 +137,7 @@ fun MySpoolApp(modifier: Modifier = Modifier) {
                         spoolEntryViewModel.updateTextField(
                             newBrand = spoolEntryUiState.brand,
                             newMaterial = spoolEntryUiState.material,
+                            newPrice = spoolEntryUiState.price,
                             newTotalWeight = newValue,
                             newColorHex = spoolEntryUiState.colorHex,
                             newColorName = spoolEntryUiState.colorName,
@@ -127,6 +151,7 @@ fun MySpoolApp(modifier: Modifier = Modifier) {
                         spoolEntryViewModel.updateTextField(
                             newBrand = spoolEntryUiState.brand,
                             newMaterial = spoolEntryUiState.material,
+                            newPrice = spoolEntryUiState.price,
                             newTotalWeight = spoolEntryUiState.totalWeight,
                             newColorHex = spoolEntryUiState.colorHex,
                             newColorName = newValue,
@@ -140,6 +165,7 @@ fun MySpoolApp(modifier: Modifier = Modifier) {
                         spoolEntryViewModel.updateTextField(
                             newBrand = spoolEntryUiState.brand,
                             newMaterial = spoolEntryUiState.material,
+                            newPrice = spoolEntryUiState.price,
                             newTotalWeight = spoolEntryUiState.totalWeight,
                             newColorHex = newValue,
                             newColorName = spoolEntryUiState.colorName,
@@ -149,10 +175,11 @@ fun MySpoolApp(modifier: Modifier = Modifier) {
                             newNote = spoolEntryUiState.note
                         )
                     },
-                    onCurrentWeightValueChange = {newValue ->
+                    onCurrentWeightValueChange = { newValue ->
                         spoolEntryViewModel.updateTextField(
                             newBrand = spoolEntryUiState.brand,
                             newMaterial = spoolEntryUiState.material,
+                            newPrice = spoolEntryUiState.price,
                             newTotalWeight = spoolEntryUiState.totalWeight,
                             newColorHex = spoolEntryUiState.colorHex,
                             newColorName = spoolEntryUiState.colorName,
@@ -162,10 +189,11 @@ fun MySpoolApp(modifier: Modifier = Modifier) {
                             newNote = spoolEntryUiState.note
                         )
                     },
-                    onNozzleTempValueChange = {newValue ->
+                    onNozzleTempValueChange = { newValue ->
                         spoolEntryViewModel.updateTextField(
                             newBrand = spoolEntryUiState.brand,
                             newMaterial = spoolEntryUiState.material,
+                            newPrice = spoolEntryUiState.price,
                             newTotalWeight = spoolEntryUiState.totalWeight,
                             newColorHex = spoolEntryUiState.colorHex,
                             newColorName = spoolEntryUiState.colorName,
@@ -175,10 +203,11 @@ fun MySpoolApp(modifier: Modifier = Modifier) {
                             newNote = spoolEntryUiState.note
                         )
                     },
-                    onBedTempValueChange = {newValue ->
+                    onBedTempValueChange = { newValue ->
                         spoolEntryViewModel.updateTextField(
                             newBrand = spoolEntryUiState.brand,
                             newMaterial = spoolEntryUiState.material,
+                            newPrice = spoolEntryUiState.price,
                             newTotalWeight = spoolEntryUiState.totalWeight,
                             newColorHex = spoolEntryUiState.colorHex,
                             newColorName = spoolEntryUiState.colorName,
@@ -188,10 +217,11 @@ fun MySpoolApp(modifier: Modifier = Modifier) {
                             newNote = spoolEntryUiState.note
                         )
                     },
-                    onNoteValueChange = {newValue ->
+                    onNoteValueChange = { newValue ->
                         spoolEntryViewModel.updateTextField(
                             newBrand = spoolEntryUiState.brand,
                             newMaterial = spoolEntryUiState.material,
+                            newPrice = spoolEntryUiState.price,
                             newTotalWeight = spoolEntryUiState.totalWeight,
                             newColorHex = spoolEntryUiState.colorHex,
                             newColorName = spoolEntryUiState.colorName,
@@ -232,13 +262,76 @@ fun MySpoolApp(modifier: Modifier = Modifier) {
                         spoolDetailsViewModel.deleteSpool(filament)
                         backStack.removeLastOrNull()
                     },
-                    printWeight = printWeight,
-                    onPrintWeightValueChange = { newValue->
-                        spoolDetailsViewModel.quickDeductionUpdateField(newValue = newValue)
+                    uiState = printUiState,
+                    onPrintWeightValueChange = { newGramsUsed ->
+                        spoolDetailsViewModel.quickDeductionUpdateField(
+                            gramsUsed = newGramsUsed,
+                            printTitle = printUiState.printTitle,
+                            isFailed = printUiState.isFailed,
+                        )
                     },
-                    onPrintWeightClick = {id, weight ->
+                    onPrintTitleValueChange = { newPrintTitle ->
+                        spoolDetailsViewModel.quickDeductionUpdateField(
+                            gramsUsed = printUiState.gramsUsed,
+                            printTitle = newPrintTitle,
+                            isFailed = printUiState.isFailed
+                        )
+                    },
+                    onCheckedChange = { newChecked ->
+                        spoolDetailsViewModel.quickDeductionUpdateField(
+                            gramsUsed = printUiState.gramsUsed,
+                            printTitle = printUiState.printTitle,
+                            isFailed = newChecked
+                        )
+                    },
+                    onPrintWeightClick = { id, weight ->
+                        spoolDetailsViewModel.validateInputErrorsOfPrintObjectUiState()
                         spoolDetailsViewModel.deductCurrentWeight(id, weight)
+                    },
+                    isPrintErrorState = isPrintErrorState,
+                    onPrintHistoryClick = {
+                        backStack.add(Routes.PrintHistory(entry.id))
+                        printHistoryViewModel.triggerId(entry.id)
                     }
+                )
+            }
+
+            entry<Routes.PrintHistory> { entry ->
+                PrintHistoryScreen(
+                    navigateUp = { backStack.removeLastOrNull() },
+                    usageLog = spoolPrintUsageHistoryDetails,
+                    onEditClick = { log ->
+                        spoolDetailsViewModel.prepareEditLog(log)
+                    },
+                    onDeleteClick = { usageLog ->
+                        printHistoryViewModel.deletePrintItem(usageLog)
+                    },
+                    uiState = printUiState,
+                    onGramsUsedValueChange = { newGramsUsed ->
+                        spoolDetailsViewModel.quickDeductionUpdateField(
+                            gramsUsed = newGramsUsed,
+                            printTitle = printUiState.printTitle,
+                            isFailed = printUiState.isFailed,
+                        )
+                    },
+                    onPrintTitleValueChange = { newPrintTitle ->
+                        spoolDetailsViewModel.quickDeductionUpdateField(
+                            gramsUsed = printUiState.gramsUsed,
+                            printTitle = newPrintTitle,
+                            isFailed = printUiState.isFailed
+                        )
+                    },
+                    onCheckedChange = { newChecked ->
+                        spoolDetailsViewModel.quickDeductionUpdateField(
+                            gramsUsed = printUiState.gramsUsed,
+                            printTitle = printUiState.printTitle,
+                            isFailed = newChecked
+                        )
+                    },
+                    isPrintErrorState = isPrintErrorState,
+                    onConfirm = { id, weight ->
+                        spoolDetailsViewModel.deductCurrentWeight(id = id, inputWeight = weight)
+                    },
                 )
             }
 

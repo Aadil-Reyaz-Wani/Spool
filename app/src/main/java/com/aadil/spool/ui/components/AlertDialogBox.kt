@@ -4,14 +4,16 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.CompassCalibration
 import androidx.compose.material.icons.outlined.DeleteSweep
+import androidx.compose.material.icons.outlined.Description
+import androidx.compose.material.icons.outlined.MonitorWeight
 import androidx.compose.material.icons.outlined.Scale
 import androidx.compose.material.icons.rounded.Delete
 import androidx.compose.material.icons.rounded.Print
@@ -20,17 +22,22 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.aadil.spool.R
+import com.aadil.spool.ui.screens.details.PrintObjectUiState
 import com.aadil.spool.ui.theme.Dimens
 
 
@@ -43,7 +50,10 @@ fun DeleteConfirmationAlertDialog(
     AlertDialog(
         modifier = modifier
             .fillMaxWidth()
-            .background(color = MaterialTheme.colorScheme.surface, shape = MaterialTheme.shapes.medium),
+            .background(
+                color = MaterialTheme.colorScheme.surface,
+                shape = MaterialTheme.shapes.medium
+            ),
         shape = MaterialTheme.shapes.medium,
         onDismissRequest = {
             onDismiss()
@@ -58,10 +68,10 @@ fun DeleteConfirmationAlertDialog(
 
         },
         title = {
-                Text(
-                    text = "Confirm Deletion",
-                    color = MaterialTheme.colorScheme.onSurface
-                )
+            Text(
+                text = "Confirm Deletion",
+                color = MaterialTheme.colorScheme.onSurface
+            )
         },
         text = {
             Box(
@@ -117,15 +127,23 @@ fun DeleteConfirmationAlertDialog(
 
 @Composable
 fun InputAlertDialog(
-    printWeight: String,
-    onValueChange: (String) -> Unit,
+    uiState: PrintObjectUiState,
+    onGramsUsedValueChange: (String) -> Unit,
+    onPrintTitleValueChange: (String) -> Unit,
     onConfirm: (String) -> Unit,
     onDismissRequest: () -> Unit,
+    onCheckedChange: (Boolean) -> Unit,
+    isPrintErrorState: String?,
+//    isEditMode: Boolean,
+//    resetState: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     AlertDialog(
         modifier = modifier
-            .background(color = MaterialTheme.colorScheme.surface, shape = MaterialTheme.shapes.medium),
+            .background(
+                color = MaterialTheme.colorScheme.surface,
+                shape = MaterialTheme.shapes.medium
+            ),
         shape = MaterialTheme.shapes.medium,
         icon = {
             Icon(
@@ -143,27 +161,59 @@ fun InputAlertDialog(
             )
         },
         text = {
-            Column (
+            Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center,
-                modifier = Modifier.fillMaxWidth()
-            ){
+            ) {
                 SpoolOutlinedTextField(
-                    value = printWeight,
-                    onValueChange = onValueChange,
+                    value = uiState.gramsUsed,
+                    onValueChange = onGramsUsedValueChange,
                     label = stringResource(R.string.label_deduct_weight),
                     placeholder = stringResource(R.string.hint_total_wight),
-                    leadingIcon = Icons.Outlined.CompassCalibration,
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+                    leadingIcon = Icons.Outlined.MonitorWeight,
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    isError = isPrintErrorState != null,
+                    supportingText = isPrintErrorState
                 )
+
+                SpoolOutlinedTextField(
+                    value = uiState.printTitle,
+                    onValueChange = onPrintTitleValueChange,
+                    label = stringResource(R.string.label_print_title),
+                    placeholder = stringResource(R.string.hint_print_title),
+                    leadingIcon = Icons.Outlined.Description,
+                    keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words),
+                    isError = isPrintErrorState != null,
+                    supportingText = isPrintErrorState
+
+                )
+
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = stringResource(R.string.check_failure),
+                        style = MaterialTheme.typography.labelLarge.copy(fontSize = Dimens.RegularTextSize)
+                    )
+
+                    Switch(
+                        checked = uiState.isFailed,
+                        onCheckedChange = onCheckedChange,
+                    )
+                }
             }
         },
         onDismissRequest = onDismissRequest,
         confirmButton = {
             FilledTonalButton(
                 onClick = {
-                    onConfirm(printWeight)
-                    onDismissRequest()
+                    onConfirm(uiState.gramsUsed)
+                    if (isPrintErrorState == null) {
+                        onDismissRequest()
+                    }
                 },
                 shape = MaterialTheme.shapes.small,
                 colors = ButtonDefaults.filledTonalButtonColors(
@@ -195,8 +245,22 @@ fun InputAlertDialog(
                     color = MaterialTheme.colorScheme.onBackground,
 
 
-                )
+                    )
             }
         }
     )
 }
+
+//@Preview
+//@Composable
+//private fun InsertDialogPrev() {
+//    InputAlertDialog(
+//        uiState = PrintObjectUiState(),
+//        onGramsUsedValueChange = {},
+//        onPrintTitleValueChange = {},
+//        onConfirm = {},
+//        onDismissRequest = {},
+//        onCheckedChange = {},
+//        isPrintErrorState = "",
+//    )
+//}
