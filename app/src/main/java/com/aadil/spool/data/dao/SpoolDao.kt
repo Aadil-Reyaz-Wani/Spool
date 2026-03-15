@@ -25,7 +25,7 @@ interface SpoolDao {
     @Delete
     suspend fun deleteSpool(filament: Filament)
 
-    @Query("SELECT * FROM filaments")
+    @Query("SELECT * FROM filaments ORDER BY timestamp DESC")
     fun getAllSpools(): Flow<List<Filament>>
 
     @Query("SELECT * FROM filaments WHERE id = :id")

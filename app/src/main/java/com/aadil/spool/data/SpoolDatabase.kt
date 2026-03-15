@@ -15,14 +15,18 @@ import kotlin.concurrent.Volatile
 
 @Database(
     entities = [Filament::class, UsageLog::class],
-    version = 13,
+    version = 14,
     autoMigrations = [
         AutoMigration(from = 10, to = 11),
-        AutoMigration(from = 11, to = 12),
+        AutoMigration(from = 11, to = 12, spec = SpoolDatabase.DeletePriceSpec::class),
         AutoMigration(from = 12, to = 13),
+        AutoMigration(from = 13, to = 14),
     ],
     exportSchema = true
 )
 abstract class SpoolDatabase : RoomDatabase() {
     abstract fun spoolDao(): SpoolDao
+
+    @DeleteColumn(tableName = "usage_log", columnName = "price_per_print")
+    class DeletePriceSpec : AutoMigrationSpec
 }
