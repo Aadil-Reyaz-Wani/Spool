@@ -16,9 +16,9 @@ import javax.inject.Singleton
 @InstallIn(SingletonComponent::class)
 object DatabaseModule {
 
-    // 1. Teach hilt how to create DATABASE
+    // 1. Teaches hilt how to create DATABASE
     @Provides
-    @Singleton // This tells the hilt to create the database once
+    @Singleton // This tells hilt to create the database once
     fun provideDatabase(@ApplicationContext context: Context) : SpoolDatabase {
         return Room.databaseBuilder(
             context = context,
@@ -28,7 +28,7 @@ object DatabaseModule {
             .build()
     }
 
-    // 2. Teach hilt how to create DAO
+    // 2. Teaches hilt how to create DAO
     @Provides
     fun provideSpoolDao(spoolDatabase: SpoolDatabase) : SpoolDao{
         return spoolDatabase.spoolDao()
