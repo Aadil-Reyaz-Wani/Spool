@@ -40,4 +40,9 @@ object Dimens {
     val SmallTextSize = 14.sp
     val TinyTextSize = 12.sp
     val LetterSpacing = 1.5.sp
+
+    val CustomScrollbarTopBottomPadding = 8.dp
+
+    // Custom heights
+    val DropDownMenuHeight = 200.dp
 }

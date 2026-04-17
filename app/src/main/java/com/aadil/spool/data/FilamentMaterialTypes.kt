@@ -9,5 +9,7 @@ object FilamentMaterialTypes {
         "PC",
         "TPU",
         "ASA",
+        "PA",
+        "PA-CF",
     )
 }
