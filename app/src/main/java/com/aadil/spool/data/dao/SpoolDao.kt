@@ -37,6 +37,12 @@ interface SpoolDao {
     @Query("UPDATE filaments SET current_weight = :currentWeight WHERE id = :id")
     suspend fun updateCurrentWeight(id: Int, currentWeight: Double)
 
+    @Query("SELECT DISTINCT brand FROM filaments")
+    fun getUniqueBrand(): Flow<List<String>>
+
+    @Query("SELECT * FROM filaments WHERE brand = :brand")
+    fun getSpoolsByBrand(brand: String): Flow<List<Filament>>
+
 
     // Usage Log - Print History
     @Insert(onConflict = REPLACE)

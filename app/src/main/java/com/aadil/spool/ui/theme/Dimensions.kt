@@ -44,5 +44,5 @@ object Dimens {
     val CustomScrollbarTopBottomPadding = 8.dp
 
     // Custom heights
-    val DropDownMenuHeight = 200.dp
+    val ScrollableCardHeight = 200.dp
 }

@@ -90,6 +90,16 @@
 
 
 
+    <string name="clear_all_filters_button_label">Clear all filters</string>
+    <string name="clear_all_button_label">Clear All</string>
+    <string name="filter_by_label">Filter By</string>
+    <string name="brand_card_label">Brand</string>
+
+
+
+
+
+
 
     <string name="version_number">v1.1.0 • Initializing</string>
 </resources>

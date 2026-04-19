@@ -14,6 +14,9 @@ interface SpoolRepository {
     suspend fun getCurrentWeightStream(id: Int) : Double
     suspend fun updateCurrentWeight(id: Int, currentWeight: Double)
 
+    fun getUniqueBrandStream(): Flow<List<String>>
+    fun getSpoolsByBrandStream(brand: String): Flow<List<Filament>>
+
     // Usage Log
     suspend fun insertSpoolUsageLog(log: UsageLog)
     suspend fun deleteSpoolUsageLog(log: UsageLog)

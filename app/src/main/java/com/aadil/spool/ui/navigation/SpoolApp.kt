@@ -17,6 +17,8 @@ import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
 import com.aadil.spool.ui.screens.dashboard.DashboardScreen
 import com.aadil.spool.ui.screens.dashboard.DashboardViewModel
+import com.aadil.spool.ui.screens.dashboard.FilterBottomSheet
+import com.aadil.spool.ui.screens.dashboard.IsFilterApplied
 import com.aadil.spool.ui.screens.details.SpoolDetailsScreen
 import com.aadil.spool.ui.screens.details.SpoolDetailsViewModel
 import com.aadil.spool.ui.screens.entry.SpoolEntryScreen
@@ -38,6 +40,9 @@ fun MySpoolApp(modifier: Modifier = Modifier) {
 
     // Dashboard
     val listOfSpools by dashboardViewModel.getAllSpool.collectAsStateWithLifecycle()
+    val listOfUniqueBrandStrings by dashboardViewModel.getUniqueBrand.collectAsStateWithLifecycle()
+    val isFilterAppliedState by dashboardViewModel.isFilterAppliedState.collectAsStateWithLifecycle()
+
 
     // Entry
     val spoolEntryUiState by spoolEntryViewModel.spoolEntryUiState.collectAsStateWithLifecycle()
@@ -104,7 +109,12 @@ fun MySpoolApp(modifier: Modifier = Modifier) {
                     onCardClick = { id ->
                         backStack.add(Routes.SpoolDetails(id))
                     },
-                    listOfSpools = listOfSpools
+                    listOfSpools = listOfSpools,
+                    listOfUniqueBrandStrings = listOfUniqueBrandStrings,
+                    onFilterStringClick = {brandString ->
+                        dashboardViewModel.isFilterApplied(brandString)
+                    },
+                    selectedBrand = isFilterAppliedState.whichFilter,
                 )
             }
 
