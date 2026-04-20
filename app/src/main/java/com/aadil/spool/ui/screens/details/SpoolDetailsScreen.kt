@@ -66,6 +66,7 @@ import com.aadil.spool.ui.components.DeleteConfirmationAlertDialog
 import com.aadil.spool.ui.components.InputAlertDialog
 import com.aadil.spool.ui.components.SpoolButton
 import com.aadil.spool.ui.components.SpoolHeadingText
+import com.aadil.spool.ui.components.SpoolHorizontalDivider
 import com.aadil.spool.ui.components.SpoolProgressBar
 import com.aadil.spool.ui.components.SpoolTag
 import com.aadil.spool.ui.theme.BrandOrange
@@ -114,7 +115,8 @@ fun SpoolDetailsScreen(
             onPrintWeightValueChange = onPrintWeightValueChange,
             onPrintTitleValueChange = onPrintTitleValueChange,
             onPrintWeightClick = {
-                onPrintWeightClick(spoolDetails.id, uiState.gramsUsed) },
+                onPrintWeightClick(spoolDetails.id, uiState.gramsUsed)
+            },
             onCheckedChange = onCheckedChange,
             isPrintErrorState = isPrintErrorState,
             onPrintHistoryClick = onPrintHistoryClick,
@@ -437,7 +439,17 @@ fun MainDetailsCard(
                 )
             }
 
-            HorizontalDivider(modifier = Modifier.padding(top = Dimens.PaddingMedium))
+//            HorizontalDivider(modifier = Modifier.padding(top = Dimens.PaddingMedium))
+//            HorizontalDivider(
+//                modifier = Modifier.padding(top = Dimens.PaddingMedium),
+//                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f),
+//                thickness = 0.5.dp
+//            )
+
+            SpoolHorizontalDivider(
+                modifier = Modifier.padding(top = Dimens.PaddingMedium),
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.End

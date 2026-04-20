@@ -45,4 +45,5 @@ object Dimens {
 
     // Custom heights
     val ScrollableCardHeight = 200.dp
+    val ClearAllButtonHeight = 32.dp
 }

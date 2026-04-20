@@ -28,6 +28,7 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuAnchorType
 import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
@@ -350,7 +351,7 @@ fun SpoolHeadingText(
             text = text,
             style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
             color = textColor,
-            modifier = Modifier.fillMaxWidth()
+            modifier = modifier
         )
     }
 }
@@ -403,15 +404,6 @@ fun SpoolTag(
 
                     )
             }
-
-//            Text(
-//                text = text,
-//                style = MaterialTheme.typography.labelMedium,
-//                fontWeight = FontWeight.Bold,
-//                color = textColor,
-//                modifier = modifier.padding(horizontal = 6.dp, vertical = 2.dp)
-//
-//            )
         }
     )
 }
@@ -441,5 +433,18 @@ fun SpoolProgressBar(
         trackColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f),
         strokeCap = StrokeCap.Butt,
         gapSize = 1.5.dp,
+    )
+}
+
+@Composable
+fun SpoolHorizontalDivider(
+    modifier: Modifier = Modifier,
+    padding: Dp = 0.dp,
+    color: Color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f)
+) {
+    HorizontalDivider(
+        modifier = modifier,
+        color = color.copy(alpha = 0.3f),
+        thickness = 0.5.dp
     )
 }

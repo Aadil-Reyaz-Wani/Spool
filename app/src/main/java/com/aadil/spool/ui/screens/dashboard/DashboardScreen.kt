@@ -30,6 +30,8 @@ import androidx.compose.material.icons.outlined.AddTask
 import androidx.compose.material.icons.outlined.Done
 import androidx.compose.material.icons.outlined.ExpandLess
 import androidx.compose.material.icons.outlined.ExpandMore
+import androidx.compose.material.icons.outlined.FilterAlt
+import androidx.compose.material.icons.outlined.FilterList
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -63,6 +65,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.aadil.spool.R
 import com.aadil.spool.data.entity.Filament
 import com.aadil.spool.ui.common.GhostCard
@@ -71,6 +74,8 @@ import com.aadil.spool.ui.common.WeightProgressBar
 import com.aadil.spool.ui.common.lazyVerticalScrollbar
 import com.aadil.spool.ui.common.verticalScrollbar
 import com.aadil.spool.ui.components.SpoolButton
+import com.aadil.spool.ui.components.SpoolHeadingText
+import com.aadil.spool.ui.components.SpoolHorizontalDivider
 import com.aadil.spool.ui.components.SpoolTag
 import com.aadil.spool.ui.theme.Dimens
 
@@ -91,9 +96,7 @@ fun DashboardScreen(
         else -> 140.dp
     }
     var showBottomSheet by rememberSaveable { mutableStateOf(false) }
-    val sheetState = rememberModalBottomSheetState(
-        skipPartiallyExpanded = false
-    )
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = false)
 
     Scaffold(
         modifier = modifier,
@@ -284,24 +287,27 @@ fun FilterBottomSheet(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Text(
+            SpoolHeadingText(
                 text = stringResource(R.string.filter_by_label),
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.ExtraBold,
+                icon = Icons.Outlined.FilterList,
             )
             OutlinedButton(
                 onClick = { onFilterStringClick(clearAllFilter) },
-                modifier = Modifier,
+                modifier = Modifier.height(Dimens.ClearAllButtonHeight),
                 shape = MaterialTheme.shapes.small,
             ) {
                 Text(
                     text = stringResource(R.string.clear_all_button_label),
-                    textAlign = TextAlign.Center
+                    textAlign = TextAlign.Center,
+                    style = MaterialTheme.typography.bodySmall,
                 )
             }
 
         }
-        HorizontalDivider(modifier = Modifier.padding(top = Dimens.PaddingSmall))
+        SpoolHorizontalDivider(
+            modifier = Modifier.padding(top = Dimens.PaddingMedium),
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
         // Brand Card Implementation
         Card(
             modifier = Modifier
@@ -318,7 +324,6 @@ fun FilterBottomSheet(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-
                 Text(
                     text = stringResource(R.string.brand_card_label),
                     style = MaterialTheme.typography.titleMedium,
@@ -336,7 +341,10 @@ fun FilterBottomSheet(
             }
 
             if (showFilterOptions) {
-                HorizontalDivider(modifier = Modifier.padding(horizontal = Dimens.PaddingSmall))
+                SpoolHorizontalDivider(
+                    modifier = Modifier.padding(horizontal = Dimens.PaddingSmall),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
                 LazyColumn(
                     modifier = Modifier
                         .heightIn(max = Dimens.ScrollableCardHeight)
@@ -387,7 +395,6 @@ fun FilterBottomSheet(
                     }
                 }
             }
-
         }
     }
 
