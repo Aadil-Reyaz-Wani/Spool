@@ -17,8 +17,6 @@ import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
 import com.aadil.spool.ui.screens.dashboard.DashboardScreen
 import com.aadil.spool.ui.screens.dashboard.DashboardViewModel
-import com.aadil.spool.ui.screens.dashboard.FilterBottomSheet
-import com.aadil.spool.ui.screens.dashboard.IsFilterApplied
 import com.aadil.spool.ui.screens.details.SpoolDetailsScreen
 import com.aadil.spool.ui.screens.details.SpoolDetailsViewModel
 import com.aadil.spool.ui.screens.entry.SpoolEntryScreen
@@ -41,6 +39,7 @@ fun MySpoolApp(modifier: Modifier = Modifier) {
     // Dashboard
     val listOfSpools by dashboardViewModel.getAllSpool.collectAsStateWithLifecycle()
     val listOfUniqueBrandStrings by dashboardViewModel.getUniqueBrand.collectAsStateWithLifecycle()
+    val listOfUniqueMaterialTypeStrings by dashboardViewModel.getUniqueMaterialType.collectAsStateWithLifecycle()
     val isFilterAppliedState by dashboardViewModel.isFilterAppliedState.collectAsStateWithLifecycle()
 
 
@@ -111,10 +110,11 @@ fun MySpoolApp(modifier: Modifier = Modifier) {
                     },
                     listOfSpools = listOfSpools,
                     listOfUniqueBrandStrings = listOfUniqueBrandStrings,
-                    onFilterStringClick = {brandString ->
-                        dashboardViewModel.isFilterApplied(brandString)
+                    listOfUniqueMaterialTypeStrings = listOfUniqueMaterialTypeStrings,
+                    onFilterStringClick = {filterString, filterType ->
+                        dashboardViewModel.applyFilter(filterValue = filterString, type = filterType)
                     },
-                    selectedBrand = isFilterAppliedState.whichFilter,
+                    selectedOption = isFilterAppliedState.whichFilter,
                 )
             }
 

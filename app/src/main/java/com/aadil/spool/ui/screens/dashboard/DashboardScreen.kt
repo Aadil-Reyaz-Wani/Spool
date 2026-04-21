@@ -20,7 +20,6 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
@@ -30,28 +29,23 @@ import androidx.compose.material.icons.outlined.AddTask
 import androidx.compose.material.icons.outlined.Done
 import androidx.compose.material.icons.outlined.ExpandLess
 import androidx.compose.material.icons.outlined.ExpandMore
-import androidx.compose.material.icons.outlined.FilterAlt
 import androidx.compose.material.icons.outlined.FilterList
-import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FabPosition
 import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SheetState
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -65,15 +59,12 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.aadil.spool.R
 import com.aadil.spool.data.entity.Filament
 import com.aadil.spool.ui.common.GhostCard
 import com.aadil.spool.ui.common.SpoolAppBar
 import com.aadil.spool.ui.common.WeightProgressBar
-import com.aadil.spool.ui.common.lazyVerticalScrollbar
-import com.aadil.spool.ui.common.verticalScrollbar
-import com.aadil.spool.ui.components.SpoolButton
+import com.aadil.spool.ui.components.FilterCard
 import com.aadil.spool.ui.components.SpoolHeadingText
 import com.aadil.spool.ui.components.SpoolHorizontalDivider
 import com.aadil.spool.ui.components.SpoolTag
@@ -84,10 +75,11 @@ import com.aadil.spool.ui.theme.Dimens
 fun DashboardScreen(
     listOfSpools: List<Filament>,
     listOfUniqueBrandStrings: List<String>,
+    listOfUniqueMaterialTypeStrings: List<String>,
     onFabClick: () -> Unit,
     onCardClick: (Int) -> Unit,
-    onFilterStringClick: (String) -> Unit,
-    selectedBrand: String,
+    onFilterStringClick: (String, FilterType) -> Unit,
+    selectedOption: String,
     modifier: Modifier = Modifier,
 ) {
 
@@ -138,11 +130,12 @@ fun DashboardScreen(
                 FilterBottomSheet(
                     modifier = modifier.padding(horizontal = 12.dp),
                     listOfUniqueBrandStrings = listOfUniqueBrandStrings,
-                    onFilterStringClick = { brandName ->
-                        onFilterStringClick(brandName)
+                    listOfUniqueMaterialTypeStrings = listOfUniqueMaterialTypeStrings,
+                    onFilterStringClick = { filterOption, filterType ->
+                        onFilterStringClick(filterOption, filterType)
 //                        showBottomSheet = false
                     },
-                    selectedBrand = selectedBrand
+                    selectedOption = selectedOption
                 )
             }
         }
@@ -269,8 +262,9 @@ fun SpoolItemCard(
 fun FilterBottomSheet(
     modifier: Modifier = Modifier,
     listOfUniqueBrandStrings: List<String>,
-    onFilterStringClick: (String) -> Unit,
-    selectedBrand: String,
+    listOfUniqueMaterialTypeStrings: List<String>,
+    onFilterStringClick: (String, FilterType) -> Unit,
+    selectedOption: String,
 ) {
 
     val scrollState = rememberScrollState()
@@ -292,7 +286,7 @@ fun FilterBottomSheet(
                 icon = Icons.Outlined.FilterList,
             )
             OutlinedButton(
-                onClick = { onFilterStringClick(clearAllFilter) },
+                onClick = { onFilterStringClick(clearAllFilter, FilterType.ALL) },
                 modifier = Modifier.height(Dimens.ClearAllButtonHeight),
                 shape = MaterialTheme.shapes.small,
             ) {
@@ -304,98 +298,30 @@ fun FilterBottomSheet(
             }
 
         }
+
         SpoolHorizontalDivider(
-            modifier = Modifier.padding(top = Dimens.PaddingMedium),
+            modifier = Modifier.padding(vertical = Dimens.PaddingMedium),
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
-        // Brand Card Implementation
-        Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = Dimens.PaddingMedium),
-            shape = MaterialTheme.shapes.small
-        ) {
-            var showFilterOptions by rememberSaveable { mutableStateOf(false) }
-            // Top header row -> Brand & Icon
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(Dimens.PaddingSmall),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Text(
-                    text = stringResource(R.string.brand_card_label),
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                )
-                IconButton(
-                    onClick = { showFilterOptions = !showFilterOptions },
-                ) {
-                    Icon(
-                        imageVector = if (!showFilterOptions) Icons.Outlined.ExpandMore else Icons.Outlined.ExpandLess,
-                        contentDescription = stringResource(R.string.filter_by_label),
-                        modifier = Modifier.size(Dimens.IconLarge)
-                    )
-                }
-            }
 
-            if (showFilterOptions) {
-                SpoolHorizontalDivider(
-                    modifier = Modifier.padding(horizontal = Dimens.PaddingSmall),
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-                LazyColumn(
-                    modifier = Modifier
-                        .heightIn(max = Dimens.ScrollableCardHeight)
-                        .padding(vertical = Dimens.PaddingTiny, horizontal = Dimens.PaddingSmall)
-                ) {
-                    items(listOfUniqueBrandStrings) { brand ->
-                        val isSelected = brand == selectedBrand
+        // Brand Filter Card Implementation
+        FilterCard(
+            modifier = Modifier,
+            headerName = stringResource(R.string.brand_card_label),
+            listOfStrings = listOfUniqueBrandStrings,
+            selectedOption = selectedOption,
+            onFilterStringClick = {filterString -> onFilterStringClick(filterString, FilterType.BRAND) }
+        )
 
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(vertical = Dimens.PaddingTiny)
-                                .clip(MaterialTheme.shapes.small)
-                                .border(
-                                    width = 1.dp,
-                                    color = MaterialTheme.colorScheme.outlineVariant,
-                                    shape = MaterialTheme.shapes.small
-                                )
-                                .clickable(onClick = {
-                                    onFilterStringClick(brand)
-                                }
-                                )
-                        ) {
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth(),
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.SpaceBetween
-                            ) {
-                                Text(
-                                    text = brand,
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(vertical = Dimens.PaddingTiny, horizontal = Dimens.PaddingSmall)
-                                        .weight(1f)
-                                )
-                                if (isSelected) {
-                                    Icon(
-                                        imageVector = Icons.Outlined.Done,
-                                        contentDescription = null,
-                                        tint = MaterialTheme.colorScheme.primary,
-                                        modifier = Modifier
-                                            .padding(vertical = Dimens.PaddingTiny, horizontal = Dimens.PaddingSmall)
-                                    )
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
+        // Material Filter Card Implementation
+        FilterCard(
+            modifier = Modifier,
+            headerName = stringResource(R.string.material_card_label),
+            listOfStrings = listOfUniqueMaterialTypeStrings,
+            selectedOption = selectedOption,
+            onFilterStringClick = {filterString -> onFilterStringClick(filterString, FilterType.MATERIAL) }
+        )
+
     }
 
 }

@@ -39,8 +39,16 @@ class OfflineSpoolRepository @Inject constructor(
         return spoolDao.getUniqueBrand()
     }
 
+    override fun getUniqueMaterialTypeStream(): Flow<List<String>> {
+        return spoolDao.getUniqueMaterialType()
+    }
+
     override fun getSpoolsByBrandStream(brand: String): Flow<List<Filament>> {
         return spoolDao.getSpoolsByBrand(brand = brand)
+    }
+
+    override fun getSpoolsByMaterialTypeStream(material: String): Flow<List<Filament>> {
+        return spoolDao.getSpoolsByMaterialType(material = material)
     }
 
     override suspend fun updateCurrentWeight(id: Int, currentWeight: Double) {

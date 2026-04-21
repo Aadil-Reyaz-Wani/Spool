@@ -94,6 +94,7 @@
     <string name="clear_all_button_label">Clear All</string>
     <string name="filter_by_label">Filter By</string>
     <string name="brand_card_label">Brand</string>
+    <string name="material_card_label">Material Type</string>
 
 
 

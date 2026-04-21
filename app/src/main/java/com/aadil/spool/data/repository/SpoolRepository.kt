@@ -15,7 +15,11 @@ interface SpoolRepository {
     suspend fun updateCurrentWeight(id: Int, currentWeight: Double)
 
     fun getUniqueBrandStream(): Flow<List<String>>
+
+    fun getUniqueMaterialTypeStream(): Flow<List<String>>
+
     fun getSpoolsByBrandStream(brand: String): Flow<List<Filament>>
+    fun getSpoolsByMaterialTypeStream(material: String): Flow<List<Filament>>
 
     // Usage Log
     suspend fun insertSpoolUsageLog(log: UsageLog)

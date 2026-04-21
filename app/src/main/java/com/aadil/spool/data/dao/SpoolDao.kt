@@ -40,8 +40,15 @@ interface SpoolDao {
     @Query("SELECT DISTINCT brand FROM filaments")
     fun getUniqueBrand(): Flow<List<String>>
 
+
+    @Query("SELECT DISTINCT material FROM filaments")
+    fun getUniqueMaterialType(): Flow<List<String>>
+
     @Query("SELECT * FROM filaments WHERE brand = :brand")
     fun getSpoolsByBrand(brand: String): Flow<List<Filament>>
+
+    @Query("SELECT * FROM filaments WHERE material = :material")
+    fun getSpoolsByMaterialType(material: String): Flow<List<Filament>>
 
 
     // Usage Log - Print History
