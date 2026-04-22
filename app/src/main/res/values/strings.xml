@@ -95,6 +95,7 @@
     <string name="filter_by_label">Filter By</string>
     <string name="brand_card_label">Brand</string>
     <string name="material_card_label">Material Type</string>
+    <string name="color_card_label">Color</string>
 
 
 

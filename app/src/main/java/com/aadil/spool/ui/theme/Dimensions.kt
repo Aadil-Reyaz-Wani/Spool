@@ -26,6 +26,7 @@ object Dimens {
     // Filament Specifics
     val ColorDotSize = 36.dp         // The circle showing filament color
     val ColorDotSizeExtra = 52.dp         // The circle showing filament color
+    val InputColorDotSize = 50.dp         // The circle showing filament color
     val ProgressBarHeight = 12.dp    // Thick enough to read easily
     val SpoolCardMinHeight = 80.dp   // Minimum touch target for list items
     val HeightOrWidth = 4.dp

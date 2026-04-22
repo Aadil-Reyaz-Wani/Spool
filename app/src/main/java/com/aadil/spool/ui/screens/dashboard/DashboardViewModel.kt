@@ -12,11 +12,10 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.stateIn
-import javax.annotation.meta.When
 import javax.inject.Inject
 
 enum class FilterType {
-    ALL, BRAND, MATERIAL
+    ALL, BRAND, MATERIAL, COLOR
 }
 data class IsFilterApplied(
     val whichFilter: String = "",
@@ -28,22 +27,16 @@ class DashboardViewModel @Inject constructor(
 ) : ViewModel() {
 
     private val _filterApplied = MutableStateFlow(IsFilterApplied())
-    val isFilterAppliedState: StateFlow<IsFilterApplied> = _filterApplied.asStateFlow()
+    val filterAppliedState: StateFlow<IsFilterApplied> = _filterApplied.asStateFlow()
 
     @OptIn(ExperimentalCoroutinesApi::class)
     val getAllSpool: StateFlow<List<Filament>> = _filterApplied
         .flatMapLatest { filter ->
-//            if (_filterApplied.value.whichFilter.isBlank() || _filterApplied.value.whichFilter == "Clear all filters") {
-//                spoolRepository.getAllSpoolsStream()
-//            } else if (_filterApplied.value.whichFilter.isNotBlank()){
-//                spoolRepository.getSpoolsByBrandStream(_filterApplied.value.whichFilter)
-//            }else {
-//                spoolRepository.getSpoolsByMaterialTypeStream(_filterApplied.value.whichFilter)
-//            }
             when(filter.filterType) {
                 FilterType.ALL -> spoolRepository.getAllSpoolsStream()
                 FilterType.BRAND -> spoolRepository.getSpoolsByBrandStream(filter.whichFilter)
                 FilterType.MATERIAL -> spoolRepository.getSpoolsByMaterialTypeStream(filter.whichFilter)
+                FilterType.COLOR -> spoolRepository.getSpoolsByColorHexStream(filter.whichFilter.toLong())
             }
         }
             .stateIn(
@@ -62,6 +55,14 @@ class DashboardViewModel @Inject constructor(
 
     val getUniqueMaterialType: StateFlow<List<String>> =
         spoolRepository.getUniqueMaterialTypeStream()
+            .stateIn(
+                scope = viewModelScope,
+                started = SharingStarted.WhileSubscribed(5000),
+                initialValue = emptyList()
+            )
+
+    val getUniqueColorHex: StateFlow<List<Long>> =
+        spoolRepository.getUniqueColorHexStream()
             .stateIn(
                 scope = viewModelScope,
                 started = SharingStarted.WhileSubscribed(5000),

@@ -43,12 +43,20 @@ class OfflineSpoolRepository @Inject constructor(
         return spoolDao.getUniqueMaterialType()
     }
 
+    override fun getUniqueColorHexStream(): Flow<List<Long>> {
+        return spoolDao.getUniqueColorHex()
+    }
+
     override fun getSpoolsByBrandStream(brand: String): Flow<List<Filament>> {
         return spoolDao.getSpoolsByBrand(brand = brand)
     }
 
     override fun getSpoolsByMaterialTypeStream(material: String): Flow<List<Filament>> {
         return spoolDao.getSpoolsByMaterialType(material = material)
+    }
+
+    override fun getSpoolsByColorHexStream(colorHex: Long): Flow<List<Filament>> {
+        return spoolDao.getSpoolsByColorHex(colorHex = colorHex)
     }
 
     override suspend fun updateCurrentWeight(id: Int, currentWeight: Double) {

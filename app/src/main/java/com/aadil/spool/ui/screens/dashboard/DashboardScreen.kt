@@ -48,6 +48,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.toString
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -76,6 +77,7 @@ fun DashboardScreen(
     listOfSpools: List<Filament>,
     listOfUniqueBrandStrings: List<String>,
     listOfUniqueMaterialTypeStrings: List<String>,
+    listOfUniqueColorHex: List<Long>,
     onFabClick: () -> Unit,
     onCardClick: (Int) -> Unit,
     onFilterStringClick: (String, FilterType) -> Unit,
@@ -131,6 +133,7 @@ fun DashboardScreen(
                     modifier = modifier.padding(horizontal = 12.dp),
                     listOfUniqueBrandStrings = listOfUniqueBrandStrings,
                     listOfUniqueMaterialTypeStrings = listOfUniqueMaterialTypeStrings,
+                    listOfUniqueColorHex = listOfUniqueColorHex,
                     onFilterStringClick = { filterOption, filterType ->
                         onFilterStringClick(filterOption, filterType)
 //                        showBottomSheet = false
@@ -263,6 +266,7 @@ fun FilterBottomSheet(
     modifier: Modifier = Modifier,
     listOfUniqueBrandStrings: List<String>,
     listOfUniqueMaterialTypeStrings: List<String>,
+    listOfUniqueColorHex: List<Long>,
     onFilterStringClick: (String, FilterType) -> Unit,
     selectedOption: String,
 ) {
@@ -320,6 +324,16 @@ fun FilterBottomSheet(
             listOfStrings = listOfUniqueMaterialTypeStrings,
             selectedOption = selectedOption,
             onFilterStringClick = {filterString -> onFilterStringClick(filterString, FilterType.MATERIAL) }
+        )
+
+        // Color Filter Card Implementation
+        FilterCard(
+            modifier = Modifier,
+            headerName = stringResource(R.string.color_card_label),
+            listOfStrings = listOfUniqueColorHex.map { colorHex-> colorHex.toString() },
+            selectedOption = selectedOption,
+            onFilterStringClick = {filterString -> onFilterStringClick(filterString, FilterType.COLOR) },
+            isColorGrid = true
         )
 
     }

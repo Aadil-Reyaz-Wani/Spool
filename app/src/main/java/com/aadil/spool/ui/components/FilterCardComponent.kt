@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Done
@@ -32,7 +33,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.aadil.spool.R
+import com.aadil.spool.ui.screens.entry.ColorCircle
 import com.aadil.spool.ui.theme.Dimens
+import kotlin.math.max
 
 @Composable
 fun FilterCard(
@@ -41,6 +44,7 @@ fun FilterCard(
     listOfStrings: List<String>,
     selectedOption: String,
     onFilterStringClick: (String) -> Unit,
+    isColorGrid: Boolean = false
 ) {
     Card(
         modifier = modifier
@@ -78,61 +82,82 @@ fun FilterCard(
                 modifier = Modifier.padding(horizontal = Dimens.PaddingSmall),
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
-            LazyColumn(
-                modifier = Modifier
-                    .heightIn(max = Dimens.ScrollableCardHeight)
-                    .padding(vertical = Dimens.PaddingTiny, horizontal = Dimens.PaddingSmall)
-            ) {
-                items(listOfStrings) { option ->
-                    val isSelected = option == selectedOption
 
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = Dimens.PaddingTiny)
-                            .clip(MaterialTheme.shapes.small)
-                            .border(
-                                width = 1.dp,
-                                color = MaterialTheme.colorScheme.outlineVariant,
-                                shape = MaterialTheme.shapes.small
-                            )
-                            .clickable(onClick = {
-                                onFilterStringClick(option)
-                            }
-                            )
-                    ) {
-                        Row(
+            if (!isColorGrid){
+                LazyColumn(
+                    modifier = Modifier
+                        .heightIn(max = Dimens.ScrollableCardHeight)
+                        .padding(vertical = Dimens.PaddingTiny, horizontal = Dimens.PaddingSmall)
+                ) {
+                    items(listOfStrings) { option ->
+                        val isSelected = option == selectedOption
+
+                        Box(
                             modifier = Modifier
-                                .fillMaxWidth(),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.SpaceBetween
+                                .fillMaxWidth()
+                                .padding(vertical = Dimens.PaddingTiny)
+                                .clip(MaterialTheme.shapes.small)
+                                .border(
+                                    width = 1.dp,
+                                    color = MaterialTheme.colorScheme.outlineVariant,
+                                    shape = MaterialTheme.shapes.small
+                                )
+                                .clickable(onClick = {
+                                    onFilterStringClick(option)
+                                }
+                                )
                         ) {
-                            Text(
-                                text = option,
+                            Row(
                                 modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(
-                                        vertical = Dimens.PaddingTiny,
-                                        horizontal = Dimens.PaddingSmall
-                                    )
-                                    .weight(1f)
-                            )
-                            if (isSelected) {
-                                Icon(
-                                    imageVector = Icons.Outlined.Done,
-                                    contentDescription = null,
-                                    tint = MaterialTheme.colorScheme.primary,
+                                    .fillMaxWidth(),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Text(
+                                    text = option,
                                     modifier = Modifier
+                                        .fillMaxWidth()
                                         .padding(
                                             vertical = Dimens.PaddingTiny,
                                             horizontal = Dimens.PaddingSmall
                                         )
+                                        .weight(1f)
                                 )
+                                if (isSelected) {
+                                    Icon(
+                                        imageVector = Icons.Outlined.Done,
+                                        contentDescription = null,
+                                        tint = MaterialTheme.colorScheme.primary,
+                                        modifier = Modifier
+                                            .padding(
+                                                vertical = Dimens.PaddingTiny,
+                                                horizontal = Dimens.PaddingSmall
+                                            )
+                                    )
+                                }
                             }
                         }
                     }
                 }
+            }else {
+                LazyRow(
+                    modifier = Modifier
+                        .heightIn(max = 100.dp)
+                        .padding(vertical = Dimens.PaddingTiny, horizontal = Dimens.PaddingSmall)
+                ) {
+                    items(listOfStrings) { option ->
+                        val isSelected = option == selectedOption
+                        ColorCircle(
+                            colorHex = option.toLong(),
+                            isSelected = isSelected,
+                            onClick = { onFilterStringClick(option) },
+                            modifier = Modifier.padding(horizontal = Dimens.PaddingSmall)
+                        )
+                    }
+                }
             }
+
+
         }
     }
 }

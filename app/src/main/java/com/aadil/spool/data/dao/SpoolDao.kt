@@ -44,12 +44,17 @@ interface SpoolDao {
     @Query("SELECT DISTINCT material FROM filaments")
     fun getUniqueMaterialType(): Flow<List<String>>
 
+    @Query("SELECT DISTINCT color_hex FROM filaments")
+    fun getUniqueColorHex(): Flow<List<Long>>
+
     @Query("SELECT * FROM filaments WHERE brand = :brand")
     fun getSpoolsByBrand(brand: String): Flow<List<Filament>>
 
     @Query("SELECT * FROM filaments WHERE material = :material")
     fun getSpoolsByMaterialType(material: String): Flow<List<Filament>>
 
+    @Query("SELECT * FROM filaments WHERE color_hex = :colorHex")
+    fun getSpoolsByColorHex(colorHex: Long): Flow<List<Filament>>
 
     // Usage Log - Print History
     @Insert(onConflict = REPLACE)

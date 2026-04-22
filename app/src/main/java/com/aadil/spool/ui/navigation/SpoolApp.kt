@@ -40,7 +40,8 @@ fun MySpoolApp(modifier: Modifier = Modifier) {
     val listOfSpools by dashboardViewModel.getAllSpool.collectAsStateWithLifecycle()
     val listOfUniqueBrandStrings by dashboardViewModel.getUniqueBrand.collectAsStateWithLifecycle()
     val listOfUniqueMaterialTypeStrings by dashboardViewModel.getUniqueMaterialType.collectAsStateWithLifecycle()
-    val isFilterAppliedState by dashboardViewModel.isFilterAppliedState.collectAsStateWithLifecycle()
+    val listOfUniqueColorHex by dashboardViewModel.getUniqueColorHex.collectAsStateWithLifecycle()
+    val filterAppliedState by dashboardViewModel.filterAppliedState.collectAsStateWithLifecycle()
 
 
     // Entry
@@ -111,10 +112,11 @@ fun MySpoolApp(modifier: Modifier = Modifier) {
                     listOfSpools = listOfSpools,
                     listOfUniqueBrandStrings = listOfUniqueBrandStrings,
                     listOfUniqueMaterialTypeStrings = listOfUniqueMaterialTypeStrings,
+                    listOfUniqueColorHex = listOfUniqueColorHex,
                     onFilterStringClick = {filterString, filterType ->
                         dashboardViewModel.applyFilter(filterValue = filterString, type = filterType)
                     },
-                    selectedOption = isFilterAppliedState.whichFilter,
+                    selectedOption = filterAppliedState.whichFilter,
                 )
             }
 
