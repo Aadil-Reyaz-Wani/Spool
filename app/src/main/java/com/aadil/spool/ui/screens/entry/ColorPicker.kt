@@ -81,37 +81,54 @@ fun ColorCircle(
     inputColorDotSize: Dp = Dimens.InputColorDotSize
 ) {
 
-    Icon(
-        imageVector = Icons.Filled.Circle,
-        contentDescription = null,
-        tint = if (!isSelected) {
-            FilamentColorData.getComposeColor(colorHex).copy(alpha = 0.7f)
-        } else {
-            FilamentColorData.getComposeColor(colorHex)
-        },
-        modifier = modifier
-            .size(inputColorDotSize)
-            .clickable(
-                interactionSource = remember { MutableInteractionSource() },
-                indication = null,
-                onClick = onClick
+
+    Box(
+        modifier = Modifier
+            .clip(CircleShape),
+        contentAlignment = Alignment.Center
+    ) {
+
+        Icon(
+            imageVector = Icons.Filled.Circle,
+            contentDescription = null,
+            tint = if (!isSelected) {
+                FilamentColorData.getComposeColor(colorHex).copy(alpha = 0.7f)
+            } else {
+                FilamentColorData.getComposeColor(colorHex)
+            },
+            modifier = modifier
+                .size(inputColorDotSize)
+                .clickable(
+                    interactionSource = remember { MutableInteractionSource() },
+                    indication = null,
+                    onClick = onClick
+                )
+                .border(
+                    width = Dimens.BorderThickness,
+                    color = MaterialTheme.colorScheme.outlineVariant,
+                    shape = CircleShape
+                )
+                .then(
+                    if (isSelected) {
+                        Modifier
+                            .border(
+                                width = Dimens.ColorDotBorderThickness,
+                                color = MaterialTheme.colorScheme.primary,
+                                shape = CircleShape,
+                            )
+                    } else Modifier
+                ),
+        )
+        // This is the selected color indicator Done/Tick Icon which is appearing inside the
+        // color circle dot when selected.
+        if (isSelected) {
+            Icon(
+                imageVector = Icons.Outlined.Done,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.primary
             )
-            .border(
-                width = Dimens.BorderThickness,
-                color = MaterialTheme.colorScheme.outlineVariant,
-                shape = CircleShape
-            )
-            .then(
-                if (isSelected) {
-                    Modifier
-                        .border(
-                            width = Dimens.ColorDotBorderThickness,
-                            color = MaterialTheme.colorScheme.primary,
-                            shape = CircleShape,
-                        )
-                } else Modifier
-            ),
-    )
+        }
+    }
 }
 
 @Preview

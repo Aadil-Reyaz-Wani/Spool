@@ -18,8 +18,10 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.aadil.spool.R
 import com.aadil.spool.ui.theme.Dimens
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -30,7 +32,8 @@ fun SpoolAppBar(
     canNavigateBack: Boolean,
     navigateUp: () -> Unit,
     isDashboardScreen: Boolean = false,
-    onFilterClick: () -> Unit = {}
+    onFilterClick: () -> Unit = {},
+    filamentListSize: Int = 0
 ) {
     TopAppBar(
         title = {
@@ -47,13 +50,13 @@ fun SpoolAppBar(
                     fontWeight = FontWeight.Bold
                 )
 
-                if (isDashboardScreen) {
+                if (isDashboardScreen && filamentListSize > 0) {
                     IconButton (
                         onClick = onFilterClick
                     ){
                         Icon(
                             imageVector = Icons.Default.FilterList,
-                            contentDescription = "Filter List"
+                            contentDescription = stringResource(R.string.filter_by_label)
                         )
                     }
                 }

@@ -96,6 +96,7 @@
     <string name="brand_card_label">Brand</string>
     <string name="material_card_label">Material Type</string>
     <string name="color_card_label">Color</string>
+    <string name="empty_filter_card_message">Please Add Some Filaments in Inventory</string>
 
 
 

@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
@@ -69,7 +70,9 @@ import com.aadil.spool.ui.components.FilterCard
 import com.aadil.spool.ui.components.SpoolHeadingText
 import com.aadil.spool.ui.components.SpoolHorizontalDivider
 import com.aadil.spool.ui.components.SpoolTag
+import com.aadil.spool.ui.screens.entry.ColorCircle
 import com.aadil.spool.ui.theme.Dimens
+import kotlin.text.toLong
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -90,7 +93,7 @@ fun DashboardScreen(
         else -> 140.dp
     }
     var showBottomSheet by rememberSaveable { mutableStateOf(false) }
-    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = false)
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
     Scaffold(
         modifier = modifier,
@@ -101,7 +104,8 @@ fun DashboardScreen(
                 navigateUp = {},
                 modifier = modifier,
                 isDashboardScreen = true,
-                onFilterClick = { showBottomSheet = !showBottomSheet }
+                onFilterClick = { showBottomSheet = !showBottomSheet },
+                filamentListSize = listOfSpools.size
             )
         },
         floatingActionButton = {
@@ -130,7 +134,7 @@ fun DashboardScreen(
                 shape = MaterialTheme.shapes.medium
             ) {
                 FilterBottomSheet(
-                    modifier = modifier.padding(horizontal = 12.dp),
+                    modifier = modifier.padding(horizontal = 16.dp),
                     listOfUniqueBrandStrings = listOfUniqueBrandStrings,
                     listOfUniqueMaterialTypeStrings = listOfUniqueMaterialTypeStrings,
                     listOfUniqueColorHex = listOfUniqueColorHex,
@@ -275,71 +279,205 @@ fun FilterBottomSheet(
     val clearAllFilter = stringResource(R.string.clear_all_filters_button_label)
 
 
-    Column(
+    var expandBrand by rememberSaveable { mutableStateOf(false) }
+    var expandMaterial by rememberSaveable { mutableStateOf(false) }
+    var expandColor by rememberSaveable { mutableStateOf(false) }
+
+    LazyColumn(
         modifier = modifier
             .fillMaxWidth()
-            .verticalScroll(scrollState)
+            .padding(bottom = Dimens.PaddingMedium)
     ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            SpoolHeadingText(
-                text = stringResource(R.string.filter_by_label),
-                icon = Icons.Outlined.FilterList,
-            )
-            OutlinedButton(
-                onClick = { onFilterStringClick(clearAllFilter, FilterType.ALL) },
-                modifier = Modifier.height(Dimens.ClearAllButtonHeight),
-                shape = MaterialTheme.shapes.small,
-            ) {
-                Text(
-                    text = stringResource(R.string.clear_all_button_label),
-                    textAlign = TextAlign.Center,
-                    style = MaterialTheme.typography.bodySmall,
-                )
-            }
 
+        // TOP HEADER
+        item {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                SpoolHeadingText(
+                    text = stringResource(R.string.filter_by_label),
+                    icon = Icons.Outlined.FilterList,
+                )
+                OutlinedButton(
+                    onClick = { onFilterStringClick(clearAllFilter, FilterType.ALL) },
+                    modifier = Modifier.height(Dimens.ClearAllButtonHeight),
+                    shape = MaterialTheme.shapes.small,
+                ) {
+                    Text(
+                        text = stringResource(R.string.clear_all_button_label),
+                        textAlign = TextAlign.Center,
+                        style = MaterialTheme.typography.bodySmall,
+                    )
+                }
+
+            }
+            SpoolHorizontalDivider(
+                modifier = Modifier.padding(vertical = Dimens.PaddingMedium),
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
         }
 
-        SpoolHorizontalDivider(
-            modifier = Modifier.padding(vertical = Dimens.PaddingMedium),
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
 
-        // Brand Filter Card Implementation
-        FilterCard(
-            modifier = Modifier,
-            headerName = stringResource(R.string.brand_card_label),
-            listOfStrings = listOfUniqueBrandStrings,
-            selectedOption = selectedOption,
-            onFilterStringClick = {filterString -> onFilterStringClick(filterString, FilterType.BRAND) }
-        )
+        // BRAND SECTION
+        item {
+            FilterSectionHeader(
+                headerName = stringResource(R.string.brand_card_label),
+                isExpanded = expandBrand,
+                onToggle = { expandBrand = !expandBrand }
+            )
+        }
+        if (expandBrand) {
+            items(listOfUniqueBrandStrings) { brand ->
+                FilterOptionRow(
+                    option = brand,
+                    isSelected = brand == selectedOption,
+                    onClick = { onFilterStringClick(brand, FilterType.BRAND) }
+                )
+            }
+        }
 
-        // Material Filter Card Implementation
-        FilterCard(
-            modifier = Modifier,
-            headerName = stringResource(R.string.material_card_label),
-            listOfStrings = listOfUniqueMaterialTypeStrings,
-            selectedOption = selectedOption,
-            onFilterStringClick = {filterString -> onFilterStringClick(filterString, FilterType.MATERIAL) }
-        )
+        // MATERIAL SECTION
+        item {
+            FilterSectionHeader(
+                headerName = stringResource(R.string.material_card_label),
+                isExpanded = expandMaterial,
+                onToggle = { expandMaterial = !expandMaterial }
+            )
+        }
+        if (expandMaterial) {
+            items(listOfUniqueMaterialTypeStrings) { material ->
+                FilterOptionRow(
+                    option = material,
+                    isSelected = material == selectedOption,
+                    onClick = { onFilterStringClick(material, FilterType.MATERIAL) }
+                )
+            }
+        }
 
-        // Color Filter Card Implementation
-        FilterCard(
-            modifier = Modifier,
-            headerName = stringResource(R.string.color_card_label),
-            listOfStrings = listOfUniqueColorHex.map { colorHex-> colorHex.toString() },
-            selectedOption = selectedOption,
-            onFilterStringClick = {filterString -> onFilterStringClick(filterString, FilterType.COLOR) },
-            isColorGrid = true
-        )
+        // COLOR SECTION
+        item {
+            FilterSectionHeader(
+                headerName = stringResource(R.string.color_card_label),
+                isExpanded = expandColor,
+                onToggle = { expandColor = !expandColor }
+            )
+            if (expandColor) {
+                LazyRow(
+                    modifier = Modifier
+                        .heightIn(max = Dimens.ScrollableColorCardHeight)
+                        .padding(vertical = Dimens.PaddingSmall, horizontal = Dimens.PaddingTiny)
+                ) {
+                    items(listOfUniqueColorHex) { colorHex ->
+                        val optionParsed = colorHex.toString()
+                        val isSelected = optionParsed == selectedOption
+                        ColorCircle(
+                            colorHex = colorHex,
+                            isSelected = isSelected,
+                            onClick = { onFilterStringClick(optionParsed, FilterType.COLOR) },
+                            modifier = Modifier.padding(horizontal = Dimens.PaddingSmall)
+                        )
+                    }
+                }
+            }
+        }
 
     }
 
 }
 
+@Composable
+fun FilterSectionHeader(
+    modifier: Modifier = Modifier,
+    headerName: String,
+    isExpanded: Boolean,
+    onToggle: () -> Unit
+) {
+
+    Card(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(vertical = Dimens.PaddingTiny)
+            .clickable(onClick = { onToggle() }),
+        shape = MaterialTheme.shapes.small
+    ) {
+        // Top header row -> Brand & Icon
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(Dimens.PaddingSmall),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Text(
+                text = headerName,
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+            )
+            IconButton(
+                onClick = { onToggle() },
+            ) {
+                Icon(
+                    imageVector = if (!isExpanded) Icons.Outlined.ExpandMore else Icons.Outlined.ExpandLess,
+                    contentDescription = stringResource(R.string.filter_by_label),
+                    modifier = Modifier.size(Dimens.IconLarge)
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun FilterOptionRow(
+    modifier: Modifier = Modifier,
+    option: String,
+    isSelected: Boolean,
+    onClick: () -> Unit
+) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = Dimens.PaddingTiny)
+            .clip(MaterialTheme.shapes.small)
+            .border(
+                width = 1.dp,
+                color = MaterialTheme.colorScheme.outlineVariant,
+                shape = MaterialTheme.shapes.small
+            )
+            .clickable { onClick() }
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Text(
+                text = option,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(
+                        vertical = Dimens.PaddingTiny,
+                        horizontal = Dimens.PaddingSmall
+                    )
+                    .weight(1f)
+            )
+            if (isSelected) {
+                Icon(
+                    imageVector = Icons.Outlined.Done,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier
+                        .padding(
+                            vertical = Dimens.PaddingTiny,
+                            horizontal = Dimens.PaddingSmall
+                        )
+                )
+            }
+        }
+    }
+}
 
 @SuppressLint("ConfigurationScreenWidthHeight")
 @Composable
@@ -348,18 +486,17 @@ fun isTablet(): Boolean {
     return configuration.screenWidthDp >= 600
 }
 
-
-@Preview(showBackground = true)
-@Composable
-private fun SpoolCardPreview() {
-    SpoolItemCard(
-        brandName = "HackersSpool",
-        materialType = "PETG",
-        colorName = "Galaxy Mate Black",
-        totalWeight = "1000",
-        currentWeight = "230",
-        colorHex = 0xFF000000,
-        onCardClick = {},
-        modifier = Modifier
-    )
-}
+//@Preview(showBackground = true)
+//@Composable
+//private fun SpoolCardPreview() {
+//    SpoolItemCard(
+//        brandName = "HackersSpool",
+//        materialType = "PETG",
+//        colorName = "Galaxy Mate Black",
+//        totalWeight = "1000",
+//        currentWeight = "230",
+//        colorHex = 0xFF000000,
+//        onCardClick = {},
+//        modifier = Modifier
+//    )
+//}

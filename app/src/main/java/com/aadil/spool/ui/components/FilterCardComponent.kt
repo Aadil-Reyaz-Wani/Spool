@@ -4,6 +4,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
@@ -77,11 +78,30 @@ fun FilterCard(
             }
         }
 
+
         if (showFilterOptions) {
             SpoolHorizontalDivider(
                 modifier = Modifier.padding(horizontal = Dimens.PaddingSmall),
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
+
+            // This empty spool message is not yet in action because we are hiding the icon itself
+            // when the there is no filament to filter or there is an empty table in the db.
+            if (listOfStrings.isEmpty()) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(Dimens.PaddingSmall),
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        text = stringResource(R.string.empty_filter_card_message),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
 
             if (!isColorGrid){
                 LazyColumn(
@@ -142,8 +162,8 @@ fun FilterCard(
             }else {
                 LazyRow(
                     modifier = Modifier
-                        .heightIn(max = 100.dp)
-                        .padding(vertical = Dimens.PaddingTiny, horizontal = Dimens.PaddingSmall)
+                        .heightIn(max = Dimens.ScrollableColorCardHeight)
+                        .padding(vertical = Dimens.PaddingSmall, horizontal = Dimens.PaddingTiny)
                 ) {
                     items(listOfStrings) { option ->
                         val isSelected = option == selectedOption
