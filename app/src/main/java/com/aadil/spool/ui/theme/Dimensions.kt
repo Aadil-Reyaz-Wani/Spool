@@ -11,6 +11,9 @@ object Dimens {
     val PaddingLarge = 24.dp
     val PaddingExtraLarge = 32.dp
 
+    // Extra Paddings for some components
+    val FilterPillHorizontalPadding = 12.dp
+
     // Component Specifics
     val CardElevation = 4.dp
     val BorderThickness = 1.dp
@@ -44,8 +47,9 @@ object Dimens {
 
     val CustomScrollbarTopBottomPadding = 8.dp
 
-    // Custom heights
+    // Custom heights/widths
     val ScrollableCardHeight = 200.dp
     val ScrollableColorCardHeight = 100.dp
     val ClearAllButtonHeight = 32.dp
+    val FilterPillMaxWidth = 150.dp
 }
