@@ -57,7 +57,7 @@
 
     <string name="hint_nozzle">e.g. 120</string>
     <string name="hint_bed">e.g. 32</string>
-    <string name="hint_note">Write your note here...</string>
+    <string name="hint_note">Write your note here…</string>
     <string name="hint_color_code">e.g. 0xFF000000</string>
     <string name="hint_brand">e.g. Prusament</string>
     <string name="hint_price">e.g. $300</string>
@@ -104,5 +104,5 @@
 
 
 
-    <string name="version_number">v1.1.0 • Initializing</string>
+    <string name="version_number">v1.2.0 • Initializing</string>
 </resources>
