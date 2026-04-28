@@ -23,6 +23,7 @@ import com.aadil.spool.ui.screens.entry.SpoolEntryScreen
 import com.aadil.spool.ui.screens.entry.SpoolEntryViewModel
 import com.aadil.spool.ui.screens.history.PrintHistoryScreen
 import com.aadil.spool.ui.screens.history.PrintHistoryViewModel
+import com.aadil.spool.ui.screens.settings.SpoolSettingsViewModel
 import com.aadil.spool.ui.screens.splash.SplashScreen
 import kotlinx.coroutines.delay
 
@@ -35,6 +36,7 @@ fun MySpoolApp(modifier: Modifier = Modifier) {
     val spoolEntryViewModel: SpoolEntryViewModel = hiltViewModel()
     val spoolDetailsViewModel: SpoolDetailsViewModel = hiltViewModel()
     val printHistoryViewModel: PrintHistoryViewModel = hiltViewModel()
+    val spoolSettingsViewModel: SpoolSettingsViewModel = hiltViewModel()
 
     // Dashboard
     val listOfSpools by dashboardViewModel.getAllSpool.collectAsStateWithLifecycle()
@@ -56,6 +58,11 @@ fun MySpoolApp(modifier: Modifier = Modifier) {
 
     // Print History
     val spoolPrintUsageHistoryDetails by printHistoryViewModel.spoolPrintUsageHistoryDetails.collectAsStateWithLifecycle()
+
+    // Settings
+    val selectedCurrency by spoolSettingsViewModel.selectedCurrency.collectAsStateWithLifecycle()
+
+    // Navigation
 
 
     val backStack = rememberNavBackStack(Routes.Splash)
@@ -371,6 +378,7 @@ fun MySpoolApp(modifier: Modifier = Modifier) {
                     onConfirm = { id, weight ->
                         spoolDetailsViewModel.deductCurrentWeight(id = id, inputWeight = weight)
                     },
+                    selectedCurrency = selectedCurrency
                 )
             }
 

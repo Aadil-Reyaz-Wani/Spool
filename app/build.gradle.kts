@@ -113,4 +113,9 @@ dependencies {
     ksp(libs.hilt.android.compiler)
     implementation(libs.androidx.hilt.navigation.compose)
 
+    // Preferences DataStore (SharedPreferences like APIs)
+    implementation(libs.androidx.datastore.preferences)
+    // Alternatively - without an Android dependency.
+    implementation(libs.androidx.datastore.preferences.core)
+
 }
