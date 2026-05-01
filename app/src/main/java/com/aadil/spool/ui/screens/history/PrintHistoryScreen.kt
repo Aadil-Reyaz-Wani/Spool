@@ -56,7 +56,6 @@ fun PrintHistoryScreen(
     onEditClick: (UsageLog) -> Unit,
     onDeleteClick: (usageLog: UsageLog) -> Unit,
     modifier: Modifier = Modifier,
-    // Working...
     onGramsUsedValueChange: (String) -> Unit,
     onPrintTitleValueChange: (String) -> Unit,
     onConfirm: (Int, String) -> Unit,
@@ -100,7 +99,6 @@ fun PrintHistoryScreen(
                         title = log.title,
                         date = log.timestamp.toReadableDate(),
                         usedGrams = log.gramsUsed.toString(),
-//                        price = log.pricePerPrint.toString(),
                         price = log.pricePerPrint,
                         status = log.isFailure,
                         modifier = Modifier.padding(
@@ -128,7 +126,6 @@ fun PrintItemViewCard(
     title: String,
     date: String,
     usedGrams: String,
-//    price: String,
     price: Double,
     status: Boolean,
     modifier: Modifier = Modifier,
@@ -307,7 +304,6 @@ private fun PrintItemViewCardPrev() {
         title = "Iron Man Helmet",
         date = "231243521",
         usedGrams = "100",
-//        price = "0.25",
         price = 0.25,
         status = true,
         onGramsUsedValueChange = {},

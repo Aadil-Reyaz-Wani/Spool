@@ -1,6 +1,6 @@
 package com.aadil.spool.data
 
-object FilamentMaterialTypes {
+object SpoolLists {
     val materialTypes = listOf(
         "PLA",
         "ABS",
@@ -11,5 +11,12 @@ object FilamentMaterialTypes {
         "ASA",
         "PA",
         "PA-CF",
+    )
+
+    val currencyType = listOf(
+        "USD",
+        "EUR",
+        "GBP",
+        "INR"
     )
 }

@@ -120,10 +120,17 @@ fun MySpoolApp(modifier: Modifier = Modifier) {
                     listOfUniqueBrandStrings = listOfUniqueBrandStrings,
                     listOfUniqueMaterialTypeStrings = listOfUniqueMaterialTypeStrings,
                     listOfUniqueColorHex = listOfUniqueColorHex,
-                    onFilterStringClick = {filterString, filterType ->
-                        dashboardViewModel.applyFilter(filterValue = filterString, type = filterType)
+                    onFilterStringClick = { filterString, filterType ->
+                        dashboardViewModel.applyFilter(
+                            filterValue = filterString,
+                            type = filterType
+                        )
+                    },
+                    onCurrencyStringClick = { currencyCode ->
+                        spoolSettingsViewModel.saveCurrency(currencyCode)
                     },
                     selectedOption = filterAppliedState.whichFilter,
+                    selectedCurrency = selectedCurrency,
                 )
             }
 

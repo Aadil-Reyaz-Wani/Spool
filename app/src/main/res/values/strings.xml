@@ -98,6 +98,8 @@
     <string name="color_card_label">Color</string>
     <string name="empty_filter_card_message">Please Add Some Filaments in Inventory</string>
 
+    <string name="set_default_currency_code_button_label">Set Currency</string>
+    <string name="set_default_currency_button_label">Default</string>
 
 
 

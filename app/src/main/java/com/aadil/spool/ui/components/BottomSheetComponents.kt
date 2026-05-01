@@ -51,6 +51,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.aadil.spool.R
 import com.aadil.spool.ui.common.verticalScrollbar
@@ -62,11 +63,15 @@ import com.aadil.spool.ui.theme.Dimens
 @Composable
 fun FilterBottomSheet(
     modifier: Modifier = Modifier,
-    listOfUniqueBrandStrings: List<String>,
-    listOfUniqueMaterialTypeStrings: List<String>,
-    listOfUniqueColorHex: List<Long>,
-    onFilterStringClick: (String, FilterType) -> Unit,
-    selectedOption: String,
+    bottomSheetHeader: String,
+    listOfUniqueBrandStrings: List<String> = emptyList(),
+    listOfUniqueMaterialTypeStrings: List<String> = emptyList(),
+    listOfUniqueColorHex: List<Long> = emptyList(),
+    listOfCurrencyStrings: List<String> = emptyList(),
+    onFilterStringClick: (String, FilterType) -> Unit = { _, _ -> },
+    onCurrencyStringClick: (String) -> Unit = { _ -> },
+    selectedOption: String = "",
+    isCurrencyTab: Boolean = false
 ) {
     var expandBrand by rememberSaveable { mutableStateOf(false) }
     var expandMaterial by rememberSaveable { mutableStateOf(false) }
@@ -74,6 +79,7 @@ fun FilterBottomSheet(
 
     val scrollState = rememberScrollState()
     val clearAllFilter = stringResource(R.string.clear_all_filters_button_label)
+    val setDefaultCurrency = stringResource(R.string.set_default_currency_code_button_label)
 
     Column(
         modifier = modifier
@@ -89,19 +95,33 @@ fun FilterBottomSheet(
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             SpoolHeadingText(
-                text = stringResource(R.string.filter_by_label),
+                text = bottomSheetHeader,
                 icon = Icons.Outlined.FilterList,
             )
-            OutlinedButton(
-                onClick = { onFilterStringClick(clearAllFilter, FilterType.ALL) },
-                modifier = Modifier.height(Dimens.ClearAllButtonHeight),
-                shape = MaterialTheme.shapes.small,
-            ) {
-                Text(
-                    text = stringResource(R.string.clear_all_button_label),
-                    textAlign = TextAlign.Center,
-                    style = MaterialTheme.typography.bodySmall,
-                )
+            if (!isCurrencyTab) {
+                OutlinedButton(
+                    onClick = { onFilterStringClick(clearAllFilter, FilterType.ALL) },
+                    modifier = Modifier.height(Dimens.ClearAllButtonHeight),
+                    shape = MaterialTheme.shapes.small,
+                ) {
+                    Text(
+                        text = stringResource(R.string.clear_all_button_label),
+                        textAlign = TextAlign.Center,
+                        style = MaterialTheme.typography.bodySmall,
+                    )
+                }
+            }else {
+                OutlinedButton(
+                    onClick = { onCurrencyStringClick(setDefaultCurrency) },
+                    modifier = Modifier.height(Dimens.ClearAllButtonHeight),
+                    shape = MaterialTheme.shapes.small,
+                ) {
+                    Text(
+                        text = stringResource(R.string.set_default_currency_button_label),
+                        textAlign = TextAlign.Center,
+                        style = MaterialTheme.typography.bodySmall,
+                    )
+                }
             }
 
         }
@@ -111,63 +131,74 @@ fun FilterBottomSheet(
         )
 
 
-        // BRAND SECTION
-        FilterSectionHeader(
-            headerName = stringResource(R.string.brand_card_label),
-            isExpanded = expandBrand,
-            onToggle = { expandBrand = !expandBrand }
-        )
+        if (isCurrencyTab) {
+            CurrencySelectionRow(
+                selectedOption = selectedOption,
+                onCurrencyStringClick = onCurrencyStringClick,
+                listOfCurrencyStrings = listOfCurrencyStrings
+            )
+            return@Column
+        }else {
+            // BRAND SECTION
+            FilterSectionHeader(
+                headerName = stringResource(R.string.brand_card_label),
+                isExpanded = expandBrand,
+                onToggle = { expandBrand = !expandBrand }
+            )
 
-        FilterOptionArea(
-            listOfUniqueStrings = listOfUniqueBrandStrings,
-            expandOptions = expandBrand,
-            selectedOption = selectedOption,
-            onFilterStringClick = {brand-> onFilterStringClick(brand, FilterType.BRAND) }
-        )
+            FilterOptionArea(
+                listOfUniqueStrings = listOfUniqueBrandStrings,
+                expandOptions = expandBrand,
+                selectedOption = selectedOption,
+                onFilterStringClick = { brand -> onFilterStringClick(brand, FilterType.BRAND) }
+            )
 
 
-        // MATERIAL SECTION
-        FilterSectionHeader(
-            headerName = stringResource(R.string.material_card_label),
-            isExpanded = expandMaterial,
-            onToggle = { expandMaterial = !expandMaterial })
-        FilterOptionArea(
-            listOfUniqueStrings = listOfUniqueMaterialTypeStrings,
-            expandOptions = expandMaterial,
-            selectedOption = selectedOption,
-            onFilterStringClick = {material-> onFilterStringClick(material, FilterType.MATERIAL) }
-        )
+            // MATERIAL SECTION
+            FilterSectionHeader(
+                headerName = stringResource(R.string.material_card_label),
+                isExpanded = expandMaterial,
+                onToggle = { expandMaterial = !expandMaterial })
+            FilterOptionArea(
+                listOfUniqueStrings = listOfUniqueMaterialTypeStrings,
+                expandOptions = expandMaterial,
+                selectedOption = selectedOption,
+                onFilterStringClick = { material -> onFilterStringClick(material, FilterType.MATERIAL) }
+            )
 
-        // COLOR SECTION
-        FilterSectionHeader(
-            headerName = stringResource(R.string.color_card_label),
-            isExpanded = expandColor,
-            onToggle = { expandColor = !expandColor })
-        AnimatedVisibility(
-            visible = expandColor,
-            enter = expandVertically() + fadeIn(),
-            exit = shrinkVertically() + fadeOut()
-        ) {
-            LazyRow(
-                modifier = Modifier
-                    .heightIn(max = Dimens.ScrollableColorCardHeight)
-                    .padding(vertical = Dimens.PaddingSmall, horizontal = Dimens.PaddingTiny)
+            // COLOR SECTION
+            FilterSectionHeader(
+                headerName = stringResource(R.string.color_card_label),
+                isExpanded = expandColor,
+                onToggle = { expandColor = !expandColor })
+            AnimatedVisibility(
+                visible = expandColor,
+                enter = expandVertically() + fadeIn(),
+                exit = shrinkVertically() + fadeOut()
             ) {
-                items(listOfUniqueColorHex, key = { colorHex -> colorHex.toString() }) { colorHex ->
-                    val formattedColor = colorHex.toString()
-                    val isSelected = formattedColor == selectedOption
-                    ColorCircle(
-                        colorHex = colorHex,
-                        isSelected = isSelected,
-                        onClick = { onFilterStringClick(formattedColor, FilterType.COLOR) },
-                        modifier = Modifier
-                            .padding(horizontal = Dimens.PaddingSmall)
-                            .animateItem()
-                            .animateContentSize()
-                    )
+                LazyRow(
+                    modifier = Modifier
+                        .heightIn(max = Dimens.ScrollableColorCardHeight)
+                        .padding(vertical = Dimens.PaddingSmall, horizontal = Dimens.PaddingTiny)
+                ) {
+                    items(listOfUniqueColorHex, key = { colorHex -> colorHex.toString() }) { colorHex ->
+                        val formattedColor = colorHex.toString()
+                        val isSelected = formattedColor == selectedOption
+                        ColorCircle(
+                            colorHex = colorHex,
+                            isSelected = isSelected,
+                            onClick = { onFilterStringClick(formattedColor, FilterType.COLOR) },
+                            modifier = Modifier
+                                .padding(horizontal = Dimens.PaddingSmall)
+                                .animateItem()
+                                .animateContentSize()
+                        )
+                    }
                 }
             }
         }
+
+
     }
 
 }
@@ -265,13 +296,14 @@ fun FilterOptionRow(
     }
 
     Box(
+        contentAlignment = Alignment.Center,
         modifier = modifier
             .border(
                 width = 1.dp, color = MaterialTheme.colorScheme.outlineVariant, shape = CircleShape
             )
+            .background(color = color, shape = CircleShape)
             .clip(CircleShape)
             .clickable { onClick() }
-            .background(color)
             .padding(vertical = Dimens.PaddingTiny, horizontal = Dimens.FilterPillHorizontalPadding)
             .widthIn(max = Dimens.FilterPillMaxWidth)
 
@@ -284,4 +316,34 @@ fun FilterOptionRow(
             modifier = Modifier
         )
     }
+}
+
+
+@Composable
+fun CurrencySelectionRow(
+    modifier: Modifier = Modifier,
+    listOfCurrencyStrings: List<String>,
+    selectedOption: String,
+    onCurrencyStringClick: (String) -> Unit = {}
+) {
+
+    Text(
+        text = "Select Currency"
+    )
+    FilterOptionArea(
+        modifier = modifier,
+        listOfUniqueStrings = listOfCurrencyStrings,
+        expandOptions = true,
+        selectedOption = selectedOption,
+        onFilterStringClick = onCurrencyStringClick
+    )
+}
+
+@Preview
+@Composable
+private fun CurrencySelectionRowPrev() {
+    CurrencySelectionRow(
+        selectedOption = "INR",
+        listOfCurrencyStrings = listOf("INR", "USD", "EUR")
+    )
 }

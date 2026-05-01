@@ -16,7 +16,11 @@ class CurrencyPreferencesRepository @Inject constructor(
     }
 
     val currencyCodeFlow: Flow<String> = dataStore.data.map { preferences ->
-        preferences[PreferencesKeys.CURRENCY_CODE] ?: java.util.Currency.getInstance(java.util.Locale.getDefault()).currencyCode
+        if (preferences[PreferencesKeys.CURRENCY_CODE] == "Set Currency") {
+            java.util.Currency.getInstance(java.util.Locale.getDefault()).currencyCode
+        }else {
+            preferences[PreferencesKeys.CURRENCY_CODE] ?: java.util.Currency.getInstance(java.util.Locale.getDefault()).currencyCode
+        }
     }
 
     suspend fun updateCurrencyCode(newCode: String) {

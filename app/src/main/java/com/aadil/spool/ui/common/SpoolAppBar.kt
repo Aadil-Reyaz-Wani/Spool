@@ -2,12 +2,15 @@ package com.aadil.spool.ui.common
 
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.FilterList
+import androidx.compose.material.icons.outlined.FilterList
+import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -32,7 +35,9 @@ fun SpoolAppBar(
     canNavigateBack: Boolean,
     navigateUp: () -> Unit,
     isDashboardScreen: Boolean = false,
-    onFilterClick: () -> Unit = {},
+//    onFilterClick: () -> Unit = {},
+    onSettingsClick: () -> Unit = {},
+    dropDownMenu: @Composable () -> Unit = {},
     filamentListSize: Int = 0
 ) {
     TopAppBar(
@@ -49,15 +54,17 @@ fun SpoolAppBar(
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold
                 )
-
-                if (isDashboardScreen && filamentListSize > 0) {
-                    IconButton (
-                        onClick = onFilterClick
-                    ){
-                        Icon(
-                            imageVector = Icons.Default.FilterList,
-                            contentDescription = stringResource(R.string.filter_by_label)
-                        )
+                if (isDashboardScreen) {
+                    Box{
+                        IconButton (
+                            onClick = onSettingsClick
+                        ){
+                            Icon(
+                                imageVector = Icons.Outlined.Settings,
+                                contentDescription = "Settings"
+                            )
+                        }
+                        dropDownMenu()
                     }
                 }
             }
