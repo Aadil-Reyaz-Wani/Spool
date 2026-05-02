@@ -14,9 +14,11 @@ object SpoolLists {
     )
 
     val currencyType = listOf(
-        "USD",
-        "EUR",
-        "GBP",
-        "INR"
+        "USD", // US Dollar
+        "EUR", // Euro
+        "INR", // Indian Rupee
+        "GBP", // British Pound
+        "CAD", // Canadian Dollar
+        "AUD", // Australian Dollar
     )
 }

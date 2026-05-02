@@ -20,16 +20,12 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowForward
-import androidx.compose.material.icons.automirrored.outlined.ArrowForwardIos
-import androidx.compose.material.icons.automirrored.outlined.CompareArrows
 import androidx.compose.material.icons.automirrored.outlined.Notes
 import androidx.compose.material.icons.automirrored.outlined.StickyNote2
 import androidx.compose.material.icons.outlined.Apps
-import androidx.compose.material.icons.outlined.ArrowForward
 import androidx.compose.material.icons.outlined.Bathtub
 import androidx.compose.material.icons.outlined.DeleteOutline
 import androidx.compose.material.icons.outlined.DeviceThermostat
-import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.Print
 import androidx.compose.material.icons.outlined.Thermostat
 import androidx.compose.material.icons.outlined.Update
@@ -59,7 +55,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import com.aadil.spool.R
 import com.aadil.spool.data.entity.Filament
-import com.aadil.spool.data.entity.UsageLog
 import com.aadil.spool.ui.common.GhostCard
 import com.aadil.spool.ui.common.SpoolAppBar
 import com.aadil.spool.ui.components.DeleteConfirmationAlertDialog
@@ -481,7 +476,7 @@ fun MainDetailsCard(
                                 imageVector = Icons.AutoMirrored.Outlined.ArrowForward,
                                 contentDescription = null,
                                 tint = MaterialTheme.colorScheme.onSecondaryContainer,
-                                modifier = Modifier.size(Dimens.IconSmall)
+                                modifier = Modifier.size(Dimens.IconTiny)
                             )
                         }
                     }

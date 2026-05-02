@@ -9,6 +9,7 @@ plugins {
     id("com.google.devtools.ksp")
     alias(libs.plugins.androidx.room)
     id("com.google.dagger.hilt.android")
+    id("com.mikepenz.aboutlibraries.plugin")
 }
 
 
@@ -64,6 +65,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 }
 
@@ -117,5 +119,10 @@ dependencies {
     implementation(libs.androidx.datastore.preferences)
     // Alternatively - without an Android dependency.
     implementation(libs.androidx.datastore.preferences.core)
+
+
+    // AboutLibraries
+    implementation("com.mikepenz:aboutlibraries-core:11.2.2")
+    implementation("com.mikepenz:aboutlibraries-compose-m3:11.2.2")
 
 }

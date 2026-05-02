@@ -22,9 +22,12 @@ object Dimens {
     val CornerRadius = 16.dp
 
     // Icon Sizes
-    val IconSmall = 16.dp
+    val IconTiny = 16.dp
+    val IconSmall = 20.dp
     val IconMedium = 24.dp
     val IconLarge = 32.dp
+    val IconExtraLarge = 42.dp
+
 
     // Filament Specifics
     val ColorDotSize = 36.dp         // The circle showing filament color
@@ -33,10 +36,9 @@ object Dimens {
     val ProgressBarHeight = 12.dp    // Thick enough to read easily
     val SpoolCardMinHeight = 80.dp   // Minimum touch target for list items
     val HeightOrWidth = 4.dp
+
+
     val ButtonHeight = 50.dp
-
-
-    val IconSize = 42.dp
 
     //Text Sizes
     val TextInGhostCard = 18.sp

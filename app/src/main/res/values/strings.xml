@@ -99,12 +99,29 @@
     <string name="empty_filter_card_message">Please Add Some Filaments in Inventory</string>
 
     <string name="set_default_currency_code_button_label">Set Currency</string>
-    <string name="set_default_currency_button_label">Default</string>
+    <string name="set_default_currency_button_label">Set Default</string>
+
+
+
+    <!-- About Screen -->
+    <string name="created_by_label">Created by</string>
+    <string name="creator_label">Aadil Reyaz Wani</string>
+    <string name="about_screen_label">About</string>
+    <string name="our_mission_slogan">Spool is an offline-first 3D printing filament tracker built for speed. Designed so you own your inventory data with instant, offline access wherever your printers are.</string>
+    <string name="our_mission_header_label">Our Mission</string>
+    <string name="our_mission_header_labels">3D Printing Inventory</string>
+    <string name="social_x">Follow on X</string>
+    <string name="social_linkedin">Connect on LinkedIn</string>
+    <string name="open_source_licenses_label">Open Source Licenses</string>
+    <string name="privacy_policy_label">Privacy Policy</string>
+    <string name="rating_button_label">Rate on Google Play</string>
+    <string name="dot_separator_label">•</string>
 
 
 
 
 
-
-    <string name="version_number">v1.2.0 • Initializing</string>
+    <string name="default_version">1.2.0</string>
+<!--    <string name="version_number">v1.2.0 • Initializing</string>-->
+    <string name="version_number">v%1$s • Initializing</string>
 </resources>

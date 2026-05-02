@@ -61,15 +61,15 @@ import com.aadil.spool.ui.theme.Dimens
 // Solid Button
 @Composable
 fun SpoolButton(
+    modifier: Modifier = Modifier,
     text: String,
     icon: ImageVector,
-    contentDescription: String,
+    contentDescription: String = "",
     onClick: () -> Unit,
-    buttonContainerColor: Color,
-    buttonContentColor: Color,
-    enabled: Boolean,
-    hasBorder: Boolean,
-    modifier: Modifier = Modifier,
+    buttonContainerColor: Color = MaterialTheme.colorScheme.primary,
+    buttonContentColor: Color = MaterialTheme.colorScheme.onPrimary,
+    enabled: Boolean = true,
+    hasBorder: Boolean = false,
     buttonDefaultElevation: Dp = 4.dp,
     buttonPressedElevation: Dp = 2.dp,
 ) {
@@ -79,7 +79,7 @@ fun SpoolButton(
             .fillMaxWidth()
             .height(Dimens.ButtonHeight),
         enabled = enabled,
-        shape = MaterialTheme.shapes.extraLarge,
+        shape = MaterialTheme.shapes.medium,
         colors = ButtonDefaults.buttonColors(
             containerColor = buttonContainerColor,
             contentColor = buttonContentColor,
@@ -101,8 +101,9 @@ fun SpoolButton(
         Spacer(modifier = Modifier.width(Dimens.HeightOrWidth))
         Text(
             text = text,
-            style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.Bold
+            style = MaterialTheme.typography.labelLarge,
+            fontWeight = FontWeight.Bold,
+            color = buttonContentColor
         )
     }
 }

@@ -65,7 +65,7 @@ fun GhostCard(
                 contentDescription = "Ghost Card Icon",
                 tint = MaterialTheme.colorScheme.outline.copy(alpha = 0.7f),
                 modifier = Modifier
-                    .size(Dimens.IconSize)
+                    .size(Dimens.IconExtraLarge)
                     .background(
                         MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.07f),
                         shape = CircleShape

@@ -27,6 +27,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.CurrencyExchange
 import androidx.compose.material.icons.outlined.ExpandLess
 import androidx.compose.material.icons.outlined.ExpandMore
 import androidx.compose.material.icons.outlined.FilterList
@@ -96,7 +97,7 @@ fun FilterBottomSheet(
         ) {
             SpoolHeadingText(
                 text = bottomSheetHeader,
-                icon = Icons.Outlined.FilterList,
+                icon = if (isCurrencyTab) Icons.Outlined.CurrencyExchange else Icons.Outlined.FilterList,
             )
             if (!isCurrencyTab) {
                 OutlinedButton(
@@ -328,7 +329,10 @@ fun CurrencySelectionRow(
 ) {
 
     Text(
-        text = "Select Currency"
+        text = "Select Currency",
+        style = MaterialTheme.typography.titleMedium,
+        fontWeight = FontWeight.Bold,
+        modifier = Modifier.padding(horizontal = Dimens.PaddingSmall, vertical = Dimens.PaddingTiny)
     )
     FilterOptionArea(
         modifier = modifier,

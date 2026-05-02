@@ -76,6 +76,7 @@ fun DashboardScreen(
     selectedOption: String,
     selectedCurrency: String,
     modifier: Modifier = Modifier,
+    onAboutClick: () -> Unit,
 ) {
 
     val adaptiveMinSize = when {
@@ -111,6 +112,10 @@ fun DashboardScreen(
                             showBottomSheet = !showBottomSheet
                             isSettingsMenuVisible = false
                             isCurrencyClicked = true
+                        },
+                        onAboutClick = {
+                            onAboutClick()
+                            isSettingsMenuVisible = false
                         }
                     )
                 },
@@ -159,7 +164,7 @@ fun DashboardScreen(
                     FilterBottomSheet(
                         modifier = modifier.padding(horizontal = 16.dp),
                         listOfCurrencyStrings = SpoolLists.currencyType,
-                        bottomSheetHeader = "Select Currency",
+                        bottomSheetHeader = "Currency",
                         listOfUniqueBrandStrings = listOfUniqueBrandStrings,
                         onFilterStringClick = { filterOption, filterType ->
                             onFilterStringClick(filterOption, filterType)
@@ -316,7 +321,8 @@ private fun SpoolCardPreview() {
         expanded = true,
         onDismissRequest = {},
         onFilterClick = {},
-        onCurrencyClick = {}
+        onCurrencyClick = {},
+        onAboutClick = {},
     )
 }
 
@@ -327,6 +333,7 @@ fun DropdownMenuWithDetails(
     onDismissRequest: () -> Unit,
     onFilterClick: () -> Unit,
     onCurrencyClick: () -> Unit,
+    onAboutClick: () -> Unit,
 ) {
     DropdownMenu(
         expanded = expanded,
@@ -347,7 +354,7 @@ fun DropdownMenuWithDetails(
         DropdownMenuItem(
             text = { Text("About") },
             trailingIcon = { Icon(Icons.Outlined.Info, contentDescription = null) },
-            onClick = { /* Do something... */ }
+            onClick = onAboutClick
         )
         DropdownMenuItem(
             text = { Text("Help") },
