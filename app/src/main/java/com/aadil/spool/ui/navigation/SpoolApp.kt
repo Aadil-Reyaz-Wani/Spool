@@ -33,6 +33,7 @@ import com.aadil.spool.ui.screens.entry.SpoolEntryViewModel
 import com.aadil.spool.ui.screens.history.PrintHistoryScreen
 import com.aadil.spool.ui.screens.history.PrintHistoryViewModel
 import com.aadil.spool.ui.screens.settings.AboutScreen
+import com.aadil.spool.ui.screens.settings.HelpScreen
 import com.aadil.spool.ui.screens.settings.SpoolSettingsViewModel
 import com.aadil.spool.ui.screens.splash.SplashScreen
 import com.mikepenz.aboutlibraries.ui.compose.m3.LibrariesContainer
@@ -144,6 +145,9 @@ fun MySpoolApp(modifier: Modifier = Modifier) {
                     selectedCurrency = selectedCurrency,
                     onAboutClick = {
                         backStack.add(Routes.About)
+                    },
+                    onHelpClick = {
+                        backStack.add(Routes.Help)
                     }
                 )
             }
@@ -428,7 +432,12 @@ fun MySpoolApp(modifier: Modifier = Modifier) {
                             .padding(paddingValues),
                     )
                 }
+            }
 
+            entry<Routes.Help> {
+                HelpScreen(
+                    navigateUp = safePopBackStack
+                )
             }
 
         }

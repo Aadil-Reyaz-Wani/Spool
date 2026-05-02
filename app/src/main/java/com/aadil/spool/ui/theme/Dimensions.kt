@@ -51,6 +51,7 @@ object Dimens {
 
     // Custom heights/widths
     val ScrollableCardHeight = 200.dp
+    val MenuBarWidth = 200.dp
     val ScrollableColorCardHeight = 100.dp
     val ClearAllButtonHeight = 32.dp
     val FilterPillMaxWidth = 150.dp

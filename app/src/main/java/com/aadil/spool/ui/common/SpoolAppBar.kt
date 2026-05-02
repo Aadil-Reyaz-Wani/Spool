@@ -1,6 +1,9 @@
 package com.aadil.spool.ui.common
 
 
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -19,8 +22,10 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -38,8 +43,18 @@ fun SpoolAppBar(
 //    onFilterClick: () -> Unit = {},
     onSettingsClick: () -> Unit = {},
     dropDownMenu: @Composable () -> Unit = {},
-    filamentListSize: Int = 0
+    isSettingsMenuExpanded: Boolean = false
 ) {
+
+    val rotateAngle by animateFloatAsState(
+        targetValue =  if (isSettingsMenuExpanded) 180f else 0f,
+        animationSpec = tween (
+            durationMillis = 400,
+            easing = FastOutSlowInEasing
+        ),
+        label = "setting_gear_rotation"
+    )
+
     TopAppBar(
         title = {
             Row(
@@ -57,11 +72,14 @@ fun SpoolAppBar(
                 if (isDashboardScreen) {
                     Box{
                         IconButton (
-                            onClick = onSettingsClick
+                            onClick = {
+                                onSettingsClick()
+                            }
                         ){
                             Icon(
                                 imageVector = Icons.Outlined.Settings,
-                                contentDescription = "Settings"
+                                contentDescription = "Settings",
+                                modifier = Modifier.rotate(rotateAngle)
                             )
                         }
                         dropDownMenu()

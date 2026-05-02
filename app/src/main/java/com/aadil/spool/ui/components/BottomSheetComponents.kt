@@ -31,6 +31,10 @@ import androidx.compose.material.icons.outlined.CurrencyExchange
 import androidx.compose.material.icons.outlined.ExpandLess
 import androidx.compose.material.icons.outlined.ExpandMore
 import androidx.compose.material.icons.outlined.FilterList
+import androidx.compose.material.icons.outlined.HourglassEmpty
+import androidx.compose.material.icons.outlined.Inventory2
+import androidx.compose.material.icons.outlined.Paid
+import androidx.compose.material.icons.outlined.Wallet
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -55,6 +59,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.aadil.spool.R
+import com.aadil.spool.ui.common.GhostCard
 import com.aadil.spool.ui.common.verticalScrollbar
 import com.aadil.spool.ui.screens.dashboard.FilterType
 import com.aadil.spool.ui.screens.entry.ColorCircle
@@ -97,21 +102,23 @@ fun FilterBottomSheet(
         ) {
             SpoolHeadingText(
                 text = bottomSheetHeader,
-                icon = if (isCurrencyTab) Icons.Outlined.CurrencyExchange else Icons.Outlined.FilterList,
+                icon = if (isCurrencyTab) Icons.Outlined.Wallet else Icons.Outlined.FilterList,
             )
             if (!isCurrencyTab) {
-                OutlinedButton(
-                    onClick = { onFilterStringClick(clearAllFilter, FilterType.ALL) },
-                    modifier = Modifier.height(Dimens.ClearAllButtonHeight),
-                    shape = MaterialTheme.shapes.small,
-                ) {
-                    Text(
-                        text = stringResource(R.string.clear_all_button_label),
-                        textAlign = TextAlign.Center,
-                        style = MaterialTheme.typography.bodySmall,
-                    )
+                if (listOfUniqueBrandStrings.isNotEmpty() || listOfUniqueMaterialTypeStrings.isNotEmpty() || listOfUniqueColorHex.isNotEmpty()){
+                    OutlinedButton(
+                        onClick = { onFilterStringClick(clearAllFilter, FilterType.ALL) },
+                        modifier = Modifier.height(Dimens.ClearAllButtonHeight),
+                        shape = MaterialTheme.shapes.small,
+                    ) {
+                        Text(
+                            text = stringResource(R.string.clear_all_button_label),
+                            textAlign = TextAlign.Center,
+                            style = MaterialTheme.typography.bodySmall,
+                        )
+                    }
                 }
-            }else {
+            } else {
                 OutlinedButton(
                     onClick = { onCurrencyStringClick(setDefaultCurrency) },
                     modifier = Modifier.height(Dimens.ClearAllButtonHeight),
@@ -139,61 +146,79 @@ fun FilterBottomSheet(
                 listOfCurrencyStrings = listOfCurrencyStrings
             )
             return@Column
-        }else {
-            // BRAND SECTION
-            FilterSectionHeader(
-                headerName = stringResource(R.string.brand_card_label),
-                isExpanded = expandBrand,
-                onToggle = { expandBrand = !expandBrand }
-            )
+        } else {
+            if (listOfUniqueBrandStrings.isEmpty() || listOfUniqueMaterialTypeStrings.isEmpty() || listOfUniqueColorHex.isEmpty()) {
+                GhostCard(
+                    text = "Empty inventory, empty filters.",
+                    icon = Icons.Outlined.Inventory2
+                )
+                return@Column
+            } else {
+                // BRAND SECTION
+                FilterSectionHeader(
+                    headerName = stringResource(R.string.brand_card_label),
+                    isExpanded = expandBrand,
+                    onToggle = { expandBrand = !expandBrand }
+                )
 
-            FilterOptionArea(
-                listOfUniqueStrings = listOfUniqueBrandStrings,
-                expandOptions = expandBrand,
-                selectedOption = selectedOption,
-                onFilterStringClick = { brand -> onFilterStringClick(brand, FilterType.BRAND) }
-            )
+                FilterOptionArea(
+                    listOfUniqueStrings = listOfUniqueBrandStrings,
+                    expandOptions = expandBrand,
+                    selectedOption = selectedOption,
+                    onFilterStringClick = { brand -> onFilterStringClick(brand, FilterType.BRAND) }
+                )
 
 
-            // MATERIAL SECTION
-            FilterSectionHeader(
-                headerName = stringResource(R.string.material_card_label),
-                isExpanded = expandMaterial,
-                onToggle = { expandMaterial = !expandMaterial })
-            FilterOptionArea(
-                listOfUniqueStrings = listOfUniqueMaterialTypeStrings,
-                expandOptions = expandMaterial,
-                selectedOption = selectedOption,
-                onFilterStringClick = { material -> onFilterStringClick(material, FilterType.MATERIAL) }
-            )
-
-            // COLOR SECTION
-            FilterSectionHeader(
-                headerName = stringResource(R.string.color_card_label),
-                isExpanded = expandColor,
-                onToggle = { expandColor = !expandColor })
-            AnimatedVisibility(
-                visible = expandColor,
-                enter = expandVertically() + fadeIn(),
-                exit = shrinkVertically() + fadeOut()
-            ) {
-                LazyRow(
-                    modifier = Modifier
-                        .heightIn(max = Dimens.ScrollableColorCardHeight)
-                        .padding(vertical = Dimens.PaddingSmall, horizontal = Dimens.PaddingTiny)
-                ) {
-                    items(listOfUniqueColorHex, key = { colorHex -> colorHex.toString() }) { colorHex ->
-                        val formattedColor = colorHex.toString()
-                        val isSelected = formattedColor == selectedOption
-                        ColorCircle(
-                            colorHex = colorHex,
-                            isSelected = isSelected,
-                            onClick = { onFilterStringClick(formattedColor, FilterType.COLOR) },
-                            modifier = Modifier
-                                .padding(horizontal = Dimens.PaddingSmall)
-                                .animateItem()
-                                .animateContentSize()
+                // MATERIAL SECTION
+                FilterSectionHeader(
+                    headerName = stringResource(R.string.material_card_label),
+                    isExpanded = expandMaterial,
+                    onToggle = { expandMaterial = !expandMaterial })
+                FilterOptionArea(
+                    listOfUniqueStrings = listOfUniqueMaterialTypeStrings,
+                    expandOptions = expandMaterial,
+                    selectedOption = selectedOption,
+                    onFilterStringClick = { material ->
+                        onFilterStringClick(
+                            material,
+                            FilterType.MATERIAL
                         )
+                    }
+                )
+
+                // COLOR SECTION
+                FilterSectionHeader(
+                    headerName = stringResource(R.string.color_card_label),
+                    isExpanded = expandColor,
+                    onToggle = { expandColor = !expandColor })
+                AnimatedVisibility(
+                    visible = expandColor,
+                    enter = expandVertically() + fadeIn(),
+                    exit = shrinkVertically() + fadeOut()
+                ) {
+                    LazyRow(
+                        modifier = Modifier
+                            .heightIn(max = Dimens.ScrollableColorCardHeight)
+                            .padding(
+                                vertical = Dimens.PaddingSmall,
+                                horizontal = Dimens.PaddingTiny
+                            )
+                    ) {
+                        items(
+                            listOfUniqueColorHex,
+                            key = { colorHex -> colorHex.toString() }) { colorHex ->
+                            val formattedColor = colorHex.toString()
+                            val isSelected = formattedColor == selectedOption
+                            ColorCircle(
+                                colorHex = colorHex,
+                                isSelected = isSelected,
+                                onClick = { onFilterStringClick(formattedColor, FilterType.COLOR) },
+                                modifier = Modifier
+                                    .padding(horizontal = Dimens.PaddingSmall)
+                                    .animateItem()
+                                    .animateContentSize()
+                            )
+                        }
                     }
                 }
             }
@@ -271,6 +296,7 @@ fun FilterOptionArea(
             horizontalArrangement = Arrangement.spacedBy(Dimens.PaddingSmall),
             verticalArrangement = Arrangement.spacedBy(Dimens.PaddingSmall)
         ) {
+
             listOfUniqueStrings.forEach { option ->
                 FilterOptionRow(
                     modifier = Modifier,

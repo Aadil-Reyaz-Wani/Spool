@@ -19,11 +19,14 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.Help
+import androidx.compose.material.icons.automirrored.outlined.HelpOutline
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.outlined.AddTask
 import androidx.compose.material.icons.outlined.CurrencyExchange
 import androidx.compose.material.icons.outlined.FilterList
 import androidx.compose.material.icons.outlined.Info
+import androidx.compose.material.icons.outlined.Paid
+import androidx.compose.material.icons.outlined.Wallet
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DropdownMenu
@@ -77,6 +80,7 @@ fun DashboardScreen(
     selectedCurrency: String,
     modifier: Modifier = Modifier,
     onAboutClick: () -> Unit,
+    onHelpClick: () -> Unit,
 ) {
 
     val adaptiveMinSize = when {
@@ -86,7 +90,7 @@ fun DashboardScreen(
     var showBottomSheet by rememberSaveable { mutableStateOf(false) }
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
-    var isSettingsMenuVisible by rememberSaveable { mutableStateOf(false) }
+    var isSettingsMenuExpanded by rememberSaveable { mutableStateOf(false) }
     var isCurrencyClicked by rememberSaveable { mutableStateOf(false)}
 
     Scaffold(
@@ -98,28 +102,32 @@ fun DashboardScreen(
                 navigateUp = {},
                 modifier = modifier,
                 isDashboardScreen = true,
-                onSettingsClick = { isSettingsMenuVisible = !isSettingsMenuVisible },
+                onSettingsClick = { isSettingsMenuExpanded = !isSettingsMenuExpanded },
                 dropDownMenu = {
                     DropdownMenuWithDetails(
-                        expanded = isSettingsMenuVisible,
-                        onDismissRequest = { isSettingsMenuVisible = !isSettingsMenuVisible },
+                        expanded = isSettingsMenuExpanded,
+                        onDismissRequest = { isSettingsMenuExpanded = !isSettingsMenuExpanded },
                         onFilterClick = {
                             showBottomSheet = !showBottomSheet
-                            isSettingsMenuVisible = false
+                            isSettingsMenuExpanded = false
                             isCurrencyClicked = false
                         },
                         onCurrencyClick = {
                             showBottomSheet = !showBottomSheet
-                            isSettingsMenuVisible = false
+                            isSettingsMenuExpanded = false
                             isCurrencyClicked = true
                         },
                         onAboutClick = {
                             onAboutClick()
-                            isSettingsMenuVisible = false
+                            isSettingsMenuExpanded = false
+                        },
+                        onHelpClick = {
+                            onHelpClick()
+                            isSettingsMenuExpanded = false
                         }
                     )
                 },
-                filamentListSize = listOfSpools.size
+                isSettingsMenuExpanded = isSettingsMenuExpanded
             )
         },
         floatingActionButton = {
@@ -306,23 +314,15 @@ fun isTablet(): Boolean {
 @Preview(showBackground = true)
 @Composable
 private fun SpoolCardPreview() {
-//    SpoolItemCard(
-//        brandName = "HackersSpool",
-//        materialType = "PETG",
-//        colorName = "Galaxy Mate Black",
-//        totalWeight = "1000",
-//        currentWeight = "230",
-//        colorHex = 0xFF000000,
-//        onCardClick = {},
-//        modifier = Modifier
-//    )
-
-    DropdownMenuWithDetails(
-        expanded = true,
-        onDismissRequest = {},
-        onFilterClick = {},
-        onCurrencyClick = {},
-        onAboutClick = {},
+    SpoolItemCard(
+        brandName = "HackersSpool",
+        materialType = "PETG",
+        colorName = "Galaxy Mate Black",
+        totalWeight = "1000",
+        currentWeight = "230",
+        colorHex = 0xFF000000,
+        onCardClick = {},
+        modifier = Modifier
     )
 }
 
@@ -334,12 +334,13 @@ fun DropdownMenuWithDetails(
     onFilterClick: () -> Unit,
     onCurrencyClick: () -> Unit,
     onAboutClick: () -> Unit,
+    onHelpClick: () -> Unit,
 ) {
     DropdownMenu(
         expanded = expanded,
         onDismissRequest = onDismissRequest,
         modifier = Modifier
-            .widthIn(min = 150.dp)
+            .widthIn(min = Dimens.MenuBarWidth)
     ) {
         DropdownMenuItem(
             text = { Text(stringResource(R.string.filter_by_label)) },
@@ -348,7 +349,7 @@ fun DropdownMenuWithDetails(
         )
         DropdownMenuItem(
             text = { Text("Currency") },
-            trailingIcon = { Icon(Icons.Outlined.CurrencyExchange, contentDescription = null) },
+            trailingIcon = { Icon(Icons.Outlined.Wallet, contentDescription = null) },
             onClick = onCurrencyClick
         )
         DropdownMenuItem(
@@ -358,8 +359,8 @@ fun DropdownMenuWithDetails(
         )
         DropdownMenuItem(
             text = { Text("Help") },
-            trailingIcon = { Icon(Icons.AutoMirrored.Outlined.Help, contentDescription = null) },
-            onClick = { /* Do something... */ }
+            trailingIcon = { Icon(Icons.AutoMirrored.Outlined.HelpOutline, contentDescription = null) },
+            onClick = onHelpClick
         )
     }
 }
