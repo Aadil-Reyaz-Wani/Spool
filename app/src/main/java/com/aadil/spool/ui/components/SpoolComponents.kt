@@ -1,5 +1,8 @@
 package com.aadil.spool.ui.components
 
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -44,6 +47,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -215,6 +219,15 @@ fun SpoolDropDownMenu(
     keyboardActions: KeyboardActions = KeyboardActions.Default
 ) {
     var isExpanded by rememberSaveable { mutableStateOf(false) }
+    val rotationAngle by animateFloatAsState(
+        targetValue = if (isExpanded) 180f else 0f,
+        animationSpec = tween(
+            durationMillis = 400,
+            easing = FastOutSlowInEasing
+        ),
+        label = "arrow_rotation"
+    )
+
     ExposedDropdownMenuBox(
         expanded = isExpanded,
         onExpandedChange = { isExpanded = it },
@@ -233,17 +246,11 @@ fun SpoolDropDownMenu(
             placeholder = { Text(placeholder, color = Color.Gray) },
             readOnly = true,
             trailingIcon = {
-                if (!isExpanded) {
                     Icon(
                         Icons.Outlined.KeyboardArrowDown,
-                        contentDescription = null
+                        contentDescription = null,
+                        modifier = Modifier.rotate(rotationAngle)
                     )
-                } else {
-                    Icon(
-                        Icons.Outlined.KeyboardArrowUp,
-                        contentDescription = null
-                    )
-                }
             },
             shape = MaterialTheme.shapes.medium,
             singleLine = singleLine,
