@@ -1,5 +1,8 @@
 package com.aadil.spool.ui.components
 
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -44,6 +47,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -52,7 +56,7 @@ import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.aadil.spool.data.FilamentMaterialTypes.materialTypes
+import com.aadil.spool.data.SpoolLists.materialTypes
 import com.aadil.spool.ui.common.verticalScrollbar
 import com.aadil.spool.ui.theme.BrandOrange
 import com.aadil.spool.ui.theme.Dimens
@@ -61,15 +65,15 @@ import com.aadil.spool.ui.theme.Dimens
 // Solid Button
 @Composable
 fun SpoolButton(
+    modifier: Modifier = Modifier,
     text: String,
     icon: ImageVector,
-    contentDescription: String,
+    contentDescription: String = "",
     onClick: () -> Unit,
-    buttonContainerColor: Color,
-    buttonContentColor: Color,
-    enabled: Boolean,
-    hasBorder: Boolean,
-    modifier: Modifier = Modifier,
+    buttonContainerColor: Color = MaterialTheme.colorScheme.primary,
+    buttonContentColor: Color = MaterialTheme.colorScheme.onPrimary,
+    enabled: Boolean = true,
+    hasBorder: Boolean = false,
     buttonDefaultElevation: Dp = 4.dp,
     buttonPressedElevation: Dp = 2.dp,
 ) {
@@ -79,7 +83,7 @@ fun SpoolButton(
             .fillMaxWidth()
             .height(Dimens.ButtonHeight),
         enabled = enabled,
-        shape = MaterialTheme.shapes.extraLarge,
+        shape = MaterialTheme.shapes.medium,
         colors = ButtonDefaults.buttonColors(
             containerColor = buttonContainerColor,
             contentColor = buttonContentColor,
@@ -101,8 +105,9 @@ fun SpoolButton(
         Spacer(modifier = Modifier.width(Dimens.HeightOrWidth))
         Text(
             text = text,
-            style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.Bold
+            style = MaterialTheme.typography.labelLarge,
+            fontWeight = FontWeight.Bold,
+            color = buttonContentColor
         )
     }
 }
@@ -214,6 +219,15 @@ fun SpoolDropDownMenu(
     keyboardActions: KeyboardActions = KeyboardActions.Default
 ) {
     var isExpanded by rememberSaveable { mutableStateOf(false) }
+    val rotationAngle by animateFloatAsState(
+        targetValue = if (isExpanded) 180f else 0f,
+        animationSpec = tween(
+            durationMillis = 400,
+            easing = FastOutSlowInEasing
+        ),
+        label = "arrow_rotation"
+    )
+
     ExposedDropdownMenuBox(
         expanded = isExpanded,
         onExpandedChange = { isExpanded = it },
@@ -232,17 +246,11 @@ fun SpoolDropDownMenu(
             placeholder = { Text(placeholder, color = Color.Gray) },
             readOnly = true,
             trailingIcon = {
-                if (!isExpanded) {
                     Icon(
                         Icons.Outlined.KeyboardArrowDown,
-                        contentDescription = null
+                        contentDescription = null,
+                        modifier = Modifier.rotate(rotationAngle)
                     )
-                } else {
-                    Icon(
-                        Icons.Outlined.KeyboardArrowUp,
-                        contentDescription = null
-                    )
-                }
             },
             shape = MaterialTheme.shapes.medium,
             singleLine = singleLine,

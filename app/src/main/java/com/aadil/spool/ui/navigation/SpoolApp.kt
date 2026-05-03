@@ -3,11 +3,18 @@ package com.aadil.spool.ui.navigation
 import android.annotation.SuppressLint
 import android.app.Activity
 import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.darkColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
@@ -15,6 +22,8 @@ import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
+import com.aadil.spool.R
+import com.aadil.spool.ui.common.SpoolAppBar
 import com.aadil.spool.ui.screens.dashboard.DashboardScreen
 import com.aadil.spool.ui.screens.dashboard.DashboardViewModel
 import com.aadil.spool.ui.screens.details.SpoolDetailsScreen
@@ -23,7 +32,11 @@ import com.aadil.spool.ui.screens.entry.SpoolEntryScreen
 import com.aadil.spool.ui.screens.entry.SpoolEntryViewModel
 import com.aadil.spool.ui.screens.history.PrintHistoryScreen
 import com.aadil.spool.ui.screens.history.PrintHistoryViewModel
+import com.aadil.spool.ui.screens.settings.AboutScreen
+import com.aadil.spool.ui.screens.settings.HelpScreen
+import com.aadil.spool.ui.screens.settings.SpoolSettingsViewModel
 import com.aadil.spool.ui.screens.splash.SplashScreen
+import com.mikepenz.aboutlibraries.ui.compose.m3.LibrariesContainer
 import kotlinx.coroutines.delay
 
 @SuppressLint("ContextCastToActivity")
@@ -35,6 +48,7 @@ fun MySpoolApp(modifier: Modifier = Modifier) {
     val spoolEntryViewModel: SpoolEntryViewModel = hiltViewModel()
     val spoolDetailsViewModel: SpoolDetailsViewModel = hiltViewModel()
     val printHistoryViewModel: PrintHistoryViewModel = hiltViewModel()
+    val spoolSettingsViewModel: SpoolSettingsViewModel = hiltViewModel()
 
     // Dashboard
     val listOfSpools by dashboardViewModel.getAllSpool.collectAsStateWithLifecycle()
@@ -56,6 +70,11 @@ fun MySpoolApp(modifier: Modifier = Modifier) {
 
     // Print History
     val spoolPrintUsageHistoryDetails by printHistoryViewModel.spoolPrintUsageHistoryDetails.collectAsStateWithLifecycle()
+
+    // Settings
+    val selectedCurrency by spoolSettingsViewModel.selectedCurrency.collectAsStateWithLifecycle()
+
+    // Navigation
 
 
     val backStack = rememberNavBackStack(Routes.Splash)
@@ -113,10 +132,23 @@ fun MySpoolApp(modifier: Modifier = Modifier) {
                     listOfUniqueBrandStrings = listOfUniqueBrandStrings,
                     listOfUniqueMaterialTypeStrings = listOfUniqueMaterialTypeStrings,
                     listOfUniqueColorHex = listOfUniqueColorHex,
-                    onFilterStringClick = {filterString, filterType ->
-                        dashboardViewModel.applyFilter(filterValue = filterString, type = filterType)
+                    onFilterStringClick = { filterString, filterType ->
+                        dashboardViewModel.applyFilter(
+                            filterValue = filterString,
+                            type = filterType
+                        )
+                    },
+                    onCurrencyStringClick = { currencyCode ->
+                        spoolSettingsViewModel.saveCurrency(currencyCode)
                     },
                     selectedOption = filterAppliedState.whichFilter,
+                    selectedCurrency = selectedCurrency,
+                    onAboutClick = {
+                        backStack.add(Routes.About)
+                    },
+                    onHelpClick = {
+                        backStack.add(Routes.Help)
+                    }
                 )
             }
 
@@ -371,6 +403,40 @@ fun MySpoolApp(modifier: Modifier = Modifier) {
                     onConfirm = { id, weight ->
                         spoolDetailsViewModel.deductCurrentWeight(id = id, inputWeight = weight)
                     },
+                    selectedCurrency = selectedCurrency
+                )
+            }
+
+            entry<Routes.About> {
+                AboutScreen(
+                    navigateUp = { safePopBackStack() },
+                    onOpenSourceLicenseClick = {
+                        backStack.add(Routes.OpenSourceLicenses)
+                    }
+                )
+            }
+
+            entry<Routes.OpenSourceLicenses> {
+                Scaffold(
+                    topBar = {
+                        SpoolAppBar(
+                            title = stringResource(R.string.open_source_licenses_label),
+                            canNavigateBack = true,
+                            navigateUp = safePopBackStack
+                        )
+                    }
+                ) { paddingValues ->
+                    LibrariesContainer(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(paddingValues),
+                    )
+                }
+            }
+
+            entry<Routes.Help> {
+                HelpScreen(
+                    navigateUp = safePopBackStack
                 )
             }
 

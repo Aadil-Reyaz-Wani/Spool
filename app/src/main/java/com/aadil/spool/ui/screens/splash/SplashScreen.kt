@@ -26,6 +26,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.aadil.spool.BuildConfig
 import com.aadil.spool.R
 import com.aadil.spool.ui.theme.BrandOrange
 import com.aadil.spool.ui.theme.Dimens
@@ -127,7 +128,7 @@ fun AppDetails(modifier: Modifier = Modifier) {
         )
         Spacer(modifier = Modifier.height(Dimens.PaddingSmall))
         Text(
-            text = stringResource(R.string.version_number),
+            text = stringResource(R.string.version_number, BuildConfig.VERSION_NAME),
             letterSpacing = Dimens.LetterSpacing,
             style = MaterialTheme.typography.bodySmall,
             color = BrandOrange.copy(alpha = 0.6f)

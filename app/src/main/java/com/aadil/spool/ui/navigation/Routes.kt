@@ -23,5 +23,16 @@ sealed interface Routes : NavKey {
 
     @Serializable
     object Filter : Routes
+
+    @Serializable
+    object About : Routes
+
+
+    @Serializable
+    object OpenSourceLicenses: Routes
+
+    @Serializable
+    object Help : Routes
+
 }
 

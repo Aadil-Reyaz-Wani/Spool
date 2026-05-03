@@ -44,6 +44,7 @@ import com.aadil.spool.ui.components.InputAlertDialog
 import com.aadil.spool.ui.components.SpoolTag
 import com.aadil.spool.ui.screens.details.PrintObjectUiState
 import com.aadil.spool.ui.theme.Dimens
+import com.aadil.spool.utils.formatAsCurrency
 import com.aadil.spool.utils.toReadableDate
 import java.util.Locale
 
@@ -55,12 +56,12 @@ fun PrintHistoryScreen(
     onEditClick: (UsageLog) -> Unit,
     onDeleteClick: (usageLog: UsageLog) -> Unit,
     modifier: Modifier = Modifier,
-    // Working...
     onGramsUsedValueChange: (String) -> Unit,
     onPrintTitleValueChange: (String) -> Unit,
     onConfirm: (Int, String) -> Unit,
     onCheckedChange: (Boolean) -> Unit,
     isPrintErrorState: String?,
+    selectedCurrency: String,
 ) {
     Scaffold(
         modifier = modifier,
@@ -98,7 +99,7 @@ fun PrintHistoryScreen(
                         title = log.title,
                         date = log.timestamp.toReadableDate(),
                         usedGrams = log.gramsUsed.toString(),
-                        price = log.pricePerPrint.toString(),
+                        price = log.pricePerPrint,
                         status = log.isFailure,
                         modifier = Modifier.padding(
                             horizontal = Dimens.PaddingMedium,
@@ -108,7 +109,8 @@ fun PrintHistoryScreen(
                         onPrintTitleValueChange = onPrintTitleValueChange,
                         onConfirm = { onConfirm(log.spoolId, log.gramsUsed.toString()) },
                         onCheckedChange = onCheckedChange,
-                        isPrintErrorState = isPrintErrorState
+                        isPrintErrorState = isPrintErrorState,
+                        selectedCurrency = selectedCurrency
                     )
                 }
             }
@@ -124,7 +126,7 @@ fun PrintItemViewCard(
     title: String,
     date: String,
     usedGrams: String,
-    price: String,
+    price: Double,
     status: Boolean,
     modifier: Modifier = Modifier,
     onGramsUsedValueChange: (String) -> Unit,
@@ -132,6 +134,7 @@ fun PrintItemViewCard(
     onConfirm: (String) -> Unit,
     onCheckedChange: (Boolean) -> Unit,
     isPrintErrorState: String?,
+    selectedCurrency: String,
 ) {
     Card(
         modifier = modifier,
@@ -202,11 +205,11 @@ fun PrintItemViewCard(
                     style = MaterialTheme.typography.bodyMedium,
                     fontWeight = FontWeight.Bold
                 )
-                if (price.toDouble() > 0) {
+                if (price > 0) {
                     Spacer(modifier = Modifier.width(Dimens.HeightOrWidth))
-                    val formattedPrice = String.format(Locale.ROOT,"%.2f", price.toDouble())
+                    val priceWithCurrency = price.formatAsCurrency(currencyCode = selectedCurrency)
                     Text(
-                        text = "($$formattedPrice)",
+                        text = "($priceWithCurrency)",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -301,13 +304,14 @@ private fun PrintItemViewCardPrev() {
         title = "Iron Man Helmet",
         date = "231243521",
         usedGrams = "100",
-        price = "0.25",
+        price = 0.25,
         status = true,
         onGramsUsedValueChange = {},
         onPrintTitleValueChange = {},
         onConfirm = {},
         onCheckedChange = {},
         isPrintErrorState = null,
-        uiState = PrintObjectUiState()
+        uiState = PrintObjectUiState(),
+        selectedCurrency = "INR"
     )
 }
