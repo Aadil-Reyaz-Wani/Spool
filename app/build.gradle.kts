@@ -32,8 +32,8 @@ android {
         applicationId = "com.aadil.spool"
         minSdk = 24
         targetSdk = 36
-        versionCode = 6
-        versionName = "1.3.0"
+        versionCode = 7
+        versionName = "1.3.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -96,7 +96,7 @@ dependencies {
 
     androidTestImplementation(libs.truth)
 
-    implementation(libs.androidx.compose.material.icons.extended) // Use the latest version
+    implementation(libs.androidx.compose.material.icons.extended)
 
 
     //Room
@@ -122,7 +122,7 @@ dependencies {
 
 
     // AboutLibraries
-    implementation("com.mikepenz:aboutlibraries-core:11.2.2")
-    implementation("com.mikepenz:aboutlibraries-compose-m3:11.2.2")
+    implementation(libs.aboutlibraries.core)
+    implementation(libs.aboutlibraries.compose.m3)
 
 }

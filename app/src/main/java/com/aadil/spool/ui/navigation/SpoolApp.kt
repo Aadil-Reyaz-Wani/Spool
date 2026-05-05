@@ -312,7 +312,8 @@ fun MySpoolApp(modifier: Modifier = Modifier) {
                     isError = isError,
                     isEditMode = spoolEntryViewModel.isEditMode(entry.id),
                     resetState = spoolEntryViewModel::resetState,
-                    modifier = modifier
+                    modifier = modifier,
+                    selectedCurrency = selectedCurrency
                 )
             }
 

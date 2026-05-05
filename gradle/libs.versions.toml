@@ -1,4 +1,5 @@
 [versions]
+aboutlibrariesCore = "14.1.0"
 agp = "9.2.0"
 datastorePreferences = "1.2.1"
 hiltAndroidCompiler = "2.59.2"
@@ -23,6 +24,8 @@ kotlinSerialization = "2.3.10"
 kotlinxSerializationCore = "1.10.0"
 
 [libraries]
+aboutlibraries-compose-m3 = { module = "com.mikepenz:aboutlibraries-compose-m3", version.ref = "aboutlibrariesCore" }
+aboutlibraries-core = { module = "com.mikepenz:aboutlibraries-core", version.ref = "aboutlibrariesCore" }
 androidx-compose-material-icons-extended = { module = "androidx.compose.material:material-icons-extended", version.ref = "materialIconsExtended" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 androidx-datastore-preferences = { module = "androidx.datastore:datastore-preferences", version.ref = "datastorePreferences" }

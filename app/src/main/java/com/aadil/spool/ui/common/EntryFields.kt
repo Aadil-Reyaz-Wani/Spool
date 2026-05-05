@@ -49,6 +49,7 @@ import com.aadil.spool.ui.components.SpoolOutlinedTextField
 import com.aadil.spool.ui.screens.entry.ColorSelectionGrid
 import com.aadil.spool.ui.screens.entry.SpoolEntryUiState
 import com.aadil.spool.ui.theme.Dimens
+import com.aadil.spool.utils.formatAsCurrency
 
 @Composable
 fun EntryFields(
@@ -68,7 +69,8 @@ fun EntryFields(
     isFieldsFilled: Boolean,
     isEditMode: Boolean,
     resetState: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    selectedCurrency: String,
 ) {
     LaunchedEffect(Unit) {
         if (!isEditMode) resetState()
@@ -111,14 +113,14 @@ fun EntryFields(
         )
         // Price
         Spacer(modifier = Modifier.height(Dimens.PaddingMedium))
+        val placeholderPrice = 200.0
+        val formattedPlaceholderPrice = placeholderPrice.formatAsCurrency(selectedCurrency)
         SpoolOutlinedTextField(
             value = uiState.price,
             onValueChange = onPriceValueChange,
             label = stringResource(R.string.label_spool_price),
-            placeholder = stringResource(R.string.hint_price),
+            placeholder = formattedPlaceholderPrice,
             leadingIcon = Icons.Outlined.CurrencyExchange,
-//            isError = isFieldsFilled,
-//            supportingText = stringResource(R.string.brand_error_message),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
         )
         Spacer(modifier = Modifier.height(Dimens.PaddingLarge))
@@ -271,6 +273,7 @@ fun EntryFieldsPreview() {
         isEditMode = true,
         isFieldsFilled = true,
         resetState = {},
-        modifier = Modifier
+        modifier = Modifier,
+        selectedCurrency = "USD"
     )
 }

@@ -28,7 +28,8 @@ fun SpoolEntryScreen(
     isError: Boolean,
     isEditMode: Boolean,
     resetState: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    selectedCurrency: String
 ) {
     Scaffold(
         modifier = modifier,
@@ -58,7 +59,8 @@ fun SpoolEntryScreen(
             isFieldsFilled = isError,
             isEditMode = isEditMode,
             resetState = resetState,
-            modifier = Modifier.padding(paddingValues = paddingValues)
+            modifier = Modifier.padding(paddingValues = paddingValues),
+            selectedCurrency = selectedCurrency
         )
     }
 }
