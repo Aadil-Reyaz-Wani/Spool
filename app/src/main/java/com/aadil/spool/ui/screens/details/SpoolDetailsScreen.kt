@@ -507,7 +507,7 @@ fun PrintCard(
         SpoolButton(
             text = stringResource(R.string.btn_log_print),
             icon = Icons.Outlined.Print,
-            contentDescription = "Print Button",
+            contentDescription = stringResource(R.string.btn_log_print),
             onClick = {
                 showPrintField = true
             },
