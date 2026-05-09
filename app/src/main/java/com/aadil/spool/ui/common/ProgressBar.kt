@@ -15,14 +15,15 @@ import androidx.compose.ui.text.style.TextAlign
 import com.aadil.spool.ui.components.SpoolProgressBar
 import com.aadil.spool.ui.theme.BrandOrange
 import com.aadil.spool.ui.theme.Dimens
+import com.aadil.spool.utils.formatToInternationalStandard
 
 @Composable
 fun WeightProgressBar(
-    totalWeight: String,
-    currentWeight: String,
+    totalWeight: Double,
+    currentWeight: Double,
     modifier: Modifier = Modifier
 ) {
-    val percentage = ((currentWeight.toDouble() / totalWeight.toDouble()) * 100)
+    val percentage = ((currentWeight / totalWeight) * 100)
 
     Column(
         modifier = modifier
@@ -39,7 +40,7 @@ fun WeightProgressBar(
                 modifier = Modifier.weight(1f)
             )
             Text(
-                text = "${currentWeight}g",
+                text = "${currentWeight.formatToInternationalStandard()}g",
                 style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
                 color = if (percentage > 40) {
                     MaterialTheme.colorScheme.onSurface
@@ -61,7 +62,7 @@ fun WeightProgressBar(
             totalWeight = totalWeight
         )
         Text(
-            text = "of ${totalWeight}g",
+            text = "of ${totalWeight.formatToInternationalStandard()}g",
             style = MaterialTheme.typography.titleSmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
             textAlign = TextAlign.End,

@@ -215,8 +215,8 @@ fun DashboardScreen(
                         brandName = spool.brand,
                         materialType = spool.material,
                         colorName = spool.colorName,
-                        totalWeight = spool.totalWeight.toString(),
-                        currentWeight = spool.currentWeight.toString(),
+                        totalWeight = spool.totalWeight,
+                        currentWeight = spool.currentWeight,
                         colorHex = spool.colorHex,
                         onCardClick = { onCardClick(spool.id) }
                     )
@@ -232,8 +232,8 @@ fun SpoolItemCard(
     brandName: String,
     materialType: String,
     colorName: String,
-    totalWeight: String,
-    currentWeight: String,
+    totalWeight: Double,
+    currentWeight: Double,
     colorHex: Long,
     onCardClick: () -> Unit,
     modifier: Modifier = Modifier
@@ -318,8 +318,8 @@ private fun SpoolCardPreview() {
         brandName = "HackersSpool",
         materialType = "PETG",
         colorName = "Galaxy Mate Black",
-        totalWeight = "1000",
-        currentWeight = "230",
+        totalWeight = 1000.0,
+        currentWeight = 230.0,
         colorHex = 0xFF000000,
         onCardClick = {},
         modifier = Modifier
