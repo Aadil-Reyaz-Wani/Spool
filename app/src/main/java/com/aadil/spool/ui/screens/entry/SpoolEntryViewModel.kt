@@ -72,7 +72,6 @@ class SpoolEntryViewModel @Inject constructor(
         if (id == 0) return
         viewModelScope.launch {
             val currentSpool = spoolRepository.getSpoolStream(id).first()
-
             currentSpool?.let { spool ->
                 _spoolEntryUiState.value = spool.toSpoolEntryUiState()
             }

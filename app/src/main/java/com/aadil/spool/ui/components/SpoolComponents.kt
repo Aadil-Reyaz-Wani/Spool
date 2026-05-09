@@ -420,8 +420,8 @@ fun SpoolTag(
 @Composable
 fun SpoolProgressBar(
     percentage: Double,
-    currentWeight: String,
-    totalWeight: String,
+    currentWeight: Double,
+    totalWeight: Double,
     modifier: Modifier = Modifier
 ) {
     val progress = currentWeight.toFloat() / totalWeight.toFloat()

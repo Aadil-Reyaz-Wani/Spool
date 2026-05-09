@@ -45,6 +45,7 @@ import com.aadil.spool.ui.components.SpoolTag
 import com.aadil.spool.ui.screens.details.PrintObjectUiState
 import com.aadil.spool.ui.theme.Dimens
 import com.aadil.spool.utils.formatAsCurrency
+import com.aadil.spool.utils.formatToInternationalStandard
 import com.aadil.spool.utils.toReadableDate
 import java.util.Locale
 
@@ -97,8 +98,8 @@ fun PrintHistoryScreen(
                         onEditClick = { onEditClick(log) },
                         onDeleteClick = { onDeleteClick(log) },
                         title = log.title,
-                        date = log.timestamp.toReadableDate(),
-                        usedGrams = log.gramsUsed.toString(),
+                        date = log.timestamp,
+                        usedGrams = log.gramsUsed,
                         price = log.pricePerPrint,
                         status = log.isFailure,
                         modifier = Modifier.padding(
@@ -124,8 +125,8 @@ fun PrintItemViewCard(
     onEditClick: () -> Unit,
     onDeleteClick: () -> Unit,
     title: String,
-    date: String,
-    usedGrams: String,
+    date: Long,
+    usedGrams: Double,
     price: Double,
     status: Boolean,
     modifier: Modifier = Modifier,
@@ -167,7 +168,7 @@ fun PrintItemViewCard(
                 )
 
                 Text(
-                    text = date,
+                    text = date.toReadableDate(),
                     style = MaterialTheme.typography.bodySmall,
                     fontStyle = FontStyle.Italic,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -201,7 +202,7 @@ fun PrintItemViewCard(
                 )
                 Spacer(modifier = Modifier.width(Dimens.HeightOrWidth))
                 Text(
-                    text = "${usedGrams}g",
+                    text = "${usedGrams.formatToInternationalStandard()}g",
                     style = MaterialTheme.typography.bodyMedium,
                     fontWeight = FontWeight.Bold
                 )
@@ -302,8 +303,8 @@ private fun PrintItemViewCardPrev() {
         onEditClick = {},
         onDeleteClick = {},
         title = "Iron Man Helmet",
-        date = "231243521",
-        usedGrams = "100",
+        date = 231243521,
+        usedGrams = 100.0,
         price = 0.25,
         status = true,
         onGramsUsedValueChange = {},

@@ -66,6 +66,8 @@ import com.aadil.spool.ui.components.SpoolProgressBar
 import com.aadil.spool.ui.components.SpoolTag
 import com.aadil.spool.ui.theme.BrandOrange
 import com.aadil.spool.ui.theme.Dimens
+import com.aadil.spool.utils.formatToInternationalStandard
+import com.aadil.spool.utils.toParseLocalizedDouble
 import java.util.Locale.getDefault
 
 @Composable
@@ -95,14 +97,14 @@ fun SpoolDetailsScreen(
     ) { paddingValues ->
 
         DetailsScreen(
-            totalWeight = spoolDetails.totalWeight.toString(),
-            currentWeight = spoolDetails.currentWeight.toString(),
+            totalWeight = spoolDetails.totalWeight,
+            currentWeight = spoolDetails.currentWeight,
             colorHex = spoolDetails.colorHex,
             brandName = spoolDetails.brand,
             materialType = spoolDetails.material,
             colorName = spoolDetails.colorName,
-            nozzleTemp = spoolDetails.tempNozzle.toString(),
-            bedTemp = spoolDetails.tempBed.toString(),
+            nozzleTemp = spoolDetails.tempNozzle,
+            bedTemp = spoolDetails.tempBed,
             note = spoolDetails.note,
             onEditClick = { onUpdateClick(spoolDetails.id) },
             onConfirmDelete = { onConfirmDelete(spoolDetails) },
@@ -122,14 +124,14 @@ fun SpoolDetailsScreen(
 
 @Composable
 fun DetailsScreen(
-    totalWeight: String,
-    currentWeight: String,
+    totalWeight: Double,
+    currentWeight: Double,
     colorHex: Long,
     brandName: String,
     materialType: String,
     colorName: String,
-    nozzleTemp: String,
-    bedTemp: String,
+    nozzleTemp: Int,
+    bedTemp: Int,
     note: String,
     onEditClick: () -> Unit,
     onConfirmDelete: () -> Unit,
@@ -160,7 +162,7 @@ fun DetailsScreen(
         )
 
         // Temperature Card
-        if (nozzleTemp.toInt() > 0 || bedTemp.toInt() > 0) {
+        if (nozzleTemp > 0 || bedTemp > 0) {
             TemperatureDetailsCard(
                 nozzleTemp = nozzleTemp,
                 bedTemp = bedTemp
@@ -244,18 +246,18 @@ fun DetailsScreen(
     }
 }
 
-@Preview
+@Preview(showBackground = true)
 @Composable
 fun DetailsScreenPreview() {
     DetailsScreen(
-        totalWeight = "1000",
-        currentWeight = "23",
+        totalWeight = 1000.0,
+        currentWeight = 23.0,
         colorHex = 0xFF4CAF50,
         brandName = "Prusament",
         materialType = "PLA",
         colorName = "Galaxy Green",
-        nozzleTemp = "216",
-        bedTemp = "60",
+        nozzleTemp = 216,
+        bedTemp = 60,
         note = "This is my note",
         onEditClick = {},
         onConfirmDelete = {},
@@ -272,8 +274,8 @@ fun DetailsScreenPreview() {
 @SuppressLint("DefaultLocale")
 @Composable
 fun MainDetailsCard(
-    totalWeight: String,
-    currentWeight: String,
+    totalWeight: Double,
+    currentWeight: Double,
     colorHex: Long,
     brandName: String,
     materialType: String,
@@ -281,11 +283,13 @@ fun MainDetailsCard(
     onPrintHistoryClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val remainingPercentage = String.format(
-        "%.0f",
-        currentWeight.toDouble().div(totalWeight.toDouble()) * 100
-    )
-    val percentage = remainingPercentage.toDouble()
+//    val remainingPercentage = String.format(
+//        "%.0f",
+//        currentWeight.toDouble().div(totalWeight.toDouble()) * 100
+//    )
+
+//    val percentage = remainingPercentage.toDouble()
+    val percentage = (currentWeight / totalWeight) * 100
     Card(
         elevation = CardDefaults.cardElevation(Dimens.CardElevation),
         colors = CardDefaults.cardColors(
@@ -372,7 +376,7 @@ fun MainDetailsCard(
                         verticalAlignment = Alignment.Bottom
                     ) {
                         Text(
-                            text = String.format("%.0f", currentWeight.toDouble()),
+                            text = currentWeight.formatToInternationalStandard(),
                             style = MaterialTheme.typography.headlineLarge.copy(fontWeight = FontWeight.ExtraBold),
                             color = if (percentage < 20) MaterialTheme.colorScheme.error else BrandOrange,
                         )
@@ -388,7 +392,7 @@ fun MainDetailsCard(
             Column(
                 modifier = Modifier.padding(vertical = Dimens.PaddingMedium)
             ) {
-                // This warns the users of low stock for a particular filament/spool
+                // This warns the users of low stock for a particular filament
                 if (percentage < 20) {
                     SpoolTag(
                         text = if (percentage > 0) stringResource(R.string.low_stock) else stringResource(
@@ -414,7 +418,7 @@ fun MainDetailsCard(
             ) {
 
                 Text(
-                    text = "Capacity: ${totalWeight}g   ",
+                    text = "Capacity: ${totalWeight.formatToInternationalStandard()}g   ",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
                     textAlign = TextAlign.Start,
@@ -426,20 +430,14 @@ fun MainDetailsCard(
                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
                 )
                 Text(
-                    text = "Remaining: ${remainingPercentage}%",
+//                    text = "Remaining: ${percentage}%",
+                    text = "Remaining: ${percentage.formatToInternationalStandard()}%",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
                     textAlign = TextAlign.End,
                     modifier = Modifier.weight(1f)
                 )
             }
-
-//            HorizontalDivider(modifier = Modifier.padding(top = Dimens.PaddingMedium))
-//            HorizontalDivider(
-//                modifier = Modifier.padding(top = Dimens.PaddingMedium),
-//                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f),
-//                thickness = 0.5.dp
-//            )
 
             SpoolHorizontalDivider(
                 modifier = Modifier.padding(top = Dimens.PaddingMedium),
@@ -539,8 +537,8 @@ fun PrintCard(
 
 @Composable
 fun TemperatureDetailsCard(
-    nozzleTemp: String,
-    bedTemp: String,
+    nozzleTemp: Int,
+    bedTemp: Int,
     modifier: Modifier = Modifier
 ) {
     Card(
@@ -608,7 +606,7 @@ fun TemperatureDetailsCard(
                         Spacer(modifier = Modifier.height(Dimens.HeightOrWidth))
                         Text(
                             text = "${nozzleTemp}°C",
-                            color = if (nozzleTemp.toInt() <= 0) {
+                            color = if (nozzleTemp <= 0) {
                                 MaterialTheme.colorScheme.onSurfaceVariant
                             } else {
                                 MaterialTheme.colorScheme.onSurface
@@ -649,7 +647,7 @@ fun TemperatureDetailsCard(
                         Spacer(modifier = Modifier.height(Dimens.HeightOrWidth))
                         Text(
                             text = "${bedTemp}°C",
-                            color = if (bedTemp.toInt() <= 0) {
+                            color = if (bedTemp <= 0) {
                                 MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
                             } else {
                                 MaterialTheme.colorScheme.onSurface
