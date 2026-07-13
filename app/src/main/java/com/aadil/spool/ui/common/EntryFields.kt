@@ -64,6 +64,8 @@ fun EntryFields(
     onNozzleTempValueChange: (String) -> Unit,
     onBedTempValueChange: (String) -> Unit,
     onNoteValueChange: (String) -> Unit,
+    onAddedWeightValueChange: (String) -> Unit,
+    onAddedPriceValueChange: (String) -> Unit,
     selectedColor: Long,
     onSaveOrUpdateClick: () -> Unit,
     isFieldsFilled: Boolean,
@@ -217,7 +219,30 @@ fun EntryFields(
             Spacer(modifier = Modifier.height(Dimens.PaddingLarge))
             HorizontalDivider()
             Spacer(modifier = Modifier.height(Dimens.PaddingLarge))
-            SpoolHeadingText(text = "Notes (Optional)", icon = Icons.AutoMirrored.Outlined.StickyNote2)
+            SpoolHeadingText(text = stringResource(R.string.restock_filament), icon = Icons.Outlined.Update)
+            Spacer(modifier = Modifier.height(Dimens.PaddingMedium))
+            SpoolOutlinedTextField(
+                value = uiState.addedWeight,
+                onValueChange = onAddedWeightValueChange,
+                label = stringResource(R.string.additional_weight_label),
+                placeholder = stringResource(R.string.additional_weight_placeholder),
+                leadingIcon = Icons.Outlined.MonitorWeight,
+                singleLine = true,
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+            )
+            Spacer(modifier = Modifier.height(Dimens.PaddingTiny))
+            SpoolOutlinedTextField(
+                value = uiState.addedPrice,
+                onValueChange = onAddedPriceValueChange,
+                label = stringResource(R.string.additional_price_label),
+                placeholder = formattedPlaceholderPrice,
+                leadingIcon = Icons.Outlined.CurrencyExchange,
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+            )
+            Spacer(modifier = Modifier.height(Dimens.PaddingLarge))
+            HorizontalDivider()
+            Spacer(modifier = Modifier.height(Dimens.PaddingLarge))
+            SpoolHeadingText(text = stringResource(R.string.notes_heading), icon = Icons.AutoMirrored.Outlined.StickyNote2)
             Spacer(modifier = Modifier.height(Dimens.PaddingMedium))
             SpoolOutlinedTextField(
                 value = uiState.note,
@@ -268,6 +293,8 @@ fun EntryFieldsPreview() {
         onNozzleTempValueChange = {},
         onBedTempValueChange = {},
         onNoteValueChange = {},
+        onAddedWeightValueChange = {},
+        onAddedPriceValueChange = {},
         selectedColor = 0xFF000000,
         onSaveOrUpdateClick = {},
         isEditMode = true,

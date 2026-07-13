@@ -29,6 +29,9 @@ interface SpoolRepository {
     fun getSpoolUsageStream(spoolId: Int) : Flow<List<UsageLog>>
 
     fun getUsageLogById(id: Int): Flow<UsageLog?>
+
+    suspend fun updateAllUsageCosts(spoolId: Int, pricePerGram: Double)
+
     suspend fun deleteLogAndRestoreCurrentWeight(usageLog: UsageLog)
 
     suspend fun editLogAndRestoreCurrentWeight(usageLog: UsageLog)

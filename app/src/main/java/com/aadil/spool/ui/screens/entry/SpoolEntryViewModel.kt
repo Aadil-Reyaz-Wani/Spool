@@ -27,7 +27,9 @@ data class SpoolEntryUiState(
     val tempNozzle: String = "",
     val tempBed: String = "",
     val note: String = "",
-    val price: String = ""
+    val price: String = "",
+    val addedWeight: String = "",
+    val addedPrice: String = ""
 )
 
 @HiltViewModel
@@ -51,6 +53,8 @@ class SpoolEntryViewModel @Inject constructor(
         newTempBed: String,
         newNote: String,
         newPrice: String,
+        newAddedWeight: String = _spoolEntryUiState.value.addedWeight,
+        newAddedPrice: String = _spoolEntryUiState.value.addedPrice
     ) {
 
         _spoolEntryUiState.value = _spoolEntryUiState.value.copy(
@@ -63,7 +67,9 @@ class SpoolEntryViewModel @Inject constructor(
             tempNozzle = newTempNozzle,
             tempBed = newTempBed,
             note = newNote,
-            price = newPrice
+            price = newPrice,
+            addedWeight = newAddedWeight,
+            addedPrice = newAddedPrice
         )
     }
 
@@ -75,7 +81,6 @@ class SpoolEntryViewModel @Inject constructor(
             currentSpool?.let { spool ->
                 _spoolEntryUiState.value = spool.toSpoolEntryUiState()
             }
-
         }
     }
 
@@ -93,8 +98,22 @@ class SpoolEntryViewModel @Inject constructor(
                     && freshFilament.totalWeight > 0 &&
                     freshFilament.totalWeight >= freshFilament.currentWeight
                 ) {
-                    spoolRepository.updateSpool(freshFilament)
+                    val restockWeight = _spoolEntryUiState.value.addedWeight.toDoubleOrNull() ?: 0.0
+                    val restockPrice = _spoolEntryUiState.value.addedPrice.toDoubleOrNull() ?: 0.0
+
+                    val filamentToUpdate = freshFilament.copy(
+                        totalWeight = freshFilament.totalWeight + restockWeight,
+                        currentWeight = freshFilament.currentWeight + restockWeight,
+                        price = freshFilament.price + restockPrice
+                    )
+
+                    spoolRepository.updateSpool(filamentToUpdate)
+
+                    val newPricePerGram = if (filamentToUpdate.totalWeight > 0) filamentToUpdate.price / filamentToUpdate.totalWeight else 0.0
+                    spoolRepository.updateAllUsageCosts(filamentToUpdate.id, newPricePerGram)
+
                     isError.value = false
+                    _spoolEntryUiState.update { it.copy(addedWeight = "", addedPrice = "") }
                 } else {
                     isError.value = true
                 }
@@ -138,5 +157,4 @@ class SpoolEntryViewModel @Inject constructor(
     fun resetState() {
         _spoolEntryUiState.update { SpoolEntryUiState() }
     }
-
 }

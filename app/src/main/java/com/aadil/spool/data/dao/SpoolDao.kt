@@ -72,6 +72,9 @@ interface SpoolDao {
     @Query("SELECT * FROM usage_log WHERE id = :id")
     fun getUsageLogById(id: Int): Flow<UsageLog?>
 
+    @Query("UPDATE usage_log SET price_per_print = grams_used * :pricePerGram WHERE spoolId = :spoolId")
+    suspend fun updateAllUsageCosts(spoolId: Int, pricePerGram: Double)
+
     @Query("SELECT grams_used FROM usage_log WHERE id = :id ")
     fun getCurrentLogWeight(id: Int): Double
 

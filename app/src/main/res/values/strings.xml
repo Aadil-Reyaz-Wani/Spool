@@ -72,6 +72,7 @@
     <string name="heading_note">Notes</string>
     <string name="heading_nozzle">Nozzle</string>
     <string name="heading_bed">Bed</string>
+    <string name="notes_heading">Notes (Optional)</string>
 
 
     <string name="low_stock">Critical Level</string>
@@ -129,6 +130,11 @@
     <string name="faq_label">Frequently Asked Questions</string>
 
 
+
+    <string name="restock_filament">Restock Filament</string>
+    <string name="additional_weight_placeholder">Restock Filament</string>
+    <string name="additional_weight_label">Additional Weight (g)</string>
+    <string name="additional_price_label">Additional Price</string>
 
 
     <string name="default_version">1.2.0</string>
