@@ -93,4 +93,8 @@ class OfflineSpoolRepository @Inject constructor(
         return spoolDao.editLogAndRestoreCurrentWeight(usageLog = usageLog)
     }
 
+    override suspend fun updateAllUsageCosts(spoolId: Int, pricePerGram: Double) {
+        spoolDao.updateAllUsageCosts(spoolId, pricePerGram)
+    }
+
 }

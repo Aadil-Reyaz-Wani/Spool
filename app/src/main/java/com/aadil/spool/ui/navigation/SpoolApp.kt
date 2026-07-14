@@ -302,6 +302,36 @@ fun MySpoolApp(modifier: Modifier = Modifier) {
                             newNote = newValue
                         )
                     },
+                    onAddedWeightValueChange = { newValue ->
+                        spoolEntryViewModel.updateTextField(
+                            newBrand = spoolEntryUiState.brand,
+                            newMaterial = spoolEntryUiState.material,
+                            newPrice = spoolEntryUiState.price,
+                            newTotalWeight = spoolEntryUiState.totalWeight,
+                            newColorHex = spoolEntryUiState.colorHex,
+                            newColorName = spoolEntryUiState.colorName,
+                            newCurrentWeight = spoolEntryUiState.currentWeight,
+                            newTempNozzle = spoolEntryUiState.tempNozzle,
+                            newTempBed = spoolEntryUiState.tempBed,
+                            newNote = spoolEntryUiState.note,
+                            newAddedWeight = newValue
+                        )
+                    },
+                    onAddedPriceValueChange = { newValue ->
+                        spoolEntryViewModel.updateTextField(
+                            newBrand = spoolEntryUiState.brand,
+                            newMaterial = spoolEntryUiState.material,
+                            newPrice = spoolEntryUiState.price,
+                            newTotalWeight = spoolEntryUiState.totalWeight,
+                            newColorHex = spoolEntryUiState.colorHex,
+                            newColorName = spoolEntryUiState.colorName,
+                            newCurrentWeight = spoolEntryUiState.currentWeight,
+                            newTempNozzle = spoolEntryUiState.tempNozzle,
+                            newTempBed = spoolEntryUiState.tempBed,
+                            newNote = spoolEntryUiState.note,
+                            newAddedPrice = newValue
+                        )
+                    },
                     onSaveOrUpdateClick = {
                         spoolEntryViewModel.saveOrUpdateSpool(entry.id)
                         if (spoolEntryViewModel.isValid()) {
