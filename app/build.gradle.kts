@@ -8,7 +8,6 @@ plugins {
     alias(libs.plugins.jetbrains.kotlin.serialization)
     id("com.google.devtools.ksp")
     alias(libs.plugins.androidx.room)
-    id("com.google.dagger.hilt.android")
     id("com.mikepenz.aboutlibraries.plugin")
 }
 
@@ -110,10 +109,10 @@ dependencies {
     implementation(libs.androidx.lifecycle.viewmodel.navigation3)
     implementation(libs.kotlinx.serialization.core)
 
-    // Hilt
-    implementation(libs.hilt.android)
-    ksp(libs.hilt.android.compiler)
-    implementation(libs.androidx.hilt.navigation.compose)
+    // Koin
+    implementation(libs.koin.android)
+    implementation(libs.koin.androidx.compose)
+    implementation(libs.koin.compose.viewmodel)
 
     // Preferences DataStore (SharedPreferences like APIs)
     implementation(libs.androidx.datastore.preferences)
@@ -125,4 +124,16 @@ dependencies {
     implementation(libs.aboutlibraries.core)
     implementation(libs.aboutlibraries.compose.m3)
 
+    // KMP Core modules
+    implementation(project(":core:model"))
+    implementation(project(":core:database"))
+    implementation(project(":core:data"))
+    implementation(project(":core:network"))
+
+    // KMP Feature modules
+    implementation(project(":feature:dashboard"))
+    implementation(project(":feature:details"))
+    implementation(project(":feature:entry"))
+    implementation(project(":feature:history"))
+    implementation(project(":feature:settings"))
 }

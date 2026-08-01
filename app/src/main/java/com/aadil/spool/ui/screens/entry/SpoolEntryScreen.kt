@@ -8,6 +8,7 @@ import androidx.compose.ui.res.stringResource
 import com.aadil.spool.R
 import com.aadil.spool.ui.common.EntryFields
 import com.aadil.spool.ui.common.SpoolAppBar
+import com.aadil.spool.feature.entry.SpoolEntryUiState
 
 @Composable
 fun SpoolEntryScreen(

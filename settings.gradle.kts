@@ -21,3 +21,12 @@ dependencyResolutionManagement {
 
 rootProject.name = "Spool"
 include(":app")
+include(":core:model")
+include(":core:database")
+include(":core:network")
+include(":core:data")
+include(":feature:dashboard")
+include(":feature:details")
+include(":feature:entry")
+include(":feature:history")
+include(":feature:settings")

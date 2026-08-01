@@ -25,7 +25,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.aadil.spool.data.FilamentColorData
+import com.aadil.spool.core.model.FilamentColorData
 import com.aadil.spool.ui.theme.Dimens
 
 @Composable
@@ -92,9 +92,9 @@ fun ColorCircle(
             imageVector = Icons.Filled.Circle,
             contentDescription = null,
             tint = if (!isSelected) {
-                FilamentColorData.getComposeColor(colorHex).copy(alpha = 0.7f)
+                Color(colorHex).copy(alpha = 0.7f)
             } else {
-                FilamentColorData.getComposeColor(colorHex)
+                Color(colorHex)
             },
             modifier = modifier
                 .size(inputColorDotSize)

@@ -61,7 +61,7 @@ import androidx.compose.ui.unit.dp
 import com.aadil.spool.R
 import com.aadil.spool.ui.common.GhostCard
 import com.aadil.spool.ui.common.verticalScrollbar
-import com.aadil.spool.ui.screens.dashboard.FilterType
+import com.aadil.spool.feature.dashboard.FilterType
 import com.aadil.spool.ui.screens.entry.ColorCircle
 import com.aadil.spool.ui.theme.Dimens
 

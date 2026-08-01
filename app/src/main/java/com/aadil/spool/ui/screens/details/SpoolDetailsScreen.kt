@@ -54,6 +54,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import com.aadil.spool.R
+import com.aadil.spool.feature.details.PrintObjectUiState
 import com.aadil.spool.data.entity.Filament
 import com.aadil.spool.ui.common.GhostCard
 import com.aadil.spool.ui.common.SpoolAppBar

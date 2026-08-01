@@ -47,7 +47,7 @@ import com.aadil.spool.ui.components.SpoolButton
 import com.aadil.spool.ui.components.SpoolDropDownMenu
 import com.aadil.spool.ui.components.SpoolOutlinedTextField
 import com.aadil.spool.ui.screens.entry.ColorSelectionGrid
-import com.aadil.spool.ui.screens.entry.SpoolEntryUiState
+import com.aadil.spool.feature.entry.SpoolEntryUiState
 import com.aadil.spool.ui.theme.Dimens
 import com.aadil.spool.utils.formatAsCurrency
 

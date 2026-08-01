@@ -42,7 +42,7 @@ import com.aadil.spool.ui.common.SpoolAppBar
 import com.aadil.spool.ui.components.DeleteConfirmationAlertDialog
 import com.aadil.spool.ui.components.InputAlertDialog
 import com.aadil.spool.ui.components.SpoolTag
-import com.aadil.spool.ui.screens.details.PrintObjectUiState
+import com.aadil.spool.feature.details.PrintObjectUiState
 import com.aadil.spool.ui.theme.Dimens
 import com.aadil.spool.utils.formatAsCurrency
 import com.aadil.spool.utils.formatToInternationalStandard

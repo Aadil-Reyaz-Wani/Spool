@@ -15,7 +15,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
 import androidx.navigation3.runtime.entryProvider
@@ -25,30 +24,31 @@ import androidx.navigation3.ui.NavDisplay
 import com.aadil.spool.R
 import com.aadil.spool.ui.common.SpoolAppBar
 import com.aadil.spool.ui.screens.dashboard.DashboardScreen
-import com.aadil.spool.ui.screens.dashboard.DashboardViewModel
+import com.aadil.spool.feature.dashboard.DashboardViewModel
 import com.aadil.spool.ui.screens.details.SpoolDetailsScreen
-import com.aadil.spool.ui.screens.details.SpoolDetailsViewModel
+import com.aadil.spool.feature.details.SpoolDetailsViewModel
 import com.aadil.spool.ui.screens.entry.SpoolEntryScreen
-import com.aadil.spool.ui.screens.entry.SpoolEntryViewModel
+import com.aadil.spool.feature.entry.SpoolEntryViewModel
 import com.aadil.spool.ui.screens.history.PrintHistoryScreen
-import com.aadil.spool.ui.screens.history.PrintHistoryViewModel
+import com.aadil.spool.feature.history.PrintHistoryViewModel
 import com.aadil.spool.ui.screens.settings.AboutScreen
 import com.aadil.spool.ui.screens.settings.HelpScreen
-import com.aadil.spool.ui.screens.settings.SpoolSettingsViewModel
+import com.aadil.spool.feature.settings.SpoolSettingsViewModel
 import com.aadil.spool.ui.screens.splash.SplashScreen
 import com.mikepenz.aboutlibraries.ui.compose.m3.LibrariesContainer
 import kotlinx.coroutines.delay
+import org.koin.compose.viewmodel.koinViewModel
 
 @SuppressLint("ContextCastToActivity")
 @Composable
 fun MySpoolApp(modifier: Modifier = Modifier) {
 
     // Define ViewModels
-    val dashboardViewModel: DashboardViewModel = hiltViewModel()
-    val spoolEntryViewModel: SpoolEntryViewModel = hiltViewModel()
-    val spoolDetailsViewModel: SpoolDetailsViewModel = hiltViewModel()
-    val printHistoryViewModel: PrintHistoryViewModel = hiltViewModel()
-    val spoolSettingsViewModel: SpoolSettingsViewModel = hiltViewModel()
+    val dashboardViewModel: DashboardViewModel = koinViewModel()
+    val spoolEntryViewModel: SpoolEntryViewModel = koinViewModel()
+    val spoolDetailsViewModel: SpoolDetailsViewModel = koinViewModel()
+    val printHistoryViewModel: PrintHistoryViewModel = koinViewModel()
+    val spoolSettingsViewModel: SpoolSettingsViewModel = koinViewModel()
 
     // Dashboard
     val listOfSpools by dashboardViewModel.getAllSpool.collectAsStateWithLifecycle()

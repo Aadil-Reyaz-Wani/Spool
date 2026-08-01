@@ -56,8 +56,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.aadil.spool.R
-import com.aadil.spool.data.FAQ
-import com.aadil.spool.data.SpoolLists
+import com.aadil.spool.core.model.FAQ
+import com.aadil.spool.core.model.SpoolLists
 import com.aadil.spool.ui.common.SpoolAppBar
 import com.aadil.spool.ui.theme.Dimens
 import com.aadil.spool.ui.theme.SpoolTheme
