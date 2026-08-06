@@ -15,9 +15,31 @@ kotlin {
     iosArm64()
     iosSimulatorArm64()
 
+    val generateAppConfig by tasks.registering {
+        val outputDir = layout.buildDirectory.dir("generated/source/appconfig/commonMain")
+        val versionNameProp = (findProperty("spool.versionName") as? String) ?: "1.3.3"
+        val versionCodeProp = (findProperty("spool.versionCode") as? String)?.toIntOrNull() ?: 9
+        outputs.dir(outputDir)
+        doLast {
+            val file = outputDir.get().file("com/aadil/spool/AppConfig.kt").asFile
+            file.parentFile.mkdirs()
+            file.writeText("""
+                package com.aadil.spool
+
+                object AppConfig {
+                    const val VERSION_NAME: String = "$versionNameProp"
+                    const val VERSION_CODE: Int = $versionCodeProp
+                }
+            """.trimIndent())
+        }
+    }
+
     sourceSets {
-        commonMain.dependencies {
-            implementation(libs.kotlinx.serialization.core)
+        commonMain {
+            kotlin.srcDir(generateAppConfig.map { it.outputs.files })
+            dependencies {
+                implementation(libs.kotlinx.serialization.core)
+            }
         }
     }
 }

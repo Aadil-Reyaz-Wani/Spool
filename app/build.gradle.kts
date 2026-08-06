@@ -31,8 +31,8 @@ android {
         applicationId = "com.aadil.spool"
         minSdk = 24
         targetSdk = 36
-        versionCode = 9
-        versionName = "1.3.3"
+        versionCode = (findProperty("spool.versionCode") as? String)?.toIntOrNull() ?: 9
+        versionName = (findProperty("spool.versionName") as? String) ?: "1.3.3"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }

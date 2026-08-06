@@ -1,0 +1,142 @@
+<resources>
+    <string name="app_name">Spool</string>
+
+    <string name="app_tagline">Measure. Manage. Print.</string>
+
+    <string name="dashboard_title">Inventory\nDashboard</string>
+    <string name="dashboard_empty">No spools found.\nTap + to add your first roll.</string>
+    <string name="stats_total_weight">Total Stock</string>
+    <string name="stats_spool_count">Spools</string>
+
+    <string name="title_new_spool">New Spool</string>
+    <string name="title_update_spool">Update Spool</string>
+    <string name="spool_details">Spool Details</string>
+    <string name="spool_history">Print History</string>
+
+    <string name="label_brand">Brand</string>
+
+    <string name="weight_error_message">*Please enter valid weight</string>
+    <string name="brand_error_message">*Please enter brand name</string>
+    <string name="material_error_message">*Please select material type</string>
+    <string name="invalid_weight_error_message">*Initial weight is not valid</string>
+
+
+    <string name="label_material">Material Type</string>
+
+    <string name="label_color">Color Name</string>
+    <string name="label_color_code">Hex Color Code</string>
+
+    <string name="label_initial_weight">Initial Weight (g)</string>
+    <string name="label_current_weight">Current Weight (g)</string>
+
+    <string name="header_settings">Print Settings</string>
+    <string name="label_temp_nozzle">Nozzle (°C)</string>
+    <string name="label_temp_bed">Bed (°C)</string>
+
+    <string name="btn_save">Save Spool</string>
+    <string name="btn_delete">Delete</string>
+    <string name="btn_cancel">Cancel</string>
+    <string name="btn_update">Update</string>
+    <string name="btn_fab">Add New Spool</string>
+    <string name="btn_log_print">Log Print</string>
+
+    <string name="details_remaining">Remaining</string>
+    <string name="dialog_deduct_title">Log Print</string>
+    <string name="dialog_deduct_instruction">Enter weight used (g)</string>
+    <string name="confirm_delete">Delete this spool permanently?</string>
+
+
+    <string name="missing_settings">Add Nozzle &amp; Bed Temperatures</string>
+    <string name="missing_notes">Add print notes or observations</string>
+    <string name="label_note">Note</string>
+    <string name="label_deduct_weight">Deduct Weight (g)</string>
+    <string name="label_print_title">Print Title</string>
+
+    <string name="unit_grams">g</string>
+
+
+    <string name="hint_nozzle">e.g. 120</string>
+    <string name="hint_bed">e.g. 32</string>
+    <string name="hint_note">Write your note here…</string>
+    <string name="hint_color_code">e.g. 0xFF000000</string>
+    <string name="hint_brand">Prusament</string>
+    <string name="hint_price">e.g. $300</string>
+    <string name="hint_material">PLA</string>
+    <string name="hint_color">Vertigo Grey</string>
+    <string name="hint_total_wight">e.g. 1000</string>
+    <string name="hint_print_title">Iron Man Helmet</string>
+
+
+
+    <string name="heading_temperature">Temperature</string>
+    <string name="heading_note">Notes</string>
+    <string name="heading_nozzle">Nozzle</string>
+    <string name="heading_bed">Bed</string>
+    <string name="notes_heading">Notes (Optional)</string>
+
+
+    <string name="low_stock">Critical Level</string>
+    <string name="empty_spool">Time to Restock</string>
+
+
+    <string name="check_failure">Mark as Failed Print</string>
+
+
+    <string name="print_history">Print history</string>
+    <string name="print_history_empty">No print found.\nTap Log Print button to print.</string>
+
+
+
+    <string name="label_spool_price">Spool Price</string>
+
+
+
+    <string name="clear_all_filters_button_label">Clear all filters</string>
+    <string name="clear_all_button_label">Clear All</string>
+    <string name="filter_by_label">Filter By</string>
+    <string name="brand_card_label">Brand</string>
+    <string name="material_card_label">Material Type</string>
+    <string name="color_card_label">Color</string>
+    <string name="empty_filter_card_message">Please Add Some Filaments in Inventory</string>
+
+    <string name="set_default_currency_code_button_label">Set Currency</string>
+    <string name="set_default_currency_button_label">Set Default</string>
+
+
+
+    <!-- About Screen -->
+    <string name="created_by_label">Created by</string>
+    <string name="creator_label">Aadil Reyaz Wani</string>
+    <string name="about_screen_label">About</string>
+    <string name="our_mission_slogan">Spool is an offline-first 3D printing filament tracker built for speed. Designed so you own your inventory data with instant, offline access wherever your printers are.</string>
+    <string name="our_mission_header_label">Our Mission</string>
+    <string name="our_mission_header_labels">3D Printing Inventory</string>
+    <string name="social_x">Follow on X</string>
+    <string name="social_linkedin">Connect on LinkedIn</string>
+    <string name="open_source_licenses_label">Open Source Licenses</string>
+    <string name="privacy_policy_label">Privacy Policy</string>
+    <string name="rating_button_label">Rate on Google Play</string>
+    <string name="dot_separator_label">•</string>
+
+
+    <!-- Help & Support -->
+    <string name="topbar_label">Help &amp; Support</string>
+    <string name="support_email">spool.help@gmail.com</string>
+    <string name="support_whatsapp">916005309432</string>
+    <string name="need_assistance_header">Need Assistance?</string>
+    <string name="need_assistance_subtitle">If you found a bug or have a feature request, let us know!</string>
+    <string name="email_support_button">Email</string>
+    <string name="whatsapp_support_button">Whatsapp</string>
+    <string name="faq_label">Frequently Asked Questions</string>
+
+
+
+    <string name="restock_filament">Restock Filament</string>
+    <string name="additional_weight_placeholder">Restock Filament</string>
+    <string name="additional_weight_label">Additional Weight (g)</string>
+    <string name="additional_price_label">Additional Price</string>
+
+
+    <string name="default_version">1.2.0</string>
+    <string name="version_number">v%1$s • Initializing</string>
+</resources>

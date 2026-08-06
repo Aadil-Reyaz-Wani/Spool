@@ -21,3 +21,18 @@ keystore.properties
 app/release/
 .hotswan/
 .kotlin/
+
+# iOS / Xcode
+xcuserdata/
+*.xcworkspace/
+xcuserdata
+project.xcworkspace
+*.mode1v3
+*.mode2v3
+*.pbxuser
+*.perspectivev3
+*.xcuserstate
+iosApp/build/
+iosApp/Pods/
+.idea/artifacts/
+.idea/xcode.xml
