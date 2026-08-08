@@ -22,6 +22,7 @@ app/release/
 .hotswan/
 .kotlin/
 AGENTS.md
+docs/
 
 # iOS / Xcode
 xcuserdata/
