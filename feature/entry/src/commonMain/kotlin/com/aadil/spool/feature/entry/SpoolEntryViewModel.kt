@@ -17,34 +17,8 @@ open class SpoolEntryViewModel(
 
     val isError = MutableStateFlow(false)
 
-    fun updateTextField(
-        newBrand: String,
-        newMaterial: String,
-        newTotalWeight: String,
-        newColorName: String,
-        newColorHex: Long,
-        newCurrentWeight: String,
-        newTempNozzle: String,
-        newTempBed: String,
-        newNote: String,
-        newPrice: String,
-        newAddedWeight: String = _spoolEntryUiState.value.addedWeight,
-        newAddedPrice: String = _spoolEntryUiState.value.addedPrice
-    ) {
-        _spoolEntryUiState.value = _spoolEntryUiState.value.copy(
-            brand = newBrand,
-            material = newMaterial,
-            totalWeight = newTotalWeight,
-            currentWeight = newCurrentWeight,
-            colorName = newColorName,
-            colorHex = newColorHex,
-            tempNozzle = newTempNozzle,
-            tempBed = newTempBed,
-            note = newNote,
-            price = newPrice,
-            addedWeight = newAddedWeight,
-            addedPrice = newAddedPrice
-        )
+    fun update(transform: SpoolEntryUiState.() -> SpoolEntryUiState) {
+        _spoolEntryUiState.update(transform)
     }
 
     fun loadSpool(id: Int) {

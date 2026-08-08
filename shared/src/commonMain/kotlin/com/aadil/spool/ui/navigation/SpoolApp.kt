@@ -157,174 +157,40 @@ fun MySpoolApp(modifier: Modifier = Modifier) {
                     },
                     uiState = spoolEntryUiState,
                     onBrandValueChange = { newValue ->
-                        spoolEntryViewModel.updateTextField(
-                            newBrand = newValue,
-                            newMaterial = spoolEntryUiState.material,
-                            newPrice = spoolEntryUiState.price,
-                            newTotalWeight = spoolEntryUiState.totalWeight,
-                            newColorHex = spoolEntryUiState.colorHex,
-                            newColorName = spoolEntryUiState.colorName,
-                            newCurrentWeight = spoolEntryUiState.currentWeight,
-                            newTempNozzle = spoolEntryUiState.tempNozzle,
-                            newTempBed = spoolEntryUiState.tempBed,
-                            newNote = spoolEntryUiState.note
-                        )
+                        spoolEntryViewModel.update { copy(brand = newValue) }
                     },
                     onMaterialValueChange = { newValue ->
-                        spoolEntryViewModel.updateTextField(
-                            newBrand = spoolEntryUiState.brand,
-                            newMaterial = newValue,
-                            newPrice = spoolEntryUiState.price,
-                            newTotalWeight = spoolEntryUiState.totalWeight,
-                            newColorHex = spoolEntryUiState.colorHex,
-                            newColorName = spoolEntryUiState.colorName,
-                            newCurrentWeight = spoolEntryUiState.currentWeight,
-                            newTempNozzle = spoolEntryUiState.tempNozzle,
-                            newTempBed = spoolEntryUiState.tempBed,
-                            newNote = spoolEntryUiState.note
-                        )
+                        spoolEntryViewModel.update { copy(material = newValue) }
                     },
                     onPriceValueChange = { newValue ->
-                        spoolEntryViewModel.updateTextField(
-                            newBrand = spoolEntryUiState.brand,
-                            newMaterial = spoolEntryUiState.material,
-                            newPrice = newValue,
-                            newTotalWeight = spoolEntryUiState.totalWeight,
-                            newColorHex = spoolEntryUiState.colorHex,
-                            newColorName = spoolEntryUiState.colorName,
-                            newCurrentWeight = spoolEntryUiState.currentWeight,
-                            newTempNozzle = spoolEntryUiState.tempNozzle,
-                            newTempBed = spoolEntryUiState.tempBed,
-                            newNote = spoolEntryUiState.note
-                        )
+                        spoolEntryViewModel.update { copy(price = newValue) }
                     },
                     onInitialWeightValueChange = { newValue ->
-                        spoolEntryViewModel.updateTextField(
-                            newBrand = spoolEntryUiState.brand,
-                            newMaterial = spoolEntryUiState.material,
-                            newPrice = spoolEntryUiState.price,
-                            newTotalWeight = newValue,
-                            newColorHex = spoolEntryUiState.colorHex,
-                            newColorName = spoolEntryUiState.colorName,
-                            newCurrentWeight = spoolEntryUiState.currentWeight,
-                            newTempNozzle = spoolEntryUiState.tempNozzle,
-                            newTempBed = spoolEntryUiState.tempBed,
-                            newNote = spoolEntryUiState.note
-                        )
+                        spoolEntryViewModel.update { copy(totalWeight = newValue) }
                     },
                     onColorNameChange = { newValue ->
-                        spoolEntryViewModel.updateTextField(
-                            newBrand = spoolEntryUiState.brand,
-                            newMaterial = spoolEntryUiState.material,
-                            newPrice = spoolEntryUiState.price,
-                            newTotalWeight = spoolEntryUiState.totalWeight,
-                            newColorHex = spoolEntryUiState.colorHex,
-                            newColorName = newValue,
-                            newCurrentWeight = spoolEntryUiState.currentWeight,
-                            newTempNozzle = spoolEntryUiState.tempNozzle,
-                            newTempBed = spoolEntryUiState.tempBed,
-                            newNote = spoolEntryUiState.note
-                        )
+                        spoolEntryViewModel.update { copy(colorName = newValue) }
                     },
                     onColorValueChange = { newValue ->
-                        spoolEntryViewModel.updateTextField(
-                            newBrand = spoolEntryUiState.brand,
-                            newMaterial = spoolEntryUiState.material,
-                            newPrice = spoolEntryUiState.price,
-                            newTotalWeight = spoolEntryUiState.totalWeight,
-                            newColorHex = newValue,
-                            newColorName = spoolEntryUiState.colorName,
-                            newCurrentWeight = spoolEntryUiState.currentWeight,
-                            newTempNozzle = spoolEntryUiState.tempNozzle,
-                            newTempBed = spoolEntryUiState.tempBed,
-                            newNote = spoolEntryUiState.note
-                        )
+                        spoolEntryViewModel.update { copy(colorHex = newValue) }
                     },
                     onCurrentWeightValueChange = { newValue ->
-                        spoolEntryViewModel.updateTextField(
-                            newBrand = spoolEntryUiState.brand,
-                            newMaterial = spoolEntryUiState.material,
-                            newPrice = spoolEntryUiState.price,
-                            newTotalWeight = spoolEntryUiState.totalWeight,
-                            newColorHex = spoolEntryUiState.colorHex,
-                            newColorName = spoolEntryUiState.colorName,
-                            newCurrentWeight = newValue,
-                            newTempNozzle = spoolEntryUiState.tempNozzle,
-                            newTempBed = spoolEntryUiState.tempBed,
-                            newNote = spoolEntryUiState.note
-                        )
+                        spoolEntryViewModel.update { copy(currentWeight = newValue) }
                     },
                     onNozzleTempValueChange = { newValue ->
-                        spoolEntryViewModel.updateTextField(
-                            newBrand = spoolEntryUiState.brand,
-                            newMaterial = spoolEntryUiState.material,
-                            newPrice = spoolEntryUiState.price,
-                            newTotalWeight = spoolEntryUiState.totalWeight,
-                            newColorHex = spoolEntryUiState.colorHex,
-                            newColorName = spoolEntryUiState.colorName,
-                            newCurrentWeight = spoolEntryUiState.currentWeight,
-                            newTempNozzle = newValue,
-                            newTempBed = spoolEntryUiState.tempBed,
-                            newNote = spoolEntryUiState.note
-                        )
+                        spoolEntryViewModel.update { copy(tempNozzle = newValue) }
                     },
                     onBedTempValueChange = { newValue ->
-                        spoolEntryViewModel.updateTextField(
-                            newBrand = spoolEntryUiState.brand,
-                            newMaterial = spoolEntryUiState.material,
-                            newPrice = spoolEntryUiState.price,
-                            newTotalWeight = spoolEntryUiState.totalWeight,
-                            newColorHex = spoolEntryUiState.colorHex,
-                            newColorName = spoolEntryUiState.colorName,
-                            newCurrentWeight = spoolEntryUiState.currentWeight,
-                            newTempNozzle = spoolEntryUiState.tempNozzle,
-                            newTempBed = newValue,
-                            newNote = spoolEntryUiState.note
-                        )
+                        spoolEntryViewModel.update { copy(tempBed = newValue) }
                     },
                     onNoteValueChange = { newValue ->
-                        spoolEntryViewModel.updateTextField(
-                            newBrand = spoolEntryUiState.brand,
-                            newMaterial = spoolEntryUiState.material,
-                            newPrice = spoolEntryUiState.price,
-                            newTotalWeight = spoolEntryUiState.totalWeight,
-                            newColorHex = spoolEntryUiState.colorHex,
-                            newColorName = spoolEntryUiState.colorName,
-                            newCurrentWeight = spoolEntryUiState.currentWeight,
-                            newTempNozzle = spoolEntryUiState.tempNozzle,
-                            newTempBed = spoolEntryUiState.tempBed,
-                            newNote = newValue
-                        )
+                        spoolEntryViewModel.update { copy(note = newValue) }
                     },
                     onAddedWeightValueChange = { newValue ->
-                        spoolEntryViewModel.updateTextField(
-                            newBrand = spoolEntryUiState.brand,
-                            newMaterial = spoolEntryUiState.material,
-                            newPrice = spoolEntryUiState.price,
-                            newTotalWeight = spoolEntryUiState.totalWeight,
-                            newColorHex = spoolEntryUiState.colorHex,
-                            newColorName = spoolEntryUiState.colorName,
-                            newCurrentWeight = spoolEntryUiState.currentWeight,
-                            newTempNozzle = spoolEntryUiState.tempNozzle,
-                            newTempBed = spoolEntryUiState.tempBed,
-                            newNote = spoolEntryUiState.note,
-                            newAddedWeight = newValue
-                        )
+                        spoolEntryViewModel.update { copy(addedWeight = newValue) }
                     },
                     onAddedPriceValueChange = { newValue ->
-                        spoolEntryViewModel.updateTextField(
-                            newBrand = spoolEntryUiState.brand,
-                            newMaterial = spoolEntryUiState.material,
-                            newPrice = spoolEntryUiState.price,
-                            newTotalWeight = spoolEntryUiState.totalWeight,
-                            newColorHex = spoolEntryUiState.colorHex,
-                            newColorName = spoolEntryUiState.colorName,
-                            newCurrentWeight = spoolEntryUiState.currentWeight,
-                            newTempNozzle = spoolEntryUiState.tempNozzle,
-                            newTempBed = spoolEntryUiState.tempBed,
-                            newNote = spoolEntryUiState.note,
-                            newAddedPrice = newValue
-                        )
+                        spoolEntryViewModel.update { copy(addedPrice = newValue) }
                     },
                     onSaveOrUpdateClick = {
                         spoolEntryViewModel.saveOrUpdateSpool(entry.id)
