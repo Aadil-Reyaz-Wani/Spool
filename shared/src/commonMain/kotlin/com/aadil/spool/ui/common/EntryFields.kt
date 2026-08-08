@@ -220,7 +220,6 @@ fun EntryFields(
             HorizontalDivider()
             Spacer(modifier = Modifier.height(Dimens.PaddingLarge))
             SpoolHeadingText(text = stringResource(Res.string.restock_filament), icon = Icons.Outlined.Update)
-            HorizontalDivider()
 
             SpoolOutlinedTextField(
                 value = uiState.addedWeight,

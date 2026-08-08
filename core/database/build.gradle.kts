@@ -1,17 +1,27 @@
 plugins {
     alias(libs.plugins.kotlin.multiplatform)
-    alias(libs.plugins.android.library)
+    alias(libs.plugins.android.kotlin.multiplatform.library)
     id("com.google.devtools.ksp")
     alias(libs.plugins.androidx.room)
 }
 
 kotlin {
-    androidTarget {
+    android {
+        namespace = "com.aadil.spool.core.database"
+        compileSdk {
+            version = release(36) {
+                minorApiLevel = 1
+            }
+        }
+        minSdk = 24
         compilerOptions {
             jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_11)
         }
+        withDeviceTestBuilder {}.configure {
+            instrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        }
     }
-    
+
     iosX64()
     iosArm64()
     iosSimulatorArm64()
@@ -27,6 +37,12 @@ kotlin {
         androidMain.dependencies {
             implementation(libs.androidx.core.ktx)
         }
+        getByName("androidDeviceTest") {
+            dependencies {
+                implementation(libs.androidx.junit)
+                implementation(libs.truth)
+            }
+        }
     }
 }
 
@@ -39,21 +55,4 @@ dependencies {
     add("kspIosX64", libs.androidx.room.compiler)
     add("kspIosArm64", libs.androidx.room.compiler)
     add("kspIosSimulatorArm64", libs.androidx.room.compiler)
-
-    androidTestImplementation(libs.androidx.junit)
-    androidTestImplementation(libs.truth)
-}
-
-android {
-    namespace = "com.aadil.spool.core.database"
-    compileSdk = 36
-
-    defaultConfig {
-        minSdk = 24
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-    }
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
-    }
 }

@@ -21,6 +21,7 @@ keystore.properties
 app/release/
 .hotswan/
 .kotlin/
+AGENTS.md
 
 # iOS / Xcode
 xcuserdata/

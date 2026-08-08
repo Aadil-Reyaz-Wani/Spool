@@ -1,21 +1,28 @@
 plugins {
     alias(libs.plugins.kotlin.multiplatform)
-    alias(libs.plugins.android.library)
+    alias(libs.plugins.android.kotlin.multiplatform.library)
     alias(libs.plugins.jetbrains.kotlin.serialization)
 }
 
 kotlin {
-    androidTarget {
+    android {
+        namespace = "com.aadil.spool.core.model"
+        compileSdk {
+            version = release(36) {
+                minorApiLevel = 1
+            }
+        }
+        minSdk = 24
         compilerOptions {
             jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_11)
         }
     }
-    
+
     iosX64()
     iosArm64()
     iosSimulatorArm64()
 
-    val generateAppConfig by tasks.registering {
+    val generateAppConfig = tasks.register("generateAppConfig") {
         val outputDir = layout.buildDirectory.dir("generated/source/appconfig/commonMain")
         val versionNameProp = (findProperty("spool.versionName") as? String) ?: "1.3.3"
         val versionCodeProp = (findProperty("spool.versionCode") as? String)?.toIntOrNull() ?: 9
@@ -41,18 +48,5 @@ kotlin {
                 implementation(libs.kotlinx.serialization.core)
             }
         }
-    }
-}
-
-android {
-    namespace = "com.aadil.spool.core.model"
-    compileSdk = 36
-
-    defaultConfig {
-        minSdk = 24
-    }
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
     }
 }

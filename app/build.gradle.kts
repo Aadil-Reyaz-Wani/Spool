@@ -3,12 +3,7 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     alias(libs.plugins.android.application)
-    alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
-    alias(libs.plugins.jetbrains.kotlin.serialization)
-    id("com.google.devtools.ksp")
-    alias(libs.plugins.androidx.room)
-    id("com.mikepenz.aboutlibraries.plugin")
 }
 
 
@@ -20,12 +15,13 @@ if (keystorePropertiesFile.exists()) {
     keystoreProperties.load(keystorePropertiesFile.inputStream())
 }
 
-room {
-    schemaDirectory("$projectDir/schemas")
-}
 android {
     namespace = "com.aadil.spool"
-    compileSdk = 36
+    compileSdk {
+        version = release(36) {
+            minorApiLevel = 1
+        }
+    }
 
     defaultConfig {
         applicationId = "com.aadil.spool"
@@ -80,10 +76,7 @@ dependencies {
     implementation(libs.androidx.activity.compose)
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.compose.ui)
-    implementation(libs.androidx.compose.ui.graphics)
-    implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.compose.material3)
-    implementation(libs.androidx.compose.ui.text.google.fonts)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -91,49 +84,12 @@ dependencies {
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
     debugImplementation(libs.androidx.compose.ui.tooling)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
-    implementation(libs.androidx.lifecycle.viewmodel.compose)
 
     androidTestImplementation(libs.truth)
 
-    implementation(libs.androidx.compose.material.icons.extended)
-
-
-    //Room
-    implementation(libs.androidx.room.runtime)
-    ksp(libs.androidx.room.compiler)
-    implementation(libs.androidx.room.ktx)
-
-    // Navigation 3
-    implementation(libs.androidx.navigation3.ui)
-    implementation(libs.androidx.navigation3.runtime)
-    implementation(libs.androidx.lifecycle.viewmodel.navigation3)
-    implementation(libs.kotlinx.serialization.core)
-
-    // Koin
+    // Koin (App + shared UI both resolve Koin from the same graph)
     implementation(libs.koin.android)
-    implementation(libs.koin.androidx.compose)
-    implementation(libs.koin.compose.viewmodel)
 
-    // Preferences DataStore (SharedPreferences like APIs)
-    implementation(libs.androidx.datastore.preferences)
-    // Alternatively - without an Android dependency.
-    implementation(libs.androidx.datastore.preferences.core)
-
-
-    // AboutLibraries
-    implementation(libs.aboutlibraries.core)
-    implementation(libs.aboutlibraries.compose.m3)
-
-    // KMP Core modules
-    implementation(project(":core:model"))
-    implementation(project(":core:database"))
-    implementation(project(":core:data"))
-    implementation(project(":core:network"))
-
-    // KMP Feature modules
-    implementation(project(":feature:dashboard"))
-    implementation(project(":feature:details"))
-    implementation(project(":feature:entry"))
-    implementation(project(":feature:history"))
-    implementation(project(":feature:settings"))
+    // Shared Compose Multiplatform UI (exports core/* and feature/*)
+    implementation(project(":shared"))
 }

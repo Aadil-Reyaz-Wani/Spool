@@ -22,6 +22,13 @@ kotlin {
         }
         minSdk = 24
 
+        // The AGP 9 KMP library plugin disables the Android resource pipeline by
+        // default; without this, composeResources (drawables/strings/files) never
+        // get packaged into the APK -> MissingResourceException at runtime.
+        androidResources {
+            enable = true
+        }
+
         withHostTestBuilder {
         }
 
@@ -58,13 +65,13 @@ kotlin {
         commonMain {
             dependencies {
                 implementation(libs.kotlin.stdlib)
-                implementation(compose.runtime)
-                implementation(compose.foundation)
-                implementation(compose.material3)
-                implementation(compose.materialIconsExtended)
-                implementation(compose.ui)
-                implementation(compose.components.resources)
-                implementation(compose.components.uiToolingPreview)
+                implementation(libs.jetbrains.compose.runtime)
+                implementation(libs.jetbrains.compose.foundation)
+                implementation(libs.jetbrains.compose.material3)
+                implementation(libs.jetbrains.compose.material.icons.extended)
+                implementation(libs.jetbrains.compose.ui)
+                implementation(libs.jetbrains.compose.components.resources)
+                implementation(libs.jetbrains.compose.components.ui.tooling.preview)
                 implementation(libs.androidx.navigation3.ui)
                 implementation(libs.androidx.navigation3.runtime)
                 implementation(libs.androidx.lifecycle.viewmodel.navigation3)
