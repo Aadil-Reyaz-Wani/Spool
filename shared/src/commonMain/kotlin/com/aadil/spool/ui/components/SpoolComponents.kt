@@ -1,0 +1,455 @@
+package com.aadil.spool.ui.components
+
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Warning
+import androidx.compose.material.icons.outlined.KeyboardArrowDown
+import androidx.compose.material.icons.outlined.KeyboardArrowUp
+import androidx.compose.material.icons.outlined.Print
+import androidx.compose.material.icons.outlined.TextFields
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardCapitalization
+import org.jetbrains.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
+import com.aadil.spool.core.model.SpoolLists.materialTypes
+import com.aadil.spool.ui.common.verticalScrollbar
+import com.aadil.spool.ui.theme.BrandOrange
+import com.aadil.spool.ui.theme.Dimens
+
+
+// Solid Button
+@Composable
+fun SpoolButton(
+    modifier: Modifier = Modifier,
+    text: String,
+    icon: ImageVector,
+    contentDescription: String = "",
+    onClick: () -> Unit,
+    buttonContainerColor: Color = MaterialTheme.colorScheme.primary,
+    buttonContentColor: Color = MaterialTheme.colorScheme.onPrimary,
+    enabled: Boolean = true,
+    hasBorder: Boolean = false,
+    buttonDefaultElevation: Dp = 4.dp,
+    buttonPressedElevation: Dp = 2.dp,
+) {
+    Button(
+        onClick = onClick,
+        modifier = modifier
+            .fillMaxWidth()
+            .height(Dimens.ButtonHeight),
+        enabled = enabled,
+        shape = MaterialTheme.shapes.medium,
+        colors = ButtonDefaults.buttonColors(
+            containerColor = buttonContainerColor,
+            contentColor = buttonContentColor,
+            disabledContainerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)
+        ),
+        elevation = ButtonDefaults.buttonElevation(
+            defaultElevation = buttonDefaultElevation,
+            pressedElevation = buttonPressedElevation
+        ),
+        border = if (hasBorder) BorderStroke(
+            Dimens.BorderThickness,
+            color = MaterialTheme.colorScheme.primary
+        ) else null
+    ) {
+        Icon(
+            imageVector = icon,
+            contentDescription = contentDescription
+        )
+        Spacer(modifier = Modifier.width(Dimens.HeightOrWidth))
+        Text(
+            text = text,
+            style = MaterialTheme.typography.labelLarge,
+            fontWeight = FontWeight.Bold,
+            color = buttonContentColor
+        )
+    }
+}
+
+@Preview
+@Composable
+private fun ButtonPev() {
+    SpoolButton(
+        text = "Button",
+        icon = Icons.Outlined.Print,
+        onClick = {},
+        buttonContainerColor = Color.Yellow,
+        buttonContentColor = Color.Black,
+        enabled = true,
+        contentDescription = "",
+        hasBorder = false,
+        modifier = Modifier.padding(Dimens.PaddingMedium)
+    )
+}
+
+// Outlined Button
+@Composable
+fun SpoolOutlinedTextField(
+    value: String,
+    onValueChange: (String) -> Unit,
+    label: String,
+    modifier: Modifier = Modifier,
+    placeholder: String = "",
+    isError: Boolean = false,
+    leadingIcon: ImageVector,
+    trailingIcon: ImageVector? = null,
+    singleLine: Boolean = true,
+    supportingText: String? = "",
+    keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
+    keyboardActions: KeyboardActions = KeyboardActions.Default
+) {
+    OutlinedTextField(
+        value = value,
+        onValueChange = onValueChange,
+        label = { Text(label) },
+        placeholder = { Text(placeholder, color = Color.Gray) },
+        modifier = modifier.fillMaxWidth(),
+        shape = MaterialTheme.shapes.medium,
+        singleLine = singleLine,
+        isError = isError,
+        supportingText = {
+            if (isError) {
+                if (supportingText != null) {
+                    Text(
+                        text = supportingText,
+                        color = MaterialTheme.colorScheme.error
+                    )
+                }
+            }
+        },
+        leadingIcon = {
+            Icon(
+                imageVector = leadingIcon,
+                contentDescription = null
+            )
+        },
+        trailingIcon = {
+            if (trailingIcon != null) {
+                Icon(
+                    imageVector = trailingIcon,
+                    contentDescription = null
+                )
+            }
+        },
+        keyboardOptions = keyboardOptions,
+        keyboardActions = keyboardActions,
+        colors = OutlinedTextFieldDefaults.colors(
+            focusedBorderColor = MaterialTheme.colorScheme.primary,
+            unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant,
+
+            focusedLabelColor = MaterialTheme.colorScheme.primary,
+            unfocusedLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
+
+            cursorColor = MaterialTheme.colorScheme.primary,
+
+            focusedLeadingIconColor = MaterialTheme.colorScheme.primary,
+            unfocusedLeadingIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+
+            focusedTrailingIconColor = MaterialTheme.colorScheme.primary,
+            unfocusedTrailingIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+
+            focusedTextColor = MaterialTheme.colorScheme.onSurface,
+            unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
+
+            errorLeadingIconColor = MaterialTheme.colorScheme.error,
+            errorTrailingIconColor = MaterialTheme.colorScheme.error
+        )
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun SpoolDropDownMenu(
+    value: String,
+    onValueChange: (String) -> Unit,
+    label: String,
+    modifier: Modifier = Modifier,
+    placeholder: String = "",
+    isError: Boolean = false,
+    leadingIcon: ImageVector,
+    singleLine: Boolean = true,
+    supportingText: String = "",
+    keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
+    keyboardActions: KeyboardActions = KeyboardActions.Default,
+    options: List<String> = materialTypes
+) {
+    var isExpanded by rememberSaveable { mutableStateOf(false) }
+    val rotationAngle by animateFloatAsState(
+        targetValue = if (isExpanded) 180f else 0f,
+        animationSpec = tween(
+            durationMillis = 400,
+            easing = FastOutSlowInEasing
+        ),
+        label = "arrow_rotation"
+    )
+
+    ExposedDropdownMenuBox(
+        expanded = isExpanded,
+        onExpandedChange = { isExpanded = it },
+        modifier = modifier
+    ) {
+        OutlinedTextField(
+            modifier = Modifier
+                .fillMaxWidth()
+                .menuAnchor(),
+            value = value,
+            onValueChange = onValueChange,
+            label = { Text(label) },
+            placeholder = { Text(placeholder, color = Color.Gray) },
+            readOnly = true,
+            trailingIcon = {
+                    Icon(
+                        Icons.Outlined.KeyboardArrowDown,
+                        contentDescription = null,
+                        modifier = Modifier.rotate(rotationAngle)
+                    )
+            },
+            shape = MaterialTheme.shapes.medium,
+            singleLine = singleLine,
+            isError = isError,
+            supportingText = {
+                if (isError) {
+                    Text(
+                        text = supportingText,
+                        color = MaterialTheme.colorScheme.error
+                    )
+                }
+            },
+            leadingIcon = {
+                Icon(
+                    imageVector = leadingIcon,
+                    contentDescription = null
+                )
+            },
+            keyboardOptions = keyboardOptions,
+            keyboardActions = keyboardActions,
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedBorderColor = MaterialTheme.colorScheme.primary,
+                unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant,
+
+                focusedLabelColor = MaterialTheme.colorScheme.primary,
+                unfocusedLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
+
+                cursorColor = MaterialTheme.colorScheme.primary,
+
+                focusedLeadingIconColor = MaterialTheme.colorScheme.primary,
+                unfocusedLeadingIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+
+                focusedTrailingIconColor = MaterialTheme.colorScheme.primary,
+                unfocusedTrailingIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+
+                focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
+
+                errorLeadingIconColor = MaterialTheme.colorScheme.error,
+                errorTrailingIconColor = MaterialTheme.colorScheme.error
+            )
+
+        )
+
+        val scrollState = rememberScrollState()
+        ExposedDropdownMenu(
+            expanded = isExpanded,
+            onDismissRequest = { isExpanded = false },
+            modifier = Modifier
+                .heightIn(max = Dimens.ScrollableCardHeight)
+                .verticalScrollbar(
+                    scrollState = scrollState,
+                    color = MaterialTheme.colorScheme.primary.copy(alpha = 0.3f)
+                )
+                .verticalScroll(scrollState)
+        ) {
+            options.forEach { option ->
+                DropdownMenuItem(
+                    text = { Text(option) },
+                    onClick = {
+                        onValueChange(option)
+                        isExpanded = false
+                    }
+                )
+            }
+        }
+    }
+}
+
+@Preview
+@Composable
+private fun TextFieldPrev() {
+    SpoolOutlinedTextField(
+        value = "",
+        onValueChange = {},
+        label = "Label",
+        modifier = Modifier,
+        placeholder = "Placeholder",
+        isError = false,
+        leadingIcon = Icons.Outlined.TextFields,
+        keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words),
+        keyboardActions = KeyboardActions(onDone = { })
+    )
+}
+
+@Composable
+fun SpoolHeadingText(
+    text: String,
+    icon: ImageVector,
+    modifier: Modifier = Modifier,
+    alpha: Float = 1f,
+    iconTint: Color = MaterialTheme.colorScheme.primary,
+    textColor: Color = MaterialTheme.colorScheme.onSurface
+) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(Dimens.HeightOrWidth)
+    ) {
+        Icon(
+            imageVector = icon,
+            contentDescription = null,
+            tint = iconTint,
+            modifier = Modifier.size(Dimens.IconMedium)
+        )
+        Text(
+            text = text,
+            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+            color = textColor,
+            modifier = modifier
+        )
+    }
+}
+
+
+@Composable
+fun SpoolTag(
+    text: String,
+    modifier: Modifier = Modifier,
+    textColor: Color = MaterialTheme.colorScheme.onSecondaryContainer,
+    surfaceColor: Color = MaterialTheme.colorScheme.secondaryContainer,
+    isIconicTag: Boolean = false
+) {
+
+    Surface(
+        shape = MaterialTheme.shapes.extraSmall,
+        color = surfaceColor,
+        modifier = Modifier.border(
+            width = Dimens.BorderThickness,
+            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
+            shape = MaterialTheme.shapes.extraSmall
+        ),
+        contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
+        tonalElevation = 0.dp,
+        shadowElevation = 0.dp,
+        border = null,
+        content = {
+            Row(
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+            ) {
+
+                if (isIconicTag) {
+                    Icon(
+                        imageVector = Icons.Filled.Warning,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.error,
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Spacer(modifier = Modifier.width(Dimens.HeightOrWidth))
+
+                }
+
+                Text(
+                    text = text,
+                    style = MaterialTheme.typography.labelMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = textColor,
+
+                    )
+            }
+        }
+    )
+}
+
+
+@Composable
+fun SpoolProgressBar(
+    percentage: Double,
+    currentWeight: Double,
+    totalWeight: Double,
+    modifier: Modifier = Modifier
+) {
+    val progress = currentWeight.toFloat() / totalWeight.toFloat()
+    LinearProgressIndicator(
+        progress = { progress },
+        modifier = Modifier
+            .fillMaxWidth()
+            .size(Dimens.ProgressBarHeight)
+            .clip(CircleShape),
+        color = if (percentage > 40) {
+            BrandOrange
+        } else if (percentage < 20) {
+            BrandOrange
+        } else {
+            BrandOrange
+        },
+        trackColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f),
+        strokeCap = StrokeCap.Butt,
+        gapSize = 1.5.dp,
+    )
+}
+
+@Composable
+fun SpoolHorizontalDivider(
+    modifier: Modifier = Modifier,
+    padding: Dp = 0.dp,
+    color: Color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f)
+) {
+    HorizontalDivider(
+        modifier = modifier,
+        color = color.copy(alpha = 0.3f),
+        thickness = 0.5.dp
+    )
+}

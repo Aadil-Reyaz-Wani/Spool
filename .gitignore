@@ -1,5 +1,5 @@
 *.iml
-.gradle
+**/.gradle/
 /local.properties
 /.idea/caches
 /.idea/libraries
@@ -7,8 +7,11 @@
 /.idea/workspace.xml
 /.idea/navEditor.xml
 /.idea/assetWizardSettings.xml
+/.idea/deploymentTargetSelector.xml
+/.idea/planningMode.xml
+/.idea/gradle.xml
 .DS_Store
-/build
+**/build/
 /captures
 .externalNativeBuild
 .cxx
@@ -17,3 +20,21 @@ keystore.properties
 *.jks
 app/release/
 .hotswan/
+.kotlin/
+AGENTS.md
+docs/
+
+# iOS / Xcode
+xcuserdata/
+*.xcworkspace/
+xcuserdata
+project.xcworkspace
+*.mode1v3
+*.mode2v3
+*.pbxuser
+*.perspectivev3
+*.xcuserstate
+iosApp/build/
+iosApp/Pods/
+.idea/artifacts/
+.idea/xcode.xml
