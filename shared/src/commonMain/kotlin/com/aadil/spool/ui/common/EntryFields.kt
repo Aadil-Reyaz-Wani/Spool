@@ -48,6 +48,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -96,8 +97,12 @@ fun EntryFields(
     modifier: Modifier = Modifier,
     selectedCurrency: String,
 ) {
+    var hasResetForm by rememberSaveable { mutableStateOf(false) }
     LaunchedEffect(Unit) {
-        if (!isEditMode) resetState()
+        if (!isEditMode && !hasResetForm) {
+            hasResetForm = true
+            resetState()
+        }
     }
 
     val scrollState = rememberScrollState()

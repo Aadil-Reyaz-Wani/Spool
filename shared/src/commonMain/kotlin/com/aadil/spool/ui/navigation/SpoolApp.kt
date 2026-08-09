@@ -8,16 +8,21 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import org.jetbrains.compose.resources.stringResource
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
-import androidx.navigation3.runtime.NavBackStack
 import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.entryProvider
+import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
+import androidx.savedstate.serialization.SavedStateConfiguration
+import kotlinx.serialization.modules.SerializersModule
+import kotlinx.serialization.modules.polymorphic
+import kotlinx.serialization.modules.subclass
 import spool.shared.generated.resources.*
 import com.aadil.spool.utils.PlatformBackHandler
 import com.aadil.spool.ui.common.SpoolAppBar
@@ -73,7 +78,24 @@ fun MySpoolApp(modifier: Modifier = Modifier) {
     val selectedCurrency by spoolSettingsViewModel.selectedCurrency.collectAsStateWithLifecycle()
 
     // Navigation
-    val backStack = remember { NavBackStack<NavKey>(Routes.Splash) }
+    val backStack = rememberNavBackStack(
+        configuration = SavedStateConfiguration {
+            serializersModule = SerializersModule {
+                polymorphic(baseClass = NavKey::class) {
+                    subclass(serializer = Routes.Splash.serializer())
+                    subclass(serializer = Routes.Dashboard.serializer())
+                    subclass(serializer = Routes.SpoolEntry.serializer())
+                    subclass(serializer = Routes.SpoolDetails.serializer())
+                    subclass(serializer = Routes.PrintHistory.serializer())
+                    subclass(serializer = Routes.Filter.serializer())
+                    subclass(serializer = Routes.About.serializer())
+                    subclass(serializer = Routes.OpenSourceLicenses.serializer())
+                    subclass(serializer = Routes.Help.serializer())
+                }
+            }
+        },
+        Routes.Splash
+    )
 
     // It safely removes the screens from the backstack when the back button is pressed.
     // without the crash if the user presses the back button twice.
@@ -148,8 +170,12 @@ fun MySpoolApp(modifier: Modifier = Modifier) {
 
             // Entry Screen Entry
             entry<Routes.SpoolEntry> { entry ->
+                var hasLoadedEntry by rememberSaveable { mutableStateOf(false) }
                 LaunchedEffect(entry.id) {
-                    spoolEntryViewModel.loadSpool(entry.id)
+                    if (!hasLoadedEntry) {
+                        hasLoadedEntry = true
+                        spoolEntryViewModel.loadSpool(entry.id)
+                    }
                 }
                 SpoolEntryScreen(
                     onNavigateUp = {

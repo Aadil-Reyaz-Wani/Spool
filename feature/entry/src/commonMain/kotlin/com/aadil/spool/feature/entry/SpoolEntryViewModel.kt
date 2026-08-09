@@ -19,6 +19,7 @@ open class SpoolEntryViewModel(
 
     fun update(transform: SpoolEntryUiState.() -> SpoolEntryUiState) {
         _spoolEntryUiState.update(transform)
+        isError.value = false
     }
 
     fun loadSpool(id: Int) {
@@ -27,6 +28,7 @@ open class SpoolEntryViewModel(
             val currentSpool = spoolRepository.getSpoolStream(id).first()
             currentSpool?.let { spool ->
                 _spoolEntryUiState.value = spool.toSpoolEntryUiState()
+                isError.value = false
             }
         }
     }
@@ -97,5 +99,6 @@ open class SpoolEntryViewModel(
 
     fun resetState() {
         _spoolEntryUiState.update { SpoolEntryUiState() }
+        isError.value = false
     }
 }
