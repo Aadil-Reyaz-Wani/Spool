@@ -134,8 +134,6 @@ fun InputAlertDialog(
     onDismissRequest: () -> Unit,
     onCheckedChange: (Boolean) -> Unit,
     isPrintErrorState: String?,
-//    isEditMode: Boolean,
-//    resetState: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     AlertDialog(
@@ -211,9 +209,6 @@ fun InputAlertDialog(
             FilledTonalButton(
                 onClick = {
                     onConfirm(uiState.gramsUsed)
-                    if (isPrintErrorState == null) {
-                        onDismissRequest()
-                    }
                 },
                 shape = MaterialTheme.shapes.small,
                 colors = ButtonDefaults.filledTonalButtonColors(

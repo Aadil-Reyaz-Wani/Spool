@@ -38,6 +38,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -494,6 +495,7 @@ fun PrintCard(
     modifier: Modifier = Modifier
 ) {
     var showPrintField by rememberSaveable { mutableStateOf(false) }
+    var confirmed by rememberSaveable { mutableStateOf(false) }
 
     Column(
         modifier = modifier
@@ -505,6 +507,7 @@ fun PrintCard(
             icon = Icons.Outlined.Print,
             contentDescription = stringResource(Res.string.btn_log_print),
             onClick = {
+                confirmed = false
                 showPrintField = true
             },
             buttonContainerColor = MaterialTheme.colorScheme.primary,
@@ -520,6 +523,7 @@ fun PrintCard(
                 onPrintTitleValueChange = onPrintTitleValueChange,
                 onConfirm = { weight ->
                     onPrintClick(weight)
+                    confirmed = true
                 },
                 onDismissRequest = {
                     showPrintField = false
@@ -528,6 +532,12 @@ fun PrintCard(
                 isPrintErrorState = isPrintErrorState,
                 modifier = Modifier.fillMaxWidth()
             )
+            LaunchedEffect(uiState, isPrintErrorState) {
+                if (confirmed && uiState.id == 0 && uiState.gramsUsed.isBlank() && isPrintErrorState == null) {
+                    showPrintField = false
+                    confirmed = false
+                }
+            }
         }
     }
 }

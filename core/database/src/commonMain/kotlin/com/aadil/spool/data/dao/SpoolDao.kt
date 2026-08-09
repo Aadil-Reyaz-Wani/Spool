@@ -86,13 +86,15 @@ interface SpoolDao {
     }
 
     @Transaction
-    suspend fun editLogAndRestoreCurrentWeight(usageLog: UsageLog) {
+    suspend fun editLogAndRestoreCurrentWeight(usageLog: UsageLog): Boolean {
         val currentSpoolWeight = getCurrentWeight(usageLog.spoolId)
-        val oldLog = getUsageLogById(usageLog.id).first() ?: return
+        val oldLog = getUsageLogById(usageLog.id).first() ?: return false
         val oldWeight = oldLog.gramsUsed
         val restoredCurrentSpoolWeight = currentSpoolWeight + oldWeight
         val finalSpoolWeight = restoredCurrentSpoolWeight - usageLog.gramsUsed
+        if (finalSpoolWeight < 0) return false
         updateCurrentWeight(usageLog.spoolId, finalSpoolWeight)
         updateUsageLog(usageLog)
+        return true
     }
 }

@@ -55,7 +55,7 @@ interface SpoolRepository {
     suspend fun updateAllUsageCosts(spoolId: Int, pricePerGram: Double)
     suspend fun getCurrentLogWeight(id: Int): Double
     suspend fun deleteLogAndRestoreCurrentWeight(usageLog: UsageLog)
-    suspend fun editLogAndRestoreCurrentWeight(usageLog: UsageLog)
+    suspend fun editLogAndRestoreCurrentWeight(usageLog: UsageLog): Boolean
 }
 
 class DefaultSpoolRepository(
@@ -83,5 +83,5 @@ class DefaultSpoolRepository(
     override suspend fun updateAllUsageCosts(spoolId: Int, pricePerGram: Double) = spoolDao.updateAllUsageCosts(spoolId, pricePerGram)
     override suspend fun getCurrentLogWeight(id: Int): Double = spoolDao.getCurrentLogWeight(id)
     override suspend fun deleteLogAndRestoreCurrentWeight(usageLog: UsageLog) = spoolDao.deleteLogAndRestoreCurrentWeight(usageLog)
-    override suspend fun editLogAndRestoreCurrentWeight(usageLog: UsageLog) = spoolDao.editLogAndRestoreCurrentWeight(usageLog)
+    override suspend fun editLogAndRestoreCurrentWeight(usageLog: UsageLog): Boolean = spoolDao.editLogAndRestoreCurrentWeight(usageLog)
 }

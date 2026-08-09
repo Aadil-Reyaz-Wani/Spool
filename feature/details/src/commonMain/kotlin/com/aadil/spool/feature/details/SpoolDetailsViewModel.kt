@@ -100,19 +100,31 @@ open class SpoolDetailsViewModel(
             try {
                 if (currentState.id == 0) {
                     val newCurrentWeight = filament.currentWeight - parsedDeductedWeight
-                    if (newCurrentWeight >= 0) {
-                        spoolRepository.updateCurrentWeight(id, newCurrentWeight)
-                        spoolRepository.insertSpoolUsageLog(newUsageLog)
+                    if (newCurrentWeight < 0) {
+                        _isError.value = "Cannot log more than the remaining filament weight"
+                        return@launch
                     }
+                    spoolRepository.updateCurrentWeight(id, newCurrentWeight)
+                    spoolRepository.insertSpoolUsageLog(newUsageLog)
                 } else {
-                    spoolRepository.editLogAndRestoreCurrentWeight(newUsageLog)
+                    val applied = spoolRepository.editLogAndRestoreCurrentWeight(newUsageLog)
+                    if (!applied) {
+                        _isError.value = "Cannot log more than the remaining filament weight"
+                        return@launch
+                    }
                 }
 
                 _printObjectUiState.update { PrintObjectUiState() }
+                _isError.value = null
             } catch (ae: Exception) {
                 println("ERROR: ${ae.message}")
             }
         }
+    }
+
+    fun resetPrintObjectUiState() {
+        _printObjectUiState.update { PrintObjectUiState() }
+        _isError.value = null
     }
 
     fun loadSpool(id: Int) {

@@ -24,6 +24,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -219,6 +220,7 @@ fun PrintItemViewCard(
             HorizontalDivider(modifier = Modifier.height(Dimens.PaddingMedium))
             var showDeleteDialog by rememberSaveable { mutableStateOf(false) }
             var showPrintDialog by rememberSaveable { mutableStateOf(false) }
+            var confirmed by rememberSaveable { mutableStateOf(false) }
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.End,
@@ -228,6 +230,7 @@ fun PrintItemViewCard(
                 Surface(
                     onClick = {
                         onEditClick()
+                        confirmed = false
                         showPrintDialog = true
                     },
                     shape = MaterialTheme.shapes.extraSmall,
@@ -276,12 +279,18 @@ fun PrintItemViewCard(
                         onPrintTitleValueChange = onPrintTitleValueChange,
                         onConfirm = {
                             onConfirm(it)
-                            showPrintDialog = false
+                            confirmed = true
                         },
                         onDismissRequest = { showPrintDialog = false },
                         onCheckedChange = onCheckedChange,
                         isPrintErrorState = isPrintErrorState
                     )
+                    LaunchedEffect(uiState, isPrintErrorState) {
+                        if (confirmed && uiState.id == 0 && uiState.gramsUsed.isBlank() && isPrintErrorState == null) {
+                            showPrintDialog = false
+                            confirmed = false
+                        }
+                    }
                 }
             }
 

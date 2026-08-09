@@ -237,6 +237,7 @@ fun MySpoolApp(modifier: Modifier = Modifier) {
             entry<Routes.SpoolDetails> { entry ->
                 LaunchedEffect(entry.id) {
                     spoolDetailsViewModel.loadSpool(entry.id)
+                    spoolDetailsViewModel.resetPrintObjectUiState()
                 }
                 SpoolDetailsScreen(
                     spoolDetails = spoolDetails,
