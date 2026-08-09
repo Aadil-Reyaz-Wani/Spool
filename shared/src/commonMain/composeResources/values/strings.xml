@@ -28,6 +28,18 @@
 
     <string name="label_initial_weight">Initial Weight (g)</string>
     <string name="label_current_weight">Current Weight (g)</string>
+    <string name="label_remaining_weight">Remaining Weight (g)</string>
+
+    <string name="heading_weigh_in">Weigh-In</string>
+    <string name="heading_remaining_weight">Remaining Weight</string>
+    <string name="heading_current_weight">Current Weight</string>
+    <string name="tare_indicator">Tare %1$s g</string>
+    <string name="weigh_in_scale_reading">Scale Reading (g)</string>
+    <string name="weigh_in_tare">Spool Tare (g)</string>
+    <string name="weigh_in_custom_tare">Custom Tare (g)</string>
+    <string name="weigh_in_remaining">Remaining ≈ %1$s g</string>
+    <string name="weigh_in_hint">Place the spool on your scale and enter the reading</string>
+    <string name="weigh_in_apply">Apply</string>
 
     <string name="header_settings">Print Settings</string>
     <string name="label_temp_nozzle">Nozzle (°C)</string>

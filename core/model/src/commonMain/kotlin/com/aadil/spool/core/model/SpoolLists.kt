@@ -5,7 +5,31 @@ data class FAQ(
     val answer: String
 )
 
+data class SpoolTare(
+    val name: String,
+    val grams: Double
+)
+
+fun computeRemainingWeight(grossWeight: Double, tareWeight: Double): Double? {
+    val remaining = grossWeight - tareWeight
+    return remaining.takeIf { grossWeight > 0 && tareWeight >= 0 && remaining >= 0 }
+}
+
 object SpoolLists {
+    const val DEFAULT_TARE_GRAMS = 140.0
+    const val CUSTOM_TARE_LABEL = "Custom…"
+
+    val emptySpoolWeights = listOf(
+        SpoolTare("Cardboard spool", 140.0),
+        SpoolTare("Plastic spool", 220.0),
+        SpoolTare("Bambu reusable spool", 208.0),
+        SpoolTare("Bambu cardboard spool", 205.0),
+        SpoolTare("eSun spool", 200.0),
+        SpoolTare("Prusament spool", 200.0),
+        SpoolTare("Sunlu spool", 230.0),
+        SpoolTare("Refill (no spool)", 0.0),
+    )
+
     val materialTypes = listOf(
         "PLA",
         "ABS",

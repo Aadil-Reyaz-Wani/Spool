@@ -215,7 +215,8 @@ fun SpoolDropDownMenu(
     singleLine: Boolean = true,
     supportingText: String = "",
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
-    keyboardActions: KeyboardActions = KeyboardActions.Default
+    keyboardActions: KeyboardActions = KeyboardActions.Default,
+    options: List<String> = materialTypes
 ) {
     var isExpanded by rememberSaveable { mutableStateOf(false) }
     val rotationAngle by animateFloatAsState(
@@ -303,7 +304,7 @@ fun SpoolDropDownMenu(
                 )
                 .verticalScroll(scrollState)
         ) {
-            materialTypes.forEach { option ->
+            options.forEach { option ->
                 DropdownMenuItem(
                     text = { Text(option) },
                     onClick = {

@@ -64,9 +64,9 @@ open class SpoolEntryViewModel(
                 return@launch
             } else {
                 try {
-                    if (freshFilament.brand.isNotBlank() && freshFilament.material.isNotBlank() && freshFilament.totalWeight > 0) {
+                    if (freshFilament.brand.isNotBlank() && freshFilament.material.isNotBlank() && freshFilament.totalWeight > 0 && freshFilament.currentWeight <= freshFilament.totalWeight) {
                         val filamentToInsert = freshFilament.copy(
-                            currentWeight = freshFilament.totalWeight
+                            currentWeight = freshFilament.currentWeight.takeIf { it > 0 } ?: freshFilament.totalWeight
                         )
                         spoolRepository.insertSpool(filamentToInsert)
                         _spoolEntryUiState.value = SpoolEntryUiState()
