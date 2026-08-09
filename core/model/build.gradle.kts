@@ -26,6 +26,8 @@ kotlin {
         val outputDir = layout.buildDirectory.dir("generated/source/appconfig/commonMain")
         val versionNameProp = (findProperty("spool.versionName") as? String) ?: "1.3.3"
         val versionCodeProp = (findProperty("spool.versionCode") as? String)?.toIntOrNull() ?: 9
+        inputs.property("versionName", versionNameProp)
+        inputs.property("versionCode", versionCodeProp)
         outputs.dir(outputDir)
         doLast {
             val file = outputDir.get().file("com/aadil/spool/AppConfig.kt").asFile
