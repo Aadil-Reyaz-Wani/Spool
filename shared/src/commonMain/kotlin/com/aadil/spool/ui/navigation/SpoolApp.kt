@@ -281,6 +281,12 @@ fun MySpoolApp(modifier: Modifier = Modifier) {
                     onPrintHistoryClick = {
                         backStack.add(Routes.PrintHistory(entry.id))
                         printHistoryViewModel.triggerId(entry.id)
+                    },
+                    onMarkAsDried = { remaining, tare ->
+                        spoolDetailsViewModel.markAsDried(entry.id, remaining, tare)
+                    },
+                    onWeighNow = { remaining, tare ->
+                        spoolDetailsViewModel.updateCurrentWeight(entry.id, remaining, tare)
                     }
                 )
             }

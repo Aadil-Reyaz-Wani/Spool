@@ -35,14 +35,10 @@ import androidx.compose.material.icons.outlined.Save
 import androidx.compose.material.icons.outlined.Scale
 import androidx.compose.material.icons.outlined.Thermostat
 import androidx.compose.material.icons.outlined.Update
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -71,7 +67,6 @@ import com.aadil.spool.feature.entry.SpoolEntryUiState
 import com.aadil.spool.ui.theme.Dimens
 import com.aadil.spool.utils.formatAsCurrency
 import com.aadil.spool.core.model.SpoolLists
-import com.aadil.spool.core.model.computeRemainingWeight
 import com.aadil.spool.core.model.toParseLocalizedDouble
 
 @Composable
@@ -327,11 +322,12 @@ fun EntryFields(
         ScaleWeightDialog(
             initialTareGrams = tareGrams,
             onTareChange = { tareGrams = it },
-            onApply = { remaining ->
+            onApply = { remaining, _ ->
                 onCurrentWeightValueChange(remaining.toWeightText())
                 showScaleDialog = false
             },
-            onDismiss = { showScaleDialog = false }
+            onDismiss = { showScaleDialog = false },
+            expectedRemainingGrams = if (isEditMode) uiState.currentWeight.toParseLocalizedDouble() else null
         )
     }
 }
@@ -370,142 +366,6 @@ private fun WeighInHeadingRow(
         }
     }
 }
-
-@Composable
-private fun ScaleWeightDialog(
-    initialTareGrams: Double,
-    onTareChange: (Double) -> Unit,
-    onApply: (Double) -> Unit,
-    onDismiss: () -> Unit
-) {
-    val presets = SpoolLists.emptySpoolWeights
-    val matchedPreset = presets.firstOrNull { it.grams == initialTareGrams }
-    var selectedTareName by remember { mutableStateOf(matchedPreset?.name ?: SpoolLists.CUSTOM_TARE_LABEL) }
-    var customTare by remember {
-        mutableStateOf(if (matchedPreset == null) initialTareGrams.toWeightText() else "")
-    }
-    var gross by remember { mutableStateOf("") }
-
-    val isCustom = selectedTareName == SpoolLists.CUSTOM_TARE_LABEL
-    val tareGrams = if (isCustom) {
-        customTare.toParseLocalizedDouble() ?: 0.0
-    } else {
-        presets.firstOrNull { it.name == selectedTareName }?.grams ?: 0.0
-    }
-    val remaining = computeRemainingWeight(gross.toParseLocalizedDouble() ?: 0.0, tareGrams)
-
-    AlertDialog(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(
-                color = MaterialTheme.colorScheme.surface,
-                shape = MaterialTheme.shapes.medium
-            ),
-        shape = MaterialTheme.shapes.medium,
-        onDismissRequest = onDismiss,
-        icon = {
-            Icon(
-                imageVector = Icons.Outlined.Scale,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.size(Dimens.IconLarge)
-            )
-        },
-        title = {
-            Text(
-                text = stringResource(Res.string.heading_weigh_in),
-                color = MaterialTheme.colorScheme.onSurface
-            )
-        },
-        text = {
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center,
-            ) {
-                SpoolOutlinedTextField(
-                    value = gross,
-                    onValueChange = { gross = it },
-                    label = stringResource(Res.string.weigh_in_scale_reading),
-                    placeholder = stringResource(Res.string.hint_total_wight),
-                    leadingIcon = Icons.Outlined.MonitorWeight,
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                )
-                Spacer(modifier = Modifier.height(Dimens.PaddingTiny))
-                SpoolDropDownMenu(
-                    value = selectedTareName,
-                    onValueChange = { name ->
-                        selectedTareName = name
-                        presets.firstOrNull { it.name == name }?.let { onTareChange(it.grams) }
-                    },
-                    label = stringResource(Res.string.weigh_in_tare),
-                    leadingIcon = Icons.Outlined.LineWeight,
-                    options = presets.map { it.name } + SpoolLists.CUSTOM_TARE_LABEL
-                )
-                if (isCustom) {
-                    SpoolOutlinedTextField(
-                        value = customTare,
-                        onValueChange = { value ->
-                            customTare = value
-                            onTareChange(value.toParseLocalizedDouble() ?: 0.0)
-                        },
-                        label = stringResource(Res.string.weigh_in_custom_tare),
-                        leadingIcon = Icons.Outlined.LineWeight,
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                    )
-                }
-                Spacer(modifier = Modifier.height(Dimens.PaddingMedium))
-                Text(
-                    text = if (remaining != null) {
-                        stringResource(Res.string.weigh_in_remaining, remaining.toWeightText())
-                    } else {
-                        stringResource(Res.string.weigh_in_hint)
-                    },
-                    style = MaterialTheme.typography.labelLarge,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.fillMaxWidth()
-                )
-            }
-        },
-        confirmButton = {
-            FilledTonalButton(
-                onClick = {
-                    remaining?.let { onApply(it) }
-                    onDismiss()
-                },
-                enabled = remaining != null && remaining > 0,
-                shape = MaterialTheme.shapes.small,
-                colors = ButtonDefaults.filledTonalButtonColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer,
-                    contentColor = MaterialTheme.colorScheme.onPrimaryContainer
-                ),
-            ) {
-                Icon(
-                    imageVector = Icons.Outlined.Scale,
-                    contentDescription = null,
-                    modifier = Modifier.size(18.dp)
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(
-                    text = stringResource(Res.string.weigh_in_apply),
-                    fontWeight = FontWeight.Bold
-                )
-            }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss) {
-                Text(
-                    text = stringResource(Res.string.btn_cancel),
-                    color = MaterialTheme.colorScheme.onBackground
-                )
-            }
-        }
-    )
-}
-
-private fun Double.toWeightText(): String =
-    if (this % 1.0 == 0.0) this.toLong().toString() else this.toString()
 
 @Preview
 @Composable

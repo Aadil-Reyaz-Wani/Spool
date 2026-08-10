@@ -20,6 +20,8 @@ interface SpoolRepository {
     suspend fun getCurrentWeightStream(id: Int): Double = getCurrentWeight(id)
 
     suspend fun updateCurrentWeight(id: Int, currentWeight: Double)
+    suspend fun updateCurrentWeightWithTare(id: Int, currentWeight: Double, tareGrams: Double)
+    suspend fun markAsDried(id: Int, baselineWeight: Double, tareGrams: Double, driedAt: Long)
 
     fun getUniqueBrand(): Flow<List<String>>
     fun getUniqueBrandStream(): Flow<List<String>> = getUniqueBrand()
@@ -68,6 +70,8 @@ class DefaultSpoolRepository(
     override suspend fun deleteSpool(filament: Filament) = spoolDao.deleteSpool(filament)
     override suspend fun getCurrentWeight(id: Int): Double = spoolDao.getCurrentWeight(id)
     override suspend fun updateCurrentWeight(id: Int, currentWeight: Double) = spoolDao.updateCurrentWeight(id, currentWeight)
+    override suspend fun updateCurrentWeightWithTare(id: Int, currentWeight: Double, tareGrams: Double) = spoolDao.updateCurrentWeightWithTare(id, currentWeight, tareGrams)
+    override suspend fun markAsDried(id: Int, baselineWeight: Double, tareGrams: Double, driedAt: Long) = spoolDao.markAsDried(id, baselineWeight, tareGrams, driedAt)
     override fun getUniqueBrand(): Flow<List<String>> = spoolDao.getUniqueBrand()
     override fun getUniqueMaterialType(): Flow<List<String>> = spoolDao.getUniqueMaterialType()
     override fun getUniqueColorHex(): Flow<List<Long>> = spoolDao.getUniqueColorHex()

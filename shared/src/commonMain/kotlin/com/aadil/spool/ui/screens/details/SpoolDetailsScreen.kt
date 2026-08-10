@@ -26,8 +26,10 @@ import androidx.compose.material.icons.outlined.Bathtub
 import androidx.compose.material.icons.outlined.DeleteOutline
 import androidx.compose.material.icons.outlined.DeviceThermostat
 import androidx.compose.material.icons.outlined.Print
+import androidx.compose.material.icons.outlined.Scale
 import androidx.compose.material.icons.outlined.Thermostat
 import androidx.compose.material.icons.outlined.Update
+import androidx.compose.material.icons.outlined.WaterDrop
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
@@ -54,9 +56,13 @@ import org.jetbrains.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import spool.shared.generated.resources.*
+import com.aadil.spool.core.model.MoistureLevel
+import com.aadil.spool.core.model.SpoolLists
+import com.aadil.spool.core.model.moistureVerdict
 import com.aadil.spool.feature.details.PrintObjectUiState
 import com.aadil.spool.data.entity.Filament
 import com.aadil.spool.ui.common.GhostCard
+import com.aadil.spool.ui.common.ScaleWeightDialog
 import com.aadil.spool.ui.common.SpoolAppBar
 import com.aadil.spool.ui.components.DeleteConfirmationAlertDialog
 import com.aadil.spool.ui.components.InputAlertDialog
@@ -65,10 +71,13 @@ import com.aadil.spool.ui.components.SpoolHeadingText
 import com.aadil.spool.ui.components.SpoolHorizontalDivider
 import com.aadil.spool.ui.components.SpoolProgressBar
 import com.aadil.spool.ui.components.SpoolTag
+import com.aadil.spool.ui.theme.BrandGreen
+import com.aadil.spool.ui.theme.BrandGreenContainer
 import com.aadil.spool.ui.theme.BrandOrange
 import com.aadil.spool.ui.theme.Dimens
 import com.aadil.spool.utils.formatToInternationalStandard
 import com.aadil.spool.utils.toParseLocalizedDouble
+import com.aadil.spool.utils.toReadableDate
 
 @Composable
 fun SpoolDetailsScreen(
@@ -83,6 +92,8 @@ fun SpoolDetailsScreen(
     onCheckedChange: (Boolean) -> Unit,
     isPrintErrorState: String?,
     onPrintHistoryClick: () -> Unit,
+    onMarkAsDried: (Double, Double) -> Unit,
+    onWeighNow: (Double, Double) -> Unit,
     modifier: Modifier = Modifier
 ) {
     Scaffold(
@@ -106,6 +117,10 @@ fun SpoolDetailsScreen(
             nozzleTemp = spoolDetails.tempNozzle,
             bedTemp = spoolDetails.tempBed,
             note = spoolDetails.note,
+            dryBaselineWeight = spoolDetails.dryBaselineWeight,
+            dryBaselineTareGrams = spoolDetails.dryBaselineTareGrams,
+            lastWeighedTareGrams = spoolDetails.lastWeighedTareGrams,
+            lastDriedAt = spoolDetails.lastDriedAt,
             onEditClick = { onUpdateClick(spoolDetails.id) },
             onConfirmDelete = { onConfirmDelete(spoolDetails) },
             uiState = uiState,
@@ -117,6 +132,8 @@ fun SpoolDetailsScreen(
             onCheckedChange = onCheckedChange,
             isPrintErrorState = isPrintErrorState,
             onPrintHistoryClick = onPrintHistoryClick,
+            onMarkAsDried = onMarkAsDried,
+            onWeighNow = onWeighNow,
             modifier = Modifier.padding(paddingValues = paddingValues)
         )
     }
@@ -133,6 +150,10 @@ fun DetailsScreen(
     nozzleTemp: Int,
     bedTemp: Int,
     note: String,
+    dryBaselineWeight: Double?,
+    dryBaselineTareGrams: Double?,
+    lastWeighedTareGrams: Double?,
+    lastDriedAt: Long?,
     onEditClick: () -> Unit,
     onConfirmDelete: () -> Unit,
     uiState: PrintObjectUiState,
@@ -142,6 +163,8 @@ fun DetailsScreen(
     onCheckedChange: (Boolean) -> Unit,
     isPrintErrorState: String?,
     onPrintHistoryClick: () -> Unit,
+    onMarkAsDried: (Double, Double) -> Unit,
+    onWeighNow: (Double, Double) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val scrollState = rememberScrollState()
@@ -159,6 +182,17 @@ fun DetailsScreen(
             materialType = materialType,
             colorName = colorName,
             onPrintHistoryClick = onPrintHistoryClick
+        )
+
+        MoistureCard(
+            material = materialType,
+            currentWeight = currentWeight,
+            dryBaselineWeight = dryBaselineWeight,
+            dryBaselineTareGrams = dryBaselineTareGrams,
+            lastWeighedTareGrams = lastWeighedTareGrams,
+            lastDriedAt = lastDriedAt,
+            onMarkAsDried = onMarkAsDried,
+            onWeighNow = onWeighNow
         )
 
         // Temperature Card
@@ -259,6 +293,10 @@ fun DetailsScreenPreview() {
         nozzleTemp = 216,
         bedTemp = 60,
         note = "This is my note",
+        dryBaselineWeight = 500.0,
+        dryBaselineTareGrams = 140.0,
+        lastWeighedTareGrams = 140.0,
+        lastDriedAt = 1700000000000,
         onEditClick = {},
         onConfirmDelete = {},
         onPrintWeightValueChange = {},
@@ -267,7 +305,9 @@ fun DetailsScreenPreview() {
         onPrintWeightClick = {},
         onCheckedChange = {},
         isPrintErrorState = "",
-        onPrintHistoryClick = {}
+        onPrintHistoryClick = {},
+        onMarkAsDried = { _, _ -> },
+        onWeighNow = { _, _ -> }
     )
 }
 
@@ -542,6 +582,169 @@ fun PrintCard(
     }
 }
 
+
+@Composable
+fun MoistureCard(
+    material: String,
+    currentWeight: Double,
+    dryBaselineWeight: Double?,
+    dryBaselineTareGrams: Double?,
+    lastWeighedTareGrams: Double?,
+    lastDriedAt: Long?,
+    onMarkAsDried: (Double, Double) -> Unit,
+    onWeighNow: (Double, Double) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    var showWeighDialog by rememberSaveable { mutableStateOf(false) }
+    var markDriedMode by rememberSaveable { mutableStateOf(false) }
+
+    val verdict = moistureVerdict(
+        material = material,
+        dryBaselineWeight = dryBaselineWeight,
+        currentWeight = currentWeight,
+        dryBaselineTareGrams = dryBaselineTareGrams,
+        checkTareGrams = lastWeighedTareGrams
+    )
+    val initialTareGrams = lastWeighedTareGrams ?: dryBaselineTareGrams ?: SpoolLists.DEFAULT_TARE_GRAMS
+
+    Card(
+        elevation = CardDefaults.cardElevation(Dimens.CardElevation / 2),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant,
+            contentColor = MaterialTheme.colorScheme.onSurface
+        ),
+        modifier = modifier
+            .padding(Dimens.PaddingMedium)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = Dimens.PaddingMedium, vertical = Dimens.PaddingMedium)
+        ) {
+            SpoolHeadingText(
+                text = stringResource(Res.string.heading_dryness),
+                icon = Icons.Outlined.WaterDrop
+            )
+            Spacer(modifier = Modifier.height(Dimens.HeightOrWidth))
+
+            if (verdict.level == MoistureLevel.UNKNOWN) {
+                SpoolTag(text = stringResource(Res.string.moisture_not_tracked))
+                Spacer(modifier = Modifier.height(Dimens.HeightOrWidth))
+                Text(
+                    text = stringResource(Res.string.moisture_empty_explainer),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+                )
+            } else {
+                val absorbedText = verdict.absorbedGrams.formatToInternationalStandard()
+                val tagText = when (verdict.level) {
+                    MoistureLevel.DRY -> stringResource(Res.string.moisture_dry)
+                    MoistureLevel.LOW -> stringResource(Res.string.moisture_low)
+                    else -> stringResource(Res.string.moisture_high)
+                }
+                val tagColor = when (verdict.level) {
+                    MoistureLevel.DRY -> BrandGreen
+                    MoistureLevel.LOW -> BrandOrange
+                    else -> MaterialTheme.colorScheme.error
+                }
+                val tagContainer = when (verdict.level) {
+                    MoistureLevel.DRY -> BrandGreenContainer
+                    MoistureLevel.LOW -> BrandOrange.copy(alpha = 0.15f)
+                    else -> MaterialTheme.colorScheme.errorContainer
+                }
+                val statusText = when (verdict.level) {
+                    MoistureLevel.DRY -> if (verdict.absorbedGrams <= 0) {
+                        stringResource(Res.string.moisture_no_gain)
+                    } else {
+                        stringResource(Res.string.moisture_dry_ok, absorbedText)
+                    }
+                    MoistureLevel.LOW -> stringResource(Res.string.moisture_low_warning, absorbedText)
+                    else -> stringResource(
+                        Res.string.moisture_high_warning,
+                        absorbedText,
+                        verdict.dryHours,
+                        verdict.dryTempC
+                    )
+                }
+                SpoolTag(text = tagText, textColor = tagColor, surfaceColor = tagContainer)
+                Spacer(modifier = Modifier.height(Dimens.HeightOrWidth))
+                Text(
+                    text = statusText,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f)
+                )
+                if (lastDriedAt != null) {
+                    Spacer(modifier = Modifier.height(Dimens.PaddingTiny))
+                    Text(
+                        text = stringResource(Res.string.moisture_last_dried, lastDriedAt.toReadableDate()),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
+                    )
+                }
+                if (verdict.tareMismatch) {
+                    Spacer(modifier = Modifier.height(Dimens.PaddingTiny))
+                    Text(
+                        text = stringResource(Res.string.moisture_tare_mismatch),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.error
+                    )
+                }
+                Spacer(modifier = Modifier.height(Dimens.PaddingTiny))
+                Text(
+                    text = stringResource(Res.string.moisture_based_on_weigh_in),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
+                )
+            }
+
+            Spacer(modifier = Modifier.height(Dimens.PaddingMedium))
+            Row(modifier = Modifier.fillMaxWidth()) {
+                SpoolButton(
+                    text = stringResource(Res.string.moisture_weigh_now),
+                    icon = Icons.Outlined.Scale,
+                    contentDescription = stringResource(Res.string.moisture_weigh_now),
+                    onClick = {
+                        markDriedMode = false
+                        showWeighDialog = true
+                    },
+                    buttonContainerColor = MaterialTheme.colorScheme.surface,
+                    buttonContentColor = MaterialTheme.colorScheme.onSurface,
+                    buttonDefaultElevation = 0.dp,
+                    buttonPressedElevation = 0.dp,
+                    modifier = Modifier.weight(1f)
+                )
+                Spacer(modifier = Modifier.width(Dimens.PaddingSmall))
+                SpoolButton(
+                    text = stringResource(Res.string.moisture_mark_dried),
+                    icon = Icons.Outlined.WaterDrop,
+                    contentDescription = stringResource(Res.string.moisture_mark_dried),
+                    onClick = {
+                        markDriedMode = true
+                        showWeighDialog = true
+                    },
+                    buttonContainerColor = BrandGreenContainer,
+                    buttonContentColor = BrandGreen,
+                    buttonDefaultElevation = 0.dp,
+                    buttonPressedElevation = 0.dp,
+                    modifier = Modifier.weight(1f)
+                )
+            }
+        }
+    }
+
+    if (showWeighDialog) {
+        ScaleWeightDialog(
+            initialTareGrams = initialTareGrams,
+            onTareChange = {},
+            onApply = { remaining, tare ->
+                if (markDriedMode) onMarkAsDried(remaining, tare) else onWeighNow(remaining, tare)
+                showWeighDialog = false
+            },
+            onDismiss = { showWeighDialog = false },
+            expectedRemainingGrams = currentWeight
+        )
+    }
+}
 
 @Composable
 fun TemperatureDetailsCard(

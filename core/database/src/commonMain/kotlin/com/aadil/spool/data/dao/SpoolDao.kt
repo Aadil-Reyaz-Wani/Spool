@@ -37,6 +37,12 @@ interface SpoolDao {
     @Query("UPDATE filaments SET current_weight = :currentWeight WHERE id = :id")
     suspend fun updateCurrentWeight(id: Int, currentWeight: Double)
 
+    @Query("UPDATE filaments SET current_weight = :currentWeight, last_weighed_tare_grams = :tareGrams WHERE id = :id")
+    suspend fun updateCurrentWeightWithTare(id: Int, currentWeight: Double, tareGrams: Double)
+
+    @Query("UPDATE filaments SET current_weight = :baselineWeight, last_weighed_tare_grams = :tareGrams, dry_baseline_weight = :baselineWeight, dry_baseline_tare_grams = :tareGrams, last_dried_at = :driedAt WHERE id = :id")
+    suspend fun markAsDried(id: Int, baselineWeight: Double, tareGrams: Double, driedAt: Long)
+
     @Query("SELECT DISTINCT brand FROM filaments")
     fun getUniqueBrand(): Flow<List<String>>
 
