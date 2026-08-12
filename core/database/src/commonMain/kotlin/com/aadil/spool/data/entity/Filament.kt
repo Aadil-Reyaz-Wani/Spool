@@ -28,5 +28,13 @@ data class Filament(
     @ColumnInfo(name = "price", defaultValue = "0")
     val price: Double = 0.0,
     @ColumnInfo(name = "timestamp", defaultValue = "0")
-    val timestamp: Long = currentTimeMillis()
+    val timestamp: Long = currentTimeMillis(),
+    @ColumnInfo(name = "dry_baseline_weight")
+    val dryBaselineWeight: Double? = null,
+    @ColumnInfo(name = "dry_baseline_tare_grams")
+    val dryBaselineTareGrams: Double? = null,
+    @ColumnInfo(name = "last_weighed_tare_grams")
+    val lastWeighedTareGrams: Double? = null,
+    @ColumnInfo(name = "last_dried_at")
+    val lastDriedAt: Long? = null
 )

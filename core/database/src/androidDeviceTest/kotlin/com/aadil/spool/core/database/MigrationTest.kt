@@ -124,6 +124,10 @@ class MigrationTest {
         assertThat(spool.currentWeight).isEqualTo(750.0)
         assertThat(spool.tempNozzle).isEqualTo(215)
         assertThat(spool.price).isEqualTo(29.99)
+        assertThat(spool.dryBaselineWeight).isNull()
+        assertThat(spool.dryBaselineTareGrams).isNull()
+        assertThat(spool.lastWeighedTareGrams).isNull()
+        assertThat(spool.lastDriedAt).isNull()
 
         val logs = dao.getSpoolUsage(spoolId = 1).first()
         assertThat(logs).hasSize(1)

@@ -15,6 +15,80 @@ fun computeRemainingWeight(grossWeight: Double, tareWeight: Double): Double? {
     return remaining.takeIf { grossWeight > 0 && tareWeight >= 0 && remaining >= 0 }
 }
 
+fun isWeighInSuspicious(storedRemaining: Double, enteredRemaining: Double?, marginGrams: Double = 100.0): Boolean =
+    enteredRemaining != null && storedRemaining - enteredRemaining > marginGrams
+
+enum class MoistureLevel { UNKNOWN, DRY, LOW, HIGH }
+
+enum class MaterialMoisture(
+    val dryTempC: Int,
+    val dryHours: Int,
+    val dryBelowGrams: Double,
+    val lowBelowGrams: Double
+) {
+    LOW(50, 4, 8.0, 15.0),          // PLA, ABS, ASA
+    MEDIUM(65, 6, 5.0, 12.0),       // PETG, PET, unknown materials
+    HIGH(65, 6, 3.0, 8.0),          // TPU, PC
+    VERY_HIGH(80, 8, 3.0, 8.0);     // PA, PA-CF
+}
+
+val materialMoistureSpecs: Map<String, MaterialMoisture> = mapOf(
+    "PLA" to MaterialMoisture.LOW,
+    "ABS" to MaterialMoisture.LOW,
+    "ASA" to MaterialMoisture.LOW,
+    "PETG" to MaterialMoisture.MEDIUM,
+    "PET" to MaterialMoisture.MEDIUM,
+    "PC" to MaterialMoisture.HIGH,
+    "TPU" to MaterialMoisture.HIGH,
+    "PA" to MaterialMoisture.VERY_HIGH,
+    "PA-CF" to MaterialMoisture.VERY_HIGH,
+)
+
+fun materialMoisture(material: String): MaterialMoisture =
+    materialMoistureSpecs[material.trim().uppercase()] ?: MaterialMoisture.MEDIUM
+
+data class MoistureVerdict(
+    val level: MoistureLevel,
+    val absorbedGrams: Double,
+    val tareMismatch: Boolean,
+    val dryTempC: Int,
+    val dryHours: Int
+)
+
+fun moistureVerdict(
+    material: String,
+    dryBaselineWeight: Double?,
+    currentWeight: Double,
+    dryBaselineTareGrams: Double?,
+    checkTareGrams: Double?,
+): MoistureVerdict {
+    val spec = materialMoisture(material)
+    if (dryBaselineWeight == null) {
+        return MoistureVerdict(
+            level = MoistureLevel.UNKNOWN,
+            absorbedGrams = 0.0,
+            tareMismatch = false,
+            dryTempC = spec.dryTempC,
+            dryHours = spec.dryHours
+        )
+    }
+    val absorbedGrams = (currentWeight - dryBaselineWeight).coerceAtLeast(0.0)
+    val level = when {
+        absorbedGrams < spec.dryBelowGrams -> MoistureLevel.DRY
+        absorbedGrams < spec.lowBelowGrams -> MoistureLevel.LOW
+        else -> MoistureLevel.HIGH
+    }
+    val tareMismatch = dryBaselineTareGrams != null && checkTareGrams != null &&
+        kotlin.math.abs(dryBaselineTareGrams - checkTareGrams) > 0.01
+    return MoistureVerdict(
+        level = level,
+        absorbedGrams = absorbedGrams,
+        tareMismatch = tareMismatch,
+        dryTempC = spec.dryTempC,
+        dryHours = spec.dryHours
+    )
+}
+
 object SpoolLists {
     const val DEFAULT_TARE_GRAMS = 140.0
     const val CUSTOM_TARE_LABEL = "Custom…"

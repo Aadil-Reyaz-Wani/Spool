@@ -38,8 +38,10 @@
     <string name="weigh_in_tare">Spool Tare (g)</string>
     <string name="weigh_in_custom_tare">Custom Tare (g)</string>
     <string name="weigh_in_remaining">Remaining ≈ %1$s g</string>
+    <string name="weigh_in_stored">Stored: %1$s g</string>
     <string name="weigh_in_hint">Place the spool on your scale and enter the reading</string>
     <string name="weigh_in_apply">Apply</string>
+    <string name="weigh_in_low_warning">%1$s g below your stored weight. Printed a lot since, or entered the filament weight instead of the full scale reading (spool included)?</string>
 
     <string name="header_settings">Print Settings</string>
     <string name="label_temp_nozzle">Nozzle (°C)</string>
@@ -147,6 +149,22 @@
     <string name="additional_weight_placeholder">Restock Filament</string>
     <string name="additional_weight_label">Additional Weight (g)</string>
     <string name="additional_price_label">Additional Price</string>
+
+    <string name="heading_dryness">Dryness</string>
+    <string name="moisture_not_tracked">Not tracked yet</string>
+    <string name="moisture_empty_explainer">Weigh this spool on a kitchen scale to start tracking moisture.</string>
+    <string name="moisture_dry">Dry</string>
+    <string name="moisture_low">Low</string>
+    <string name="moisture_high">High</string>
+    <string name="moisture_no_gain">No moisture detected since your last weigh-in.</string>
+    <string name="moisture_dry_ok">Gained only %1$s g since drying — fine to print.</string>
+    <string name="moisture_low_warning">Gained %1$s g. Fine for quick parts; dry before something important.</string>
+    <string name="moisture_high_warning">Gained %1$s g — this spool is thirsty. Dry ~%2$d h at %3$d°C, then tap Mark dried.</string>
+    <string name="moisture_last_dried">Last dried: %1$s</string>
+    <string name="moisture_tare_mismatch">Spool type differs from your dry baseline — compare may be off.</string>
+    <string name="moisture_based_on_weigh_in">Based on your last weigh-in.</string>
+    <string name="moisture_weigh_now">Weigh now</string>
+    <string name="moisture_mark_dried">Mark dried</string>
 
 
     <string name="default_version">1.2.0</string>

@@ -3,6 +3,7 @@ package com.aadil.spool.feature.details
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.aadil.spool.core.data.repository.SpoolRepository
+import com.aadil.spool.core.model.currentTimeMillis
 import com.aadil.spool.data.entity.Filament
 import com.aadil.spool.data.entity.UsageLog
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -125,6 +126,18 @@ open class SpoolDetailsViewModel(
     fun resetPrintObjectUiState() {
         _printObjectUiState.update { PrintObjectUiState() }
         _isError.value = null
+    }
+
+    fun updateCurrentWeight(id: Int, weight: Double, tareGrams: Double) {
+        viewModelScope.launch {
+            spoolRepository.updateCurrentWeightWithTare(id, weight, tareGrams)
+        }
+    }
+
+    fun markAsDried(id: Int, baselineWeight: Double, tareGrams: Double) {
+        viewModelScope.launch {
+            spoolRepository.markAsDried(id, baselineWeight, tareGrams, currentTimeMillis())
+        }
     }
 
     fun loadSpool(id: Int) {

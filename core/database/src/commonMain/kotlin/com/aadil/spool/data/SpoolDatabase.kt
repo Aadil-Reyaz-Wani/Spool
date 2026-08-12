@@ -13,12 +13,13 @@ import com.aadil.spool.data.entity.UsageLog
 
 @Database(
     entities = [Filament::class, UsageLog::class],
-    version = 14,
+    version = 15,
     autoMigrations = [
         AutoMigration(from = 10, to = 11),
         AutoMigration(from = 11, to = 12, spec = SpoolDatabase.DeletePriceSpec::class),
         AutoMigration(from = 12, to = 13),
         AutoMigration(from = 13, to = 14),
+        AutoMigration(from = 14, to = 15),
     ],
     exportSchema = true
 )
