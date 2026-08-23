@@ -38,3 +38,5 @@ iosApp/build/
 iosApp/Pods/
 .idea/artifacts/
 .idea/xcode.xml
+graphify-out
+.opencode
