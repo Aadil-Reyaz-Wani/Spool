@@ -9,12 +9,16 @@ import android.net.Uri
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import android.util.Log
+import kotlinx.coroutines.runBlocking
+import org.jetbrains.compose.resources.getString
+import spool.shared.generated.resources.Res
+import spool.shared.generated.resources.low_stock_channel_name
 
 private const val CHANNEL_ID = "low_stock"
 
 class AndroidNotificationPoster(private val context: Context) : NotificationPoster {
 
-    override fun post(items: List<LowStockItem>, batched: Boolean) {
+    override fun post(items: List<LowStockItem>, batched: Boolean, actionLabel: String) {
         val manager = NotificationManagerCompat.from(context)
         Log.d("LowStock", "post() items=${items.size} batched=$batched enabled=${manager.areNotificationsEnabled()}")
         if (!manager.areNotificationsEnabled()) return
@@ -30,7 +34,7 @@ class AndroidNotificationPoster(private val context: Context) : NotificationPost
 
             builder.setContentIntent(openSpoolPendingIntent(context, item.spoolId))
             item.reorderUrl?.let { url ->
-                builder.addAction(0, "Reorder", reorderPendingIntent(context, url))
+                builder.addAction(0, actionLabel, reorderPendingIntent(context, url))
             }
 
             manager.notify(1000 + index, builder.build())
@@ -65,8 +69,10 @@ class AndroidNotificationPoster(private val context: Context) : NotificationPost
         fun ensureChannel(context: Context) {
             val manager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
             if (manager.getNotificationChannel(CHANNEL_ID) == null) {
+                // One-time read at app start; callers are non-suspend so getString needs a bridge.
+                val name = runBlocking { getString(Res.string.low_stock_channel_name) }
                 manager.createNotificationChannel(
-                    NotificationChannel(CHANNEL_ID, "Low stock alerts", NotificationManager.IMPORTANCE_DEFAULT)
+                    NotificationChannel(CHANNEL_ID, name, NotificationManager.IMPORTANCE_DEFAULT)
                 )
             }
         }

@@ -1,15 +1,23 @@
 package com.aadil.spool.ui.screens.details
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Link
+import androidx.compose.material.icons.outlined.Notifications
+import androidx.compose.material.icons.outlined.Speed
+import androidx.compose.material3.Button
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedCard
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -19,9 +27,12 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import com.aadil.spool.core.data.repository.NotificationPreferencesRepository
 import com.aadil.spool.core.model.preferences.SpoolAlertConfig
+import com.aadil.spool.ui.components.SpoolHeadingText
+import com.aadil.spool.ui.components.SpoolHorizontalDivider
+import com.aadil.spool.ui.components.SpoolOutlinedTextField
+import com.aadil.spool.ui.theme.Dimens
 import com.aadil.spool.utils.toParseLocalizedDouble
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -34,6 +45,7 @@ import spool.shared.generated.resources.low_stock_reorder_url
 import spool.shared.generated.resources.low_stock_saved
 import spool.shared.generated.resources.low_stock_threshold_hint
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LowStockAlertCard(
     spoolId: Int,
@@ -47,6 +59,7 @@ fun LowStockAlertCard(
     var threshold by remember { mutableStateOf("") }
     var reorderUrl by remember { mutableStateOf("") }
     var justSaved by remember { mutableStateOf(false) }
+    var showSheet by remember { mutableStateOf(false) }
 
     LaunchedEffect(spoolId) {
         val config = repository.loadSpoolConfig(spoolId)
@@ -59,11 +72,17 @@ fun LowStockAlertCard(
 
     OutlinedCard(modifier = modifier.fillMaxWidth()) {
         Row(
-            modifier = Modifier.fillMaxWidth().padding(16.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable(enabled = enabled && loaded) { showSheet = true }
+                .padding(horizontal = Dimens.PaddingMedium, vertical = Dimens.PaddingSmall),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween,
         ) {
-            Text(stringResource(Res.string.low_stock_alerts), style = MaterialTheme.typography.titleMedium)
+            SpoolHeadingText(
+                text = stringResource(Res.string.low_stock_alerts),
+                icon = Icons.Outlined.Notifications,
+            )
             Switch(
                 checked = enabled,
                 onCheckedChange = {
@@ -72,35 +91,53 @@ fun LowStockAlertCard(
                     scope.launch {
                         repository.saveSpoolConfig(currentConfig(base, enabled, threshold, reorderUrl))
                     }
+                    if (it) showSheet = true
                 },
                 enabled = loaded,
             )
         }
+    }
 
-        if (enabled) {
+    if (showSheet) {
+        val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+        ModalBottomSheet(
+            onDismissRequest = { showSheet = false },
+            sheetState = sheetState,
+            shape = MaterialTheme.shapes.medium,
+            modifier = Modifier.fillMaxWidth(),
+        ) {
             Column(
-                modifier = Modifier.fillMaxWidth().padding(start = 16.dp, end = 16.dp, bottom = 16.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = Dimens.PaddingMedium).padding(bottom = Dimens.PaddingMedium),
+                verticalArrangement = Arrangement.spacedBy(Dimens.PaddingSmall),
             ) {
-                OutlinedTextField(
+                SpoolHeadingText(
+                    text = stringResource(Res.string.low_stock_alerts),
+                    icon = Icons.Outlined.Notifications,
+                )
+                SpoolHorizontalDivider(
+                    modifier = Modifier.padding(vertical = Dimens.PaddingSmall),
+                )
+                SpoolOutlinedTextField(
                     value = threshold,
                     onValueChange = { threshold = it },
-                    label = { Text(stringResource(Res.string.low_stock_threshold_hint)) },
+                    label = stringResource(Res.string.low_stock_threshold_hint),
+                    leadingIcon = Icons.Outlined.Speed,
                     singleLine = true,
-                    modifier = Modifier.fillMaxWidth(),
                 )
-                OutlinedTextField(
+                SpoolOutlinedTextField(
                     value = reorderUrl,
                     onValueChange = { reorderUrl = it },
-                    label = { Text(stringResource(Res.string.low_stock_reorder_url)) },
+                    label = stringResource(Res.string.low_stock_reorder_url),
+                    leadingIcon = Icons.Outlined.Link,
                     singleLine = true,
-                    modifier = Modifier.fillMaxWidth(),
                 )
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    horizontalArrangement = Arrangement.spacedBy(Dimens.PaddingSmall),
                 ) {
-                    androidx.compose.material3.Button(onClick = {
+                    Button(onClick = {
                         scope.launch {
                             repository.saveSpoolConfig(currentConfig(base, enabled, threshold, reorderUrl))
                             justSaved = true
@@ -109,7 +146,10 @@ fun LowStockAlertCard(
                         Text(stringResource(Res.string.action_save))
                     }
                     if (justSaved) {
-                        Text(stringResource(Res.string.low_stock_saved), style = MaterialTheme.typography.bodySmall)
+                        Text(
+                            stringResource(Res.string.low_stock_saved),
+                            style = MaterialTheme.typography.bodySmall,
+                        )
                         LaunchedEffect(justSaved) {
                             delay(2000)
                             justSaved = false

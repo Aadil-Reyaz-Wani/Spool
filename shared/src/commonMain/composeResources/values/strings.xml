@@ -171,6 +171,12 @@
     <string name="low_stock_reorder_url">Reorder link (optional)</string>
     <string name="action_save">Save</string>
     <string name="low_stock_saved">Saved</string>
+    <string name="low_stock_notif_title">Low filament</string>
+    <string name="low_stock_notif_body">%1$s — %2$d g left</string>
+    <string name="low_stock_notif_batch_title">Filament running low</string>
+    <string name="low_stock_notif_batch_body">%1$d spools need attention</string>
+    <string name="action_reorder">Reorder</string>
+    <string name="low_stock_channel_name">Low stock alerts</string>
 
     <string name="default_version">1.2.0</string>
     <string name="version_number">v%1$s • Initializing</string>

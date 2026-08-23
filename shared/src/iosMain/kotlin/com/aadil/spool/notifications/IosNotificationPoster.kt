@@ -18,7 +18,7 @@ class IosNotificationPoster : NotificationPoster {
 
     private val center = UNUserNotificationCenter.currentNotificationCenter()
 
-    override fun post(items: List<LowStockItem>, batched: Boolean) {
+    override fun post(items: List<LowStockItem>, batched: Boolean, actionLabel: String) {
         ensureCategory()
         items.forEachIndexed { index, item ->
             val content = UNMutableNotificationContent()

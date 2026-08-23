@@ -10,6 +10,13 @@ import kotlinx.coroutines.sync.withLock
 import kotlinx.datetime.Clock
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
+import org.jetbrains.compose.resources.getString
+import spool.shared.generated.resources.Res
+import spool.shared.generated.resources.action_reorder
+import spool.shared.generated.resources.low_stock_notif_batch_body
+import spool.shared.generated.resources.low_stock_notif_batch_title
+import spool.shared.generated.resources.low_stock_notif_body
+import spool.shared.generated.resources.low_stock_notif_title
 
 data class LowStockItem(
     val spoolId: Int,
@@ -20,7 +27,7 @@ data class LowStockItem(
 
 /** Platform seam for displaying low-stock notifications (Android NotificationManager / iOS UNUserNotificationCenter). */
 interface NotificationPoster {
-    fun post(items: List<LowStockItem>, batched: Boolean)
+    fun post(items: List<LowStockItem>, batched: Boolean, actionLabel: String)
 }
 
 // Serializes checks: app-open and WorkManager can fire concurrently; quota/cooldown state must be read-modify-write.
@@ -73,8 +80,8 @@ suspend fun runLowStockCheck(
         listOf(
             LowStockItem(
                 spoolId = -1,
-                title = "Filament running low",
-                body = "${toNotify.size} spools need attention",
+                title = getString(Res.string.low_stock_notif_batch_title),
+                body = getString(Res.string.low_stock_notif_batch_body, toNotify.size),
                 reorderUrl = null,
             )
         )
@@ -83,13 +90,13 @@ suspend fun runLowStockCheck(
             val config = configs[stock.id]
             LowStockItem(
                 spoolId = stock.id,
-                title = "Low filament",
-                body = "${stock.label} — ${stock.currentWeight.toInt()} g left",
+                title = getString(Res.string.low_stock_notif_title),
+                body = getString(Res.string.low_stock_notif_body, stock.label, stock.currentWeight.toInt()),
                 reorderUrl = config?.reorderUrl?.takeIf { it.isNotBlank() },
             )
         }
     }
 
-    poster.post(items, batched)
+    poster.post(items, batched, getString(Res.string.action_reorder))
     alertRepository.markNotified(toNotify.map { it.id }, nowMillis, epochDay, items.size)
 }
