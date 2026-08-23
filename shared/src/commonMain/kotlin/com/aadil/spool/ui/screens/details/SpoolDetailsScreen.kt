@@ -25,6 +25,7 @@ import androidx.compose.material.icons.outlined.Apps
 import androidx.compose.material.icons.outlined.Bathtub
 import androidx.compose.material.icons.outlined.DeleteOutline
 import androidx.compose.material.icons.outlined.DeviceThermostat
+import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material.icons.outlined.Print
 import androidx.compose.material.icons.outlined.Scale
 import androidx.compose.material.icons.outlined.Thermostat
@@ -34,6 +35,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
@@ -96,13 +98,22 @@ fun SpoolDetailsScreen(
     onWeighNow: (Double, Double) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    var showAlertSheet by rememberSaveable { mutableStateOf(false) }
     Scaffold(
         modifier = modifier,
         topBar = {
             SpoolAppBar(
                 title = stringResource(Res.string.spool_details),
                 navigateUp = navigateUp,
-                canNavigateBack = true
+                canNavigateBack = true,
+                actions = {
+                    IconButton(onClick = { showAlertSheet = true }) {
+                        Icon(
+                            imageVector = Icons.Outlined.Notifications,
+                            contentDescription = stringResource(Res.string.low_stock_alerts)
+                        )
+                    }
+                }
             )
         }
     ) { paddingValues ->
@@ -136,6 +147,12 @@ fun SpoolDetailsScreen(
             onWeighNow = onWeighNow,
             spoolId = spoolDetails.id,
             modifier = Modifier.padding(paddingValues = paddingValues)
+        )
+
+        LowStockAlertSheet(
+            spoolId = spoolDetails.id,
+            showSheet = showAlertSheet,
+            onDismiss = { showAlertSheet = false }
         )
     }
 }
@@ -196,9 +213,6 @@ fun DetailsScreen(
             onMarkAsDried = onMarkAsDried,
             onWeighNow = onWeighNow
         )
-
-        // Low Stock Alert Config
-        LowStockAlertCard(spoolId = spoolId)
 
         // Temperature Card
         if (nozzleTemp > 0 || bedTemp > 0) {
