@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.CircleShape
@@ -205,7 +206,12 @@ fun DashboardScreen(
                 columns = GridCells.Fixed(2),
                 contentPadding = PaddingValues(bottom = 72.dp)
             ) {
-                items(listOfSpools, key = { it.id }) { spool ->
+                items(
+                    listOfSpools,
+                    key = { it.id },
+                    // A lone spool takes the full width; otherwise 2-column grid.
+                    span = { GridItemSpan(if (listOfSpools.size == 1) maxLineSpan else 1) }
+                ) { spool ->
                     SpoolItemCard(
                         brandName = spool.brand,
                         materialType = spool.material,
