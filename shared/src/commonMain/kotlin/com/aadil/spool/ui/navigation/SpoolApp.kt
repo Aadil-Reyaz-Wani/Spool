@@ -40,11 +40,16 @@ import com.aadil.spool.feature.settings.SpoolSettingsViewModel
 import com.aadil.spool.ui.screens.splash.SplashScreen
 import com.mikepenz.aboutlibraries.ui.compose.m3.LibrariesContainer
 import kotlinx.coroutines.delay
+import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
+import com.aadil.spool.core.data.repository.NotificationPreferencesRepository
+import com.aadil.spool.core.data.repository.SpoolRepository
+import com.aadil.spool.notifications.NotificationPoster
+import com.aadil.spool.notifications.runLowStockCheck
 
 @OptIn(org.jetbrains.compose.resources.ExperimentalResourceApi::class)
 @Composable
-fun MySpoolApp(modifier: Modifier = Modifier) {
+fun MySpoolApp(modifier: Modifier = Modifier, initialSpoolId: Int? = null) {
 
     // Define ViewModels
     val dashboardViewModel: DashboardViewModel = koinViewModel()
@@ -114,6 +119,23 @@ fun MySpoolApp(modifier: Modifier = Modifier) {
         }
     }
 
+    // Low-stock check on every app open (periodic WorkManager check covers background).
+    val spoolRepository = koinInject<SpoolRepository>()
+    val alertRepository = koinInject<NotificationPreferencesRepository>()
+    val poster = koinInject<NotificationPoster>()
+    LaunchedEffect(Unit) {
+        runLowStockCheck(spoolRepository, alertRepository, poster)
+    }
+
+    // Notification tap -> deep link to the spool. Skipped while still on splash;
+    // the splash transition handles that case.
+    LaunchedEffect(initialSpoolId) {
+        val id = initialSpoolId ?: return@LaunchedEffect
+        if (backStack.lastOrNull() !is Routes.Splash) {
+            backStack.add(Routes.SpoolDetails(id))
+        }
+    }
+
     NavDisplay(
         backStack = backStack,
         modifier = modifier,
@@ -128,7 +150,11 @@ fun MySpoolApp(modifier: Modifier = Modifier) {
                 SplashScreen()
                 LaunchedEffect(Unit) {
                     delay(1500L)
-                    backStack.add(Routes.Dashboard)
+                    if (initialSpoolId != null) {
+                        backStack.add(Routes.SpoolDetails(initialSpoolId))
+                    } else {
+                        backStack.add(Routes.Dashboard)
+                    }
                     backStack.remove(Routes.Splash)
                 }
             }

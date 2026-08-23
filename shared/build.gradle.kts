@@ -77,6 +77,7 @@ kotlin {
                 implementation(libs.androidx.lifecycle.viewmodel.navigation3)
                 implementation(libs.aboutlibraries.compose.m3)
                 implementation(libs.kotlinx.serialization.core)
+                implementation(libs.kotlinx.datetime)
 
                 api(project(":core:model"))
                 api(project(":core:database"))
@@ -98,9 +99,8 @@ kotlin {
 
         androidMain {
             dependencies {
-                // Add Android-specific dependencies here. Note that this source set depends on
-                // commonMain by default and will correctly pull the Android artifacts of any KMP
-                // dependencies declared in commonMain.
+                implementation(libs.androidx.work.runtime)
+                implementation(libs.androidx.core.ktx)
             }
         }
 

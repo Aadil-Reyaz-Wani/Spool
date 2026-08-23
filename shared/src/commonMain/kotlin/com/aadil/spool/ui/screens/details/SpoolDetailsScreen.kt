@@ -134,6 +134,7 @@ fun SpoolDetailsScreen(
             onPrintHistoryClick = onPrintHistoryClick,
             onMarkAsDried = onMarkAsDried,
             onWeighNow = onWeighNow,
+            spoolId = spoolDetails.id,
             modifier = Modifier.padding(paddingValues = paddingValues)
         )
     }
@@ -141,6 +142,7 @@ fun SpoolDetailsScreen(
 
 @Composable
 fun DetailsScreen(
+    spoolId: Int,
     totalWeight: Double,
     currentWeight: Double,
     colorHex: Long,
@@ -194,6 +196,9 @@ fun DetailsScreen(
             onMarkAsDried = onMarkAsDried,
             onWeighNow = onWeighNow
         )
+
+        // Low Stock Alert Config
+        LowStockAlertCard(spoolId = spoolId)
 
         // Temperature Card
         if (nozzleTemp > 0 || bedTemp > 0) {
@@ -307,7 +312,8 @@ fun DetailsScreenPreview() {
         isPrintErrorState = "",
         onPrintHistoryClick = {},
         onMarkAsDried = { _, _ -> },
-        onWeighNow = { _, _ -> }
+        onWeighNow = { _, _ -> },
+        spoolId = 1
     )
 }
 

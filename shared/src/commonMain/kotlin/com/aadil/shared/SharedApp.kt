@@ -5,8 +5,8 @@ import com.aadil.spool.ui.navigation.MySpoolApp
 import com.aadil.spool.ui.theme.SpoolTheme
 
 @Composable
-fun SharedApp() {
+fun SharedApp(initialSpoolId: Int? = null) {
     SpoolTheme {
-        MySpoolApp()
+        MySpoolApp(initialSpoolId = initialSpoolId)
     }
 }

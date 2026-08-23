@@ -166,6 +166,11 @@
     <string name="moisture_weigh_now">Weigh now</string>
     <string name="moisture_mark_dried">Mark dried</string>
 
+    <string name="low_stock_alerts">Low Stock Alerts</string>
+    <string name="low_stock_threshold_hint">Alert threshold (g) — blank = automatic</string>
+    <string name="low_stock_reorder_url">Reorder link (optional)</string>
+    <string name="action_save">Save</string>
+    <string name="low_stock_saved">Saved</string>
 
     <string name="default_version">1.2.0</string>
     <string name="version_number">v%1$s • Initializing</string>
