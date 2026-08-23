@@ -3,7 +3,7 @@
 
     <string name="app_tagline">Measure. Manage. Print.</string>
 
-    <string name="dashboard_title">Inventory\nDashboard</string>
+    <string name="dashboard_title">Dashboard</string>
     <string name="dashboard_empty">No spools found.\nTap + to add your first roll.</string>
     <string name="stats_total_weight">Total Stock</string>
     <string name="stats_spool_count">Spools</string>
@@ -168,8 +168,9 @@
 
     <string name="low_stock_alerts">Low Stock Alerts</string>
     <string name="low_stock_threshold_hint">Threshold (g)</string>
-    <string name="low_stock_threshold_placeholder">Auto</string>
+    <string name="low_stock_threshold_placeholder">e.g. 120g</string>
     <string name="low_stock_reorder_url">Reorder link (optional)</string>
+    <string name="low_stock_reorder_url_placeholder">e.g. https://example.com/filament</string>
     <string name="action_save">Save</string>
     <string name="low_stock_saved">Saved</string>
     <string name="low_stock_notif_title">Low filament</string>

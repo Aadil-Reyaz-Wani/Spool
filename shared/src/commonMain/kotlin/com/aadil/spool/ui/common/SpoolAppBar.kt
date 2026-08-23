@@ -4,24 +4,22 @@ package com.aadil.spool.ui.common
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.RowScope
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.FilterList
-import androidx.compose.material.icons.outlined.FilterList
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
+import com.aadil.spool.ui.components.SpoolIconActionButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -30,6 +28,7 @@ import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.aadil.spool.ui.theme.Dimens
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -55,12 +54,20 @@ fun SpoolAppBar(
         label = "setting_gear_rotation"
     )
 
+    // Align bar content with the body's 16dp edge; M3 bakes in only 4dp.
+    val edgeInset = Dimens.PaddingMedium - 4.dp
+
     TopAppBar(
         title = {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(end = Dimens.PaddingSmall),
+                    .padding(
+                        // Dashboard keeps its original tighter bar inset; other screens
+                        // align with the body's 16dp edge (M3 bakes in 4dp).
+                        start = if (isDashboardScreen) 0.dp else edgeInset,
+                        end = if (isDashboardScreen) Dimens.PaddingSmall else edgeInset,
+                    ),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
@@ -71,17 +78,12 @@ fun SpoolAppBar(
                 )
                 if (isDashboardScreen) {
                     Box{
-                        IconButton (
-                            onClick = {
-                                onSettingsClick()
-                            }
-                        ){
-                            Icon(
-                                imageVector = Icons.Outlined.Settings,
-                                contentDescription = "Settings",
-                                modifier = Modifier.rotate(rotateAngle)
-                            )
-                        }
+                        SpoolIconActionButton(
+                            icon = Icons.Outlined.Settings,
+                            contentDescription = "Settings",
+                            onClick = onSettingsClick,
+                            iconModifier = Modifier.rotate(rotateAngle),
+                        )
                         dropDownMenu()
                     }
                 }
@@ -95,17 +97,21 @@ fun SpoolAppBar(
         ),
         navigationIcon = {
             if (canNavigateBack) {
-                IconButton(
-                    onClick = navigateUp
-                ) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = "Go Back"
+                Box(modifier = Modifier.padding(start = edgeInset)) {
+                    SpoolIconActionButton(
+                        icon = Icons.AutoMirrored.Filled.KeyboardArrowLeft,
+                        contentDescription = "Go Back",
+                        onClick = navigateUp,
                     )
                 }
             }
         },
-        actions = actions,
+        actions = {
+            Row(
+                modifier = Modifier.padding(end = edgeInset),
+                verticalAlignment = Alignment.CenterVertically,
+            ) { actions() }
+        },
         modifier = modifier
     )
 }

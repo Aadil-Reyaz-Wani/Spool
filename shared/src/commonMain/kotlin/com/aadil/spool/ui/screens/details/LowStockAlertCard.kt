@@ -47,6 +47,7 @@ import spool.shared.generated.resources.Res
 import spool.shared.generated.resources.action_save
 import spool.shared.generated.resources.low_stock_alerts
 import spool.shared.generated.resources.low_stock_reorder_url
+import spool.shared.generated.resources.low_stock_reorder_url_placeholder
 import spool.shared.generated.resources.low_stock_saved
 import spool.shared.generated.resources.low_stock_threshold_hint
 import spool.shared.generated.resources.low_stock_threshold_placeholder
@@ -136,6 +137,7 @@ fun LowStockAlertSheet(
                         value = reorderUrl,
                         onValueChange = { reorderUrl = it },
                         label = stringResource(Res.string.low_stock_reorder_url),
+                        placeholder = stringResource(Res.string.low_stock_reorder_url_placeholder),
                         leadingIcon = Icons.Outlined.Link,
                         singleLine = true,
                     )

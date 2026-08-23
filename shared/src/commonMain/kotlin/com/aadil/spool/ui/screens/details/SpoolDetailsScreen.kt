@@ -35,7 +35,6 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
@@ -59,6 +58,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import spool.shared.generated.resources.*
 import com.aadil.spool.core.model.MoistureLevel
+import com.aadil.spool.ui.components.SpoolIconActionButton
 import com.aadil.spool.core.model.SpoolLists
 import com.aadil.spool.core.model.moistureVerdict
 import com.aadil.spool.feature.details.PrintObjectUiState
@@ -107,12 +107,11 @@ fun SpoolDetailsScreen(
                 navigateUp = navigateUp,
                 canNavigateBack = true,
                 actions = {
-                    IconButton(onClick = { showAlertSheet = true }) {
-                        Icon(
-                            imageVector = Icons.Outlined.Notifications,
-                            contentDescription = stringResource(Res.string.low_stock_alerts)
-                        )
-                    }
+                    SpoolIconActionButton(
+                        icon = Icons.Outlined.Notifications,
+                        contentDescription = stringResource(Res.string.low_stock_alerts),
+                        onClick = { showAlertSheet = true },
+                    )
                 }
             )
         }
