@@ -2,9 +2,9 @@ package com.aadil.spool.notifications
 
 import platform.Foundation.NSNumber
 import platform.UserNotifications.UNNotificationAction
-import platform.UserNotifications.UNNotificationActionOptions
+import platform.UserNotifications.UNNotificationActionOptionForeground
 import platform.UserNotifications.UNNotificationCategory
-import platform.UserNotifications.UNNotificationCategoryOptions
+import platform.UserNotifications.UNNotificationCategoryOptionNone
 import platform.UserNotifications.UNMutableNotificationContent
 import platform.UserNotifications.UNNotificationRequest
 import platform.UserNotifications.UNNotificationSound
@@ -21,11 +21,14 @@ class IosNotificationPoster : NotificationPoster {
     override fun post(items: List<LowStockItem>, batched: Boolean, actionLabel: String) {
         ensureCategory()
         items.forEachIndexed { index, item ->
-            val content = UNMutableNotificationContent()
-            content.title = item.title
-            content.body = item.body
-            content.sound = UNNotificationSound.defaultSound()
-            content.categoryIdentifier = CATEGORY_ID
+            val content = UNMutableNotificationContent().apply {
+                // K/N exposes these as setter functions: the properties are readonly on the
+                // base UNNotificationContent and redeclared readwrite on this subclass.
+                setTitle(item.title)
+                setBody(item.body)
+                setSound(UNNotificationSound.defaultSound())
+                setCategoryIdentifier(CATEGORY_ID)
+            }
 
             val info = mutableMapOf<Any?, Any?>()
             if (!batched && item.spoolId > 0) info["spoolId"] = NSNumber(item.spoolId)
@@ -44,13 +47,13 @@ class IosNotificationPoster : NotificationPoster {
     }
 
     private fun ensureCategory() {
-        val open = UNNotificationAction.actionWithIdentifier(ACTION_OPEN, "Open", UNNotificationActionOptions.Foreground)
-        val reorder = UNNotificationAction.actionWithIdentifier(ACTION_REORDER, "Reorder", UNNotificationActionOptions.Foreground)
+        val open = UNNotificationAction.actionWithIdentifier(ACTION_OPEN, "Open", UNNotificationActionOptionForeground)
+        val reorder = UNNotificationAction.actionWithIdentifier(ACTION_REORDER, "Reorder", UNNotificationActionOptionForeground)
         val category = UNNotificationCategory.categoryWithIdentifier(
             CATEGORY_ID,
             listOf(open, reorder),
             emptyList<String>(),
-            UNNotificationCategoryOptions.None,
+            UNNotificationCategoryOptionNone,
         )
         center.getNotificationCategoriesWithCompletionHandler { existing ->
             if (existing?.contains(category) != true) {
