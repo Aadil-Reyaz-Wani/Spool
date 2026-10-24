@@ -163,6 +163,7 @@ fun FitCheckScreen(
                             value = gramsValue,
                             onValueChange = { gramsValue = it },
                             label = stringResource(Res.string.fit_check_grams_needed),
+                            placeholder = stringResource(Res.string.fit_check_grams_needed),
                             modifier = Modifier.weight(1f).focusRequester(focusRequester),
                             leadingIcon = Icons.Outlined.Scale,
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal)
