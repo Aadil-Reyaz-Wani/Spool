@@ -14,6 +14,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.ChevronRight
 import androidx.compose.material.icons.outlined.Scale
 import androidx.compose.material.icons.outlined.Search
@@ -21,6 +22,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -29,14 +31,17 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.aadil.spool.data.entity.Filament
@@ -57,6 +62,7 @@ import spool.shared.generated.resources.fit_check_results
 import spool.shared.generated.resources.fit_check_subtitle
 import kotlin.math.round
 
+
 data class FitCheckResult(
     val spool: Filament,
     val fits: Boolean,
@@ -71,9 +77,9 @@ fun FitCheckScreen(
     navigateUp: () -> Unit,
     onSpoolClick: (Int) -> Unit = {},
 ) {
-    var gramsText by remember { mutableStateOf(if (gramsNeededInitial > 0.0) gramsNeededInitial.toString() else "") }
-    var results by remember { mutableStateOf<List<FitCheckResult>>(emptyList()) }
-    var hasChecked by remember { mutableStateOf(gramsNeededInitial > 0.0) }
+    var gramsText by rememberSaveable { mutableStateOf(if (gramsNeededInitial > 0.0) gramsNeededInitial.toString() else "") }
+    var results by rememberSaveable { mutableStateOf<List<FitCheckResult>>(emptyList()) }
+    var hasChecked by rememberSaveable { mutableStateOf(gramsNeededInitial > 0.0) }
     val keyboardController = LocalSoftwareKeyboardController.current
     val focusRequester = remember { FocusRequester() }
 
@@ -198,9 +204,8 @@ private fun FitCheckCard(
 ) {
     val needed = gramsText.toDoubleOrNull() ?: 0.0
     Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable { onSpoolClick(result.spool.id) },
+        onClick = { onSpoolClick(result.spool.id) },
+        modifier = Modifier.fillMaxWidth(),
         shape = MaterialTheme.shapes.medium,
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
     ) {
