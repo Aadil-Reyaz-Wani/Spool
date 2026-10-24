@@ -3,7 +3,7 @@
 
     <string name="app_tagline">Measure. Manage. Print.</string>
 
-    <string name="dashboard_title">Inventory\nDashboard</string>
+    <string name="dashboard_title">Dashboard</string>
     <string name="dashboard_empty">No spools found.\nTap + to add your first roll.</string>
     <string name="stats_total_weight">Total Stock</string>
     <string name="stats_spool_count">Spools</string>
@@ -176,6 +176,19 @@
     <string name="moisture_weigh_now">Weigh now</string>
     <string name="moisture_mark_dried">Mark dried</string>
 
+    <string name="low_stock_alerts">Low Stock Alerts</string>
+    <string name="low_stock_threshold_hint">Threshold (g)</string>
+    <string name="low_stock_threshold_placeholder">e.g. 120g</string>
+    <string name="low_stock_reorder_url">Reorder link (optional)</string>
+    <string name="low_stock_reorder_url_placeholder">https://example.com/filament</string>
+    <string name="action_save">Save</string>
+    <string name="low_stock_saved">Saved</string>
+    <string name="low_stock_notif_title">Low filament</string>
+    <string name="low_stock_notif_body">%1$s — %2$d g left</string>
+    <string name="low_stock_notif_batch_title">Filament running low</string>
+    <string name="low_stock_notif_batch_body">%1$d spools need attention</string>
+    <string name="action_reorder">Reorder</string>
+    <string name="low_stock_channel_name">Low stock alerts</string>
 
     <string name="default_version">1.2.0</string>
     <string name="version_number">v%1$s • Initializing</string>

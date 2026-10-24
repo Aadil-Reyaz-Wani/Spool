@@ -29,6 +29,7 @@ kotlin {
             api(libs.koin.core)
             implementation(libs.androidx.datastore.preferences.core)
             implementation(libs.kotlinx.coroutines.core)
+            implementation(libs.kotlinx.serialization.json)
         }
         androidMain.dependencies {
             implementation(libs.androidx.datastore.preferences)
