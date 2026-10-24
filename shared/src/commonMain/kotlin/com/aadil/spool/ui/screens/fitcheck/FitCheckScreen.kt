@@ -77,22 +77,35 @@ fun FitCheckScreen(
     navigateUp: () -> Unit,
     onSpoolClick: (Int) -> Unit = {},
 ) {
-    var gramsText by rememberSaveable { mutableStateOf(if (gramsNeededInitial > 0.0) gramsNeededInitial.toString() else "") }
+    var gramsValue by rememberSaveable(stateSaver = TextFieldValue.Saver) {
+        mutableStateOf(
+            if (gramsNeededInitial > 0.0) {
+                val text = gramsNeededInitial.toString()
+                TextFieldValue(text = text, selection = TextRange(text.length))
+            } else {
+                TextFieldValue("")
+            }
+        )
+    }
+    var hasAutoFocused by rememberSaveable { mutableStateOf(false) }
     var results by rememberSaveable { mutableStateOf<List<FitCheckResult>>(emptyList()) }
     var hasChecked by rememberSaveable { mutableStateOf(gramsNeededInitial > 0.0) }
     val keyboardController = LocalSoftwareKeyboardController.current
     val focusRequester = remember { FocusRequester() }
 
     LaunchedEffect(Unit) {
-        if (gramsNeededInitial == 0.0) {
+        if (gramsNeededInitial == 0.0 && !hasAutoFocused) {
+            hasAutoFocused = true
             focusRequester.requestFocus()
             keyboardController?.show()
+        } else if (gramsNeededInitial > 0.0) {
+            hasAutoFocused = true
         }
     }
 
     fun runCheck() {
         keyboardController?.hide()
-        val needed = gramsText.toDoubleOrNull() ?: 0.0
+        val needed = gramsValue.text.toDoubleOrNull() ?: 0.0
         if (needed <= 0.0) {
             results = emptyList()
             hasChecked = false
@@ -147,8 +160,8 @@ fun FitCheckScreen(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         SpoolOutlinedTextField(
-                            value = gramsText,
-                            onValueChange = { gramsText = it },
+                            value = gramsValue,
+                            onValueChange = { gramsValue = it },
                             label = stringResource(Res.string.fit_check_grams_needed),
                             modifier = Modifier.weight(1f).focusRequester(focusRequester),
                             leadingIcon = Icons.Outlined.Scale,
@@ -176,7 +189,7 @@ fun FitCheckScreen(
                         )
                     }
                     items(fitsList) { result ->
-                        FitCheckCard(result = result, gramsText = gramsText, onSpoolClick = onSpoolClick)
+                        FitCheckCard(result = result, gramsText = gramsValue.text, onSpoolClick = onSpoolClick)
                     }
                 }
                 if (noFits.isNotEmpty()) {
@@ -188,7 +201,7 @@ fun FitCheckScreen(
                         )
                     }
                     items(noFits.take(5)) { result ->
-                        FitCheckCard(result = result, gramsText = gramsText, onSpoolClick = onSpoolClick)
+                        FitCheckCard(result = result, gramsText = gramsValue.text, onSpoolClick = onSpoolClick)
                     }
                 }
             }
