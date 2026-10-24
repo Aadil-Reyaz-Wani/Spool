@@ -144,10 +144,7 @@ fun SpoolDetailsScreen(
             onPrintHistoryClick = onPrintHistoryClick,
             onMarkAsDried = onMarkAsDried,
             onWeighNow = onWeighNow,
-<<<<<<< HEAD
-=======
             spoolId = spoolDetails.id,
->>>>>>> origin/feature/push-notification
             modifier = Modifier.padding(paddingValues = paddingValues)
         )
 
@@ -305,6 +302,7 @@ fun DetailsScreen(
 @Composable
 fun DetailsScreenPreview() {
     DetailsScreen(
+        spoolId = 1,
         totalWeight = 1000.0,
         currentWeight = 23.0,
         colorHex = 0xFF4CAF50,
@@ -328,12 +326,7 @@ fun DetailsScreenPreview() {
         isPrintErrorState = "",
         onPrintHistoryClick = {},
         onMarkAsDried = { _, _ -> },
-<<<<<<< HEAD
         onWeighNow = { _, _ -> }
-=======
-        onWeighNow = { _, _ -> },
-        spoolId = 1
->>>>>>> origin/feature/push-notification
     )
 }
 
