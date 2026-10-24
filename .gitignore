@@ -36,5 +36,9 @@ project.xcworkspace
 *.xcuserstate
 iosApp/build/
 iosApp/Pods/
+.idea/
 .idea/artifacts/
 .idea/xcode.xml
+.idea/inspectionProfiles/
+.opencode/
+graphify-out/

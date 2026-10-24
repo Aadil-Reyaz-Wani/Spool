@@ -34,5 +34,8 @@ sealed interface Routes : NavKey {
     @Serializable
     object Help : Routes
 
+    @Serializable
+    data class FitCheck(val gramsNeeded: Double = 0.0) : Routes
+
 }
 

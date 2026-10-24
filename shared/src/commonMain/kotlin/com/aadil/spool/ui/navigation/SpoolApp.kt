@@ -27,6 +27,8 @@ import spool.shared.generated.resources.*
 import com.aadil.spool.utils.PlatformBackHandler
 import com.aadil.spool.ui.common.SpoolAppBar
 import com.aadil.spool.ui.screens.dashboard.DashboardScreen
+import com.aadil.spool.ui.screens.fitcheck.FitCheckScreen
+
 import com.aadil.spool.feature.dashboard.DashboardViewModel
 import com.aadil.spool.ui.screens.details.SpoolDetailsScreen
 import com.aadil.spool.feature.details.SpoolDetailsViewModel
@@ -91,6 +93,7 @@ fun MySpoolApp(modifier: Modifier = Modifier) {
                     subclass(serializer = Routes.About.serializer())
                     subclass(serializer = Routes.OpenSourceLicenses.serializer())
                     subclass(serializer = Routes.Help.serializer())
+                    subclass(serializer = Routes.FitCheck.serializer())
                 }
             }
         },
@@ -164,6 +167,9 @@ fun MySpoolApp(modifier: Modifier = Modifier) {
                     },
                     onHelpClick = {
                         backStack.add(Routes.Help)
+                    },
+                    onFitCheckClick = {
+                        backStack.add(Routes.FitCheck())
                     }
                 )
             }
@@ -281,6 +287,12 @@ fun MySpoolApp(modifier: Modifier = Modifier) {
                     onPrintHistoryClick = {
                         backStack.add(Routes.PrintHistory(entry.id))
                         printHistoryViewModel.triggerId(entry.id)
+                    },
+                    onMarkAsDried = { remaining, tare ->
+                        spoolDetailsViewModel.markAsDried(entry.id, remaining, tare)
+                    },
+                    onWeighNow = { remaining, tare ->
+                        spoolDetailsViewModel.updateCurrentWeight(entry.id, remaining, tare)
                     }
                 )
             }
@@ -356,6 +368,16 @@ fun MySpoolApp(modifier: Modifier = Modifier) {
             entry<Routes.Help> {
                 HelpScreen(
                     navigateUp = safePopBackStack
+                )
+            }
+
+            entry<Routes.FitCheck> { key ->
+                val listOfSpools = listOfSpools
+                FitCheckScreen(
+                    gramsNeededInitial = key.gramsNeeded,
+                    listOfSpools = listOfSpools,
+                    navigateUp = safePopBackStack,
+                    onSpoolClick = { id -> backStack.add(Routes.SpoolDetails(id = id)) }
                 )
             }
 
