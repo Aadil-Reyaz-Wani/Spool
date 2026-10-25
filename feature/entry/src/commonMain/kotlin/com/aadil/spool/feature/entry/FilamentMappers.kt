@@ -1,10 +1,10 @@
 package com.aadil.spool.feature.entry
 
-import com.aadil.spool.core.model.toParseCurrencyToDouble
-import com.aadil.spool.core.model.toParseLocalizedDouble
 import com.aadil.spool.core.model.toParseLocalizedInt
 import com.aadil.spool.data.entity.Filament
+import kotlinx.serialization.Serializable
 
+@Serializable
 data class SpoolEntryUiState(
     val id: Int = 0,
     val brand: String = "",
@@ -21,19 +21,28 @@ data class SpoolEntryUiState(
     val addedPrice: String = ""
 )
 
-fun SpoolEntryUiState.toFilament(): Filament {
-    return Filament(
+fun SpoolEntryUiState.toFilament(existing: Filament? = null): Filament {
+    val base = existing ?: Filament(
+        brand = brand,
+        material = material,
+        colorName = colorName,
+        colorHex = colorHex,
+        note = note,
+    )
+    return base.copy(
         id = id,
         brand = brand,
         material = material,
-        totalWeight = totalWeight.toParseLocalizedDouble() ?: 0.0,
-        currentWeight = currentWeight.toParseLocalizedDouble() ?: 0.0,
+        totalWeight = totalWeight.entryNumber() ?: 0.0,
+        currentWeight = if (currentWeight.isBlank() && existing == null) {
+            totalWeight.entryNumber() ?: 0.0
+        } else currentWeight.entryNumber() ?: 0.0,
         colorHex = colorHex,
         colorName = colorName,
         tempNozzle = tempNozzle.toParseLocalizedInt() ?: 0,
         tempBed = tempBed.toParseLocalizedInt() ?: 0,
         note = note,
-        price = price.toParseCurrencyToDouble() ?: 0.0
+        price = price.entryNumber() ?: 0.0
     )
 }
 

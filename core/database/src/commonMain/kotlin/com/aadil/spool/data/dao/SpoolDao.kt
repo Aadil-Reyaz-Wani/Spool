@@ -80,6 +80,12 @@ interface SpoolDao {
     @Query("UPDATE usage_log SET price_per_print = grams_used * :pricePerGram WHERE spoolId = :spoolId")
     suspend fun updateAllUsageCosts(spoolId: Int, pricePerGram: Double)
 
+    @Transaction
+    suspend fun updateSpoolAndUsageCosts(filament: Filament) {
+        updateSpool(filament)
+        updateAllUsageCosts(filament.id, filament.price / filament.totalWeight)
+    }
+
     @Query("SELECT grams_used FROM usage_log WHERE id = :id ")
     suspend fun getCurrentLogWeight(id: Int): Double
 

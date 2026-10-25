@@ -5,11 +5,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import org.jetbrains.compose.resources.stringResource
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -29,6 +28,7 @@ import com.aadil.spool.ui.common.SpoolAppBar
 import com.aadil.spool.ui.screens.dashboard.DashboardScreen
 import com.aadil.spool.ui.screens.fitcheck.FitCheckScreen
 
+import com.aadil.spool.feature.dashboard.FitCheckViewModel
 import com.aadil.spool.feature.dashboard.DashboardViewModel
 import com.aadil.spool.ui.screens.details.SpoolDetailsScreen
 import com.aadil.spool.feature.details.SpoolDetailsViewModel
@@ -55,7 +55,6 @@ fun MySpoolApp(modifier: Modifier = Modifier, initialSpoolId: Int? = null) {
 
     // Define ViewModels
     val dashboardViewModel: DashboardViewModel = koinViewModel()
-    val spoolEntryViewModel: SpoolEntryViewModel = koinViewModel()
     val spoolDetailsViewModel: SpoolDetailsViewModel = koinViewModel()
     val printHistoryViewModel: PrintHistoryViewModel = koinViewModel()
     val spoolSettingsViewModel: SpoolSettingsViewModel = koinViewModel()
@@ -67,10 +66,6 @@ fun MySpoolApp(modifier: Modifier = Modifier, initialSpoolId: Int? = null) {
     val listOfUniqueColorHex by dashboardViewModel.getUniqueColorHex.collectAsStateWithLifecycle()
     val filterAppliedState by dashboardViewModel.filterAppliedState.collectAsStateWithLifecycle()
 
-
-    // Entry
-    val spoolEntryUiState by spoolEntryViewModel.spoolEntryUiState.collectAsStateWithLifecycle()
-    val isError by spoolEntryViewModel.isError.collectAsStateWithLifecycle()
 
     // Details
     val spoolDetails by spoolDetailsViewModel.spoolDetails.collectAsStateWithLifecycle()
@@ -202,12 +197,15 @@ fun MySpoolApp(modifier: Modifier = Modifier, initialSpoolId: Int? = null) {
 
             // Entry Screen Entry
             entry<Routes.SpoolEntry> { entry ->
-                var hasLoadedEntry by rememberSaveable { mutableStateOf(false) }
-                LaunchedEffect(entry.id) {
-                    if (!hasLoadedEntry) {
-                        hasLoadedEntry = true
-                        spoolEntryViewModel.loadSpool(entry.id)
-                    }
+                val spoolEntryViewModel: SpoolEntryViewModel = koinViewModel()
+                val spoolEntryUiState by spoolEntryViewModel.spoolEntryUiState.collectAsStateWithLifecycle()
+                val entryError by spoolEntryViewModel.error.collectAsStateWithLifecycle()
+                val isSaving by spoolEntryViewModel.isSaving.collectAsStateWithLifecycle()
+                val isLoading by spoolEntryViewModel.isLoading.collectAsStateWithLifecycle()
+                val saveCompleted by spoolEntryViewModel.saveCompleted.collectAsStateWithLifecycle()
+                LaunchedEffect(entry.id) { spoolEntryViewModel.loadSpool(entry.id) }
+                LaunchedEffect(saveCompleted) {
+                    if (saveCompleted) safePopBackStack()
                 }
                 SpoolEntryScreen(
                     onNavigateUp = {
@@ -252,14 +250,12 @@ fun MySpoolApp(modifier: Modifier = Modifier, initialSpoolId: Int? = null) {
                     },
                     onSaveOrUpdateClick = {
                         spoolEntryViewModel.saveOrUpdateSpool(entry.id)
-                        if (spoolEntryViewModel.isValid()) {
-                            safePopBackStack()
-                        }
                     },
                     selectedColor = spoolEntryUiState.colorHex,
-                    isError = isError,
-                    isEditMode = spoolEntryViewModel.isEditMode(entry.id),
-                    resetState = spoolEntryViewModel::resetState,
+                    error = entryError,
+                    isSaving = isSaving,
+                    isLoading = isLoading,
+                    isEditMode = entry.id > 0,
                     modifier = modifier,
                     selectedCurrency = selectedCurrency
                 )
@@ -398,10 +394,14 @@ fun MySpoolApp(modifier: Modifier = Modifier, initialSpoolId: Int? = null) {
             }
 
             entry<Routes.FitCheck> { key ->
-                val listOfSpools = listOfSpools
+                val fitCheckViewModel: FitCheckViewModel = koinViewModel()
+                val fitCheckState by fitCheckViewModel.uiState.collectAsStateWithLifecycle()
+                LaunchedEffect(key.gramsNeeded) { fitCheckViewModel.initialize(key.gramsNeeded) }
                 FitCheckScreen(
                     gramsNeededInitial = key.gramsNeeded,
-                    listOfSpools = listOfSpools,
+                    uiState = fitCheckState,
+                    onGramsChange = fitCheckViewModel::updateGrams,
+                    onCheck = fitCheckViewModel::check,
                     navigateUp = safePopBackStack,
                     onSpoolClick = { id -> backStack.add(Routes.SpoolDetails(id = id)) }
                 )

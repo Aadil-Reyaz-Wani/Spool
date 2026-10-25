@@ -14,6 +14,7 @@ interface SpoolRepository {
 
     suspend fun insertSpool(filament: Filament)
     suspend fun updateSpool(filament: Filament)
+    suspend fun updateSpoolAndUsageCosts(filament: Filament)
     suspend fun deleteSpool(filament: Filament)
 
     suspend fun getCurrentWeight(id: Int): Double
@@ -67,6 +68,7 @@ class DefaultSpoolRepository(
     override fun getSpool(id: Int): Flow<Filament?> = spoolDao.getSpool(id)
     override suspend fun insertSpool(filament: Filament) = spoolDao.insertSpool(filament)
     override suspend fun updateSpool(filament: Filament) = spoolDao.updateSpool(filament)
+    override suspend fun updateSpoolAndUsageCosts(filament: Filament) = spoolDao.updateSpoolAndUsageCosts(filament)
     override suspend fun deleteSpool(filament: Filament) = spoolDao.deleteSpool(filament)
     override suspend fun getCurrentWeight(id: Int): Double = spoolDao.getCurrentWeight(id)
     override suspend fun updateCurrentWeight(id: Int, currentWeight: Double) = spoolDao.updateCurrentWeight(id, currentWeight)

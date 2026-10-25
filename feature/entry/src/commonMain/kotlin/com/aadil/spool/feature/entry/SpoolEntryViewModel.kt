@@ -1,104 +1,126 @@
 package com.aadil.spool.feature.entry
 
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.aadil.spool.core.data.repository.SpoolRepository
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 
 open class SpoolEntryViewModel(
-    private val spoolRepository: SpoolRepository
+    private val spoolRepository: SpoolRepository,
+    private val savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
-    private val _spoolEntryUiState = MutableStateFlow(SpoolEntryUiState())
+    private val json = Json { ignoreUnknownKeys = true }
+    private val restoredDraft = savedStateHandle.get<String>("draft")?.let {
+        runCatching { json.decodeFromString<SpoolEntryUiState>(it) }.getOrNull()
+    }
+    private val _spoolEntryUiState = MutableStateFlow(restoredDraft ?: SpoolEntryUiState())
     val spoolEntryUiState = _spoolEntryUiState.asStateFlow()
+    private val _error = MutableStateFlow<SpoolEntryError?>(null)
+    val error = _error.asStateFlow()
+    private val _isLoading = MutableStateFlow(false)
+    val isLoading = _isLoading.asStateFlow()
+    private val _isSaving = MutableStateFlow(false)
+    val isSaving = _isSaving.asStateFlow()
+    val saveCompleted = savedStateHandle.getStateFlow("saveCompleted", false)
+    private var loadedFor: Int? = null
 
-    val isError = MutableStateFlow(false)
+    private fun setDraft(state: SpoolEntryUiState) {
+        savedStateHandle["draft"] = json.encodeToString(state)
+        _spoolEntryUiState.value = state
+    }
 
     fun update(transform: SpoolEntryUiState.() -> SpoolEntryUiState) {
-        _spoolEntryUiState.update(transform)
-        isError.value = false
+        if (_isLoading.value || _isSaving.value || saveCompleted.value) return
+        setDraft(_spoolEntryUiState.value.transform())
+        _error.value = null
     }
 
     fun loadSpool(id: Int) {
-        if (id == 0) return
+        if (loadedFor == id || _isLoading.value || saveCompleted.value) return
+        if (id == 0) {
+            loadedFor = id
+            return
+        }
+        _isLoading.value = true
         viewModelScope.launch {
-            val currentSpool = spoolRepository.getSpoolStream(id).first()
-            currentSpool?.let { spool ->
-                _spoolEntryUiState.value = spool.toSpoolEntryUiState()
-                isError.value = false
+            try {
+                val spool = spoolRepository.getSpoolStream(id).first()
+                if (spool == null) {
+                    _error.value = SpoolEntryError.LOAD_FAILED
+                } else {
+                    // Reload the record after process death, but retain the user's saved draft.
+                    if (restoredDraft?.id != id) setDraft(spool.toSpoolEntryUiState())
+                    loadedFor = id
+                    _error.value = null
+                }
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                _error.value = SpoolEntryError.LOAD_FAILED
+            } finally {
+                _isLoading.value = false
             }
         }
     }
 
     fun saveOrUpdateSpool(id: Int) {
-        val freshFilament = _spoolEntryUiState.value.toFilament()
-
+        if (_isLoading.value || _isSaving.value || saveCompleted.value) return
+        val state = _spoolEntryUiState.value
+        val validationError = state.validationError(isEdit = id > 0)
+        if (validationError != null) {
+            _error.value = validationError
+            return
+        }
+        if (id > 0 && (loadedFor != id || state.id != id)) {
+            _error.value = SpoolEntryError.LOAD_FAILED
+            return
+        }
+        _isSaving.value = true
+        _error.value = null
         viewModelScope.launch {
-            if (id > 0) {
-                if (
-                    freshFilament.brand.isNotBlank()
-                    && freshFilament.material.isNotBlank()
-                    && freshFilament.totalWeight > 0 &&
-                    freshFilament.totalWeight >= freshFilament.currentWeight
-                ) {
-                    val restockWeight = _spoolEntryUiState.value.addedWeight.toDoubleOrNull() ?: 0.0
-                    val restockPrice = _spoolEntryUiState.value.addedPrice.toDoubleOrNull() ?: 0.0
-
-                    val filamentToUpdate = freshFilament.copy(
-                        totalWeight = freshFilament.totalWeight + restockWeight,
-                        currentWeight = freshFilament.currentWeight + restockWeight,
-                        price = freshFilament.price + restockPrice
-                    )
-
-                    spoolRepository.updateSpool(filamentToUpdate)
-
-                    val newPricePerGram = if (filamentToUpdate.totalWeight > 0) filamentToUpdate.price / filamentToUpdate.totalWeight else 0.0
-                    spoolRepository.updateAllUsageCosts(filamentToUpdate.id, newPricePerGram)
-
-                    isError.value = false
-                    _spoolEntryUiState.update { it.copy(addedWeight = "", addedPrice = "") }
-                } else {
-                    isError.value = true
-                }
-                return@launch
-            } else {
-                try {
-                    if (freshFilament.brand.isNotBlank() && freshFilament.material.isNotBlank() && freshFilament.totalWeight > 0 && freshFilament.currentWeight <= freshFilament.totalWeight) {
-                        val filamentToInsert = freshFilament.copy(
-                            currentWeight = freshFilament.currentWeight.takeIf { it > 0 } ?: freshFilament.totalWeight
-                        )
-                        spoolRepository.insertSpool(filamentToInsert)
-                        _spoolEntryUiState.value = SpoolEntryUiState()
-                        isError.value = false
-                    } else {
-                        isError.value = true
+            try {
+                if (id > 0) {
+                    val existing = spoolRepository.getSpoolStream(id).first()
+                    if (existing == null) {
+                        _error.value = SpoolEntryError.LOAD_FAILED
+                        return@launch
                     }
-                } catch (e: Exception) {
-                    println("ENTER: ${e.message}")
+                    // Copy editable values onto the stored entity to retain drying metadata and timestamp.
+                    val edited = state.toFilament(existing)
+                    val extraWeight = state.addedWeight.entryNumber() ?: 0.0
+                    val extraPrice = state.addedPrice.entryNumber() ?: 0.0
+                    val updated = edited.copy(
+                        totalWeight = edited.totalWeight + extraWeight,
+                        currentWeight = edited.currentWeight + extraWeight,
+                        price = edited.price + extraPrice,
+                    )
+                    // Added filament changes the stock being measured. Its dryness and tare
+                    // cannot be inferred from measurements taken before the restock.
+                    val toSave = if (extraWeight > 0.0) updated.copy(
+                        dryBaselineWeight = null,
+                        dryBaselineTareGrams = null,
+                        lastWeighedTareGrams = null,
+                        lastDriedAt = null,
+                    ) else updated
+                    spoolRepository.updateSpoolAndUsageCosts(toSave)
+                } else {
+                    spoolRepository.insertSpool(state.toFilament())
                 }
+                savedStateHandle["saveCompleted"] = true
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                _error.value = SpoolEntryError.SAVE_FAILED
+            } finally {
+                _isSaving.value = false
             }
         }
-    }
-
-    fun isValid(): Boolean {
-        val weightTotal = _spoolEntryUiState.value.totalWeight.toDoubleOrNull() ?: 0.0
-        val weightCurrent = _spoolEntryUiState.value.currentWeight.toDoubleOrNull() ?: 0.0
-
-        return _spoolEntryUiState.value.brand.isNotBlank()
-                && _spoolEntryUiState.value.material.isNotBlank()
-                && _spoolEntryUiState.value.totalWeight.isNotBlank()
-                && weightTotal >= weightCurrent
-    }
-
-    fun isEditMode(id: Int): Boolean {
-        return (id > 0)
-    }
-
-    fun resetState() {
-        _spoolEntryUiState.update { SpoolEntryUiState() }
-        isError.value = false
     }
 }

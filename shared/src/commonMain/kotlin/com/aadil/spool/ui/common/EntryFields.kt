@@ -40,11 +40,9 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -88,18 +86,13 @@ fun EntryFields(
     onSaveOrUpdateClick: () -> Unit,
     isFieldsFilled: Boolean,
     isEditMode: Boolean,
-    resetState: () -> Unit,
     modifier: Modifier = Modifier,
     selectedCurrency: String,
+    isSaving: Boolean = false,
+    isLoading: Boolean = false,
+    restockError: Boolean = false,
+    errorMessage: String? = null,
 ) {
-    var hasResetForm by rememberSaveable { mutableStateOf(false) }
-    LaunchedEffect(Unit) {
-        if (!isEditMode && !hasResetForm) {
-            hasResetForm = true
-            resetState()
-        }
-    }
-
     val scrollState = rememberScrollState()
     var showScaleDialog by remember { mutableStateOf(false) }
     var tareGrams by remember { mutableStateOf(SpoolLists.DEFAULT_TARE_GRAMS) }
@@ -273,6 +266,8 @@ fun EntryFields(
                 value = uiState.addedWeight,
                 onValueChange = onAddedWeightValueChange,
                 label = stringResource(Res.string.additional_weight_label),
+                isError = restockError,
+                supportingText = stringResource(Res.string.entry_invalid_restock),
                 placeholder = stringResource(Res.string.additional_weight_placeholder),
                 leadingIcon = Icons.Outlined.MonitorWeight,
                 singleLine = true,
@@ -283,6 +278,8 @@ fun EntryFields(
                 value = uiState.addedPrice,
                 onValueChange = onAddedPriceValueChange,
                 label = stringResource(Res.string.additional_price_label),
+                isError = restockError,
+                supportingText = stringResource(Res.string.entry_invalid_restock),
                 placeholder = formattedPlaceholderPrice,
                 leadingIcon = Icons.Outlined.CurrencyExchange,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
@@ -303,8 +300,16 @@ fun EntryFields(
             )
         }
         Spacer(modifier = Modifier.height(Dimens.PaddingExtraLarge))
+        if (errorMessage != null) {
+            Text(
+                text = errorMessage,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.error,
+            )
+            Spacer(modifier = Modifier.height(Dimens.PaddingSmall))
+        }
         SpoolButton(
-            text = if (!isEditMode) stringResource(Res.string.btn_save) else stringResource(Res.string.btn_update),
+            text = if (isSaving) stringResource(Res.string.entry_saving) else if (!isEditMode) stringResource(Res.string.btn_save) else stringResource(Res.string.btn_update),
                 icon = Icons.Outlined.Save,
                 contentDescription = if (!isEditMode) stringResource(Res.string.btn_save) else stringResource(
                     Res.string.btn_update
@@ -312,7 +317,7 @@ fun EntryFields(
             onClick = onSaveOrUpdateClick,
             buttonContainerColor = MaterialTheme.colorScheme.primary,
             buttonContentColor = MaterialTheme.colorScheme.onPrimary,
-            enabled = true,
+            enabled = !isSaving && !isLoading,
             hasBorder = false,
             modifier = Modifier.padding(bottom = Dimens.PaddingExtraLarge)
         )
@@ -394,7 +399,6 @@ fun EntryFieldsPreview() {
         onSaveOrUpdateClick = {},
         isEditMode = true,
         isFieldsFilled = true,
-        resetState = {},
         modifier = Modifier,
         selectedCurrency = "USD"
     )

@@ -9,6 +9,7 @@ import spool.shared.generated.resources.*
 import com.aadil.spool.ui.common.EntryFields
 import com.aadil.spool.ui.common.SpoolAppBar
 import com.aadil.spool.feature.entry.SpoolEntryUiState
+import com.aadil.spool.feature.entry.SpoolEntryError
 
 @Composable
 fun SpoolEntryScreen(
@@ -28,9 +29,10 @@ fun SpoolEntryScreen(
     onAddedPriceValueChange: (String) -> Unit,
     selectedColor: Long,
     onSaveOrUpdateClick: () -> Unit,
-    isError: Boolean,
+    error: SpoolEntryError?,
+    isSaving: Boolean,
+    isLoading: Boolean,
     isEditMode: Boolean,
-    resetState: () -> Unit,
     modifier: Modifier = Modifier,
     selectedCurrency: String
 ) {
@@ -61,9 +63,18 @@ fun SpoolEntryScreen(
             onAddedPriceValueChange = onAddedPriceValueChange,
             selectedColor = selectedColor,
             onSaveOrUpdateClick = onSaveOrUpdateClick,
-            isFieldsFilled = isError,
+            isFieldsFilled = error == SpoolEntryError.INVALID_INPUT,
             isEditMode = isEditMode,
-            resetState = resetState,
+            isSaving = isSaving,
+            isLoading = isLoading,
+            restockError = error == SpoolEntryError.INVALID_RESTOCK,
+            errorMessage = when (error) {
+                SpoolEntryError.INVALID_INPUT -> stringResource(Res.string.entry_invalid_fields)
+                SpoolEntryError.INVALID_RESTOCK -> stringResource(Res.string.entry_invalid_restock)
+                SpoolEntryError.LOAD_FAILED -> stringResource(Res.string.entry_load_failed)
+                SpoolEntryError.SAVE_FAILED -> stringResource(Res.string.entry_save_failed)
+                null -> null
+            },
             modifier = Modifier.padding(paddingValues = paddingValues),
             selectedCurrency = selectedCurrency
         )

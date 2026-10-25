@@ -192,4 +192,9 @@
 
     <string name="default_version">1.2.0</string>
     <string name="version_number">v%1$s • Initializing</string>
+    <string name="entry_invalid_fields">Enter a brand and material, an initial weight greater than 0, a remaining weight from 0 up to the initial weight, and a price of 0 or more.</string>
+    <string name="entry_invalid_restock">Additional weight and price must be valid numbers of 0 or more.</string>
+    <string name="entry_load_failed">Unable to load this spool. Go back and try again.</string>
+    <string name="entry_save_failed">Could not save the spool. Please try again.</string>
+    <string name="entry_saving">Saving...</string>
 </resources>

@@ -28,6 +28,7 @@ kotlin {
             api(libs.koin.core)
             api(libs.koin.compose.viewmodel)
             implementation(libs.androidx.lifecycle.viewmodel)
+            implementation(libs.androidx.lifecycle.viewmodel.savedstate)
             implementation(libs.kotlinx.coroutines.core)
         }
     }
