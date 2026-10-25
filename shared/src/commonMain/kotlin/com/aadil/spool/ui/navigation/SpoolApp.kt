@@ -27,6 +27,8 @@ import spool.shared.generated.resources.*
 import com.aadil.spool.utils.PlatformBackHandler
 import com.aadil.spool.ui.common.SpoolAppBar
 import com.aadil.spool.ui.screens.dashboard.DashboardScreen
+import com.aadil.spool.ui.screens.fitcheck.FitCheckScreen
+
 import com.aadil.spool.feature.dashboard.DashboardViewModel
 import com.aadil.spool.ui.screens.details.SpoolDetailsScreen
 import com.aadil.spool.feature.details.SpoolDetailsViewModel
@@ -40,11 +42,16 @@ import com.aadil.spool.feature.settings.SpoolSettingsViewModel
 import com.aadil.spool.ui.screens.splash.SplashScreen
 import com.mikepenz.aboutlibraries.ui.compose.m3.LibrariesContainer
 import kotlinx.coroutines.delay
+import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
+import com.aadil.spool.core.data.repository.NotificationPreferencesRepository
+import com.aadil.spool.core.data.repository.SpoolRepository
+import com.aadil.spool.notifications.NotificationPoster
+import com.aadil.spool.notifications.runLowStockCheck
 
 @OptIn(org.jetbrains.compose.resources.ExperimentalResourceApi::class)
 @Composable
-fun MySpoolApp(modifier: Modifier = Modifier) {
+fun MySpoolApp(modifier: Modifier = Modifier, initialSpoolId: Int? = null) {
 
     // Define ViewModels
     val dashboardViewModel: DashboardViewModel = koinViewModel()
@@ -91,6 +98,7 @@ fun MySpoolApp(modifier: Modifier = Modifier) {
                     subclass(serializer = Routes.About.serializer())
                     subclass(serializer = Routes.OpenSourceLicenses.serializer())
                     subclass(serializer = Routes.Help.serializer())
+                    subclass(serializer = Routes.FitCheck.serializer())
                 }
             }
         },
@@ -114,6 +122,23 @@ fun MySpoolApp(modifier: Modifier = Modifier) {
         }
     }
 
+    // Low-stock check on every app open (periodic WorkManager check covers background).
+    val spoolRepository = koinInject<SpoolRepository>()
+    val alertRepository = koinInject<NotificationPreferencesRepository>()
+    val poster = koinInject<NotificationPoster>()
+    LaunchedEffect(Unit) {
+        runLowStockCheck(spoolRepository, alertRepository, poster)
+    }
+
+    // Notification tap -> deep link to the spool. Skipped while still on splash;
+    // the splash transition handles that case.
+    LaunchedEffect(initialSpoolId) {
+        val id = initialSpoolId ?: return@LaunchedEffect
+        if (backStack.lastOrNull() !is Routes.Splash) {
+            backStack.add(Routes.SpoolDetails(id))
+        }
+    }
+
     NavDisplay(
         backStack = backStack,
         modifier = modifier,
@@ -128,7 +153,11 @@ fun MySpoolApp(modifier: Modifier = Modifier) {
                 SplashScreen()
                 LaunchedEffect(Unit) {
                     delay(1500L)
-                    backStack.add(Routes.Dashboard)
+                    if (initialSpoolId != null) {
+                        backStack.add(Routes.SpoolDetails(initialSpoolId))
+                    } else {
+                        backStack.add(Routes.Dashboard)
+                    }
                     backStack.remove(Routes.Splash)
                 }
             }
@@ -164,6 +193,9 @@ fun MySpoolApp(modifier: Modifier = Modifier) {
                     },
                     onHelpClick = {
                         backStack.add(Routes.Help)
+                    },
+                    onFitCheckClick = {
+                        backStack.add(Routes.FitCheck())
                     }
                 )
             }
@@ -362,6 +394,16 @@ fun MySpoolApp(modifier: Modifier = Modifier) {
             entry<Routes.Help> {
                 HelpScreen(
                     navigateUp = safePopBackStack
+                )
+            }
+
+            entry<Routes.FitCheck> { key ->
+                val listOfSpools = listOfSpools
+                FitCheckScreen(
+                    gramsNeededInitial = key.gramsNeeded,
+                    listOfSpools = listOfSpools,
+                    navigateUp = safePopBackStack,
+                    onSpoolClick = { id -> backStack.add(Routes.SpoolDetails(id = id)) }
                 )
             }
 

@@ -4,8 +4,11 @@ import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -18,6 +21,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Warning
@@ -127,6 +131,51 @@ private fun ButtonPev() {
     )
 }
 
+// App-bar icon button: themed rounded background, ripple clipped to that shape.
+@Composable
+fun SpoolIconActionButton(
+    icon: ImageVector,
+    contentDescription: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    iconModifier: Modifier = Modifier,
+) {
+    Box(
+        modifier = modifier
+            .size(Dimens.IconLarge)
+            .clip(MaterialTheme.shapes.small)
+            .background(MaterialTheme.colorScheme.surfaceVariant)
+            .clickable(onClick = onClick),
+        contentAlignment = Alignment.Center,
+    ) {
+        Icon(imageVector = icon, contentDescription = contentDescription, modifier = iconModifier)
+    }
+}
+
+@Composable
+private fun spoolTextFieldColors() = OutlinedTextFieldDefaults.colors(
+            focusedBorderColor = MaterialTheme.colorScheme.primary,
+            unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant,
+
+            focusedLabelColor = MaterialTheme.colorScheme.primary,
+            unfocusedLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
+
+            cursorColor = MaterialTheme.colorScheme.primary,
+
+            focusedLeadingIconColor = MaterialTheme.colorScheme.primary,
+            unfocusedLeadingIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+
+            focusedTrailingIconColor = MaterialTheme.colorScheme.primary,
+            unfocusedTrailingIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+
+            focusedTextColor = MaterialTheme.colorScheme.onSurface,
+            unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
+
+            errorLeadingIconColor = MaterialTheme.colorScheme.error,
+            errorTrailingIconColor = MaterialTheme.colorScheme.error
+        )
+
+
 // Outlined Button
 @Composable
 fun SpoolOutlinedTextField(
@@ -178,27 +227,62 @@ fun SpoolOutlinedTextField(
         },
         keyboardOptions = keyboardOptions,
         keyboardActions = keyboardActions,
-        colors = OutlinedTextFieldDefaults.colors(
-            focusedBorderColor = MaterialTheme.colorScheme.primary,
-            unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant,
+        colors = spoolTextFieldColors()
+    )
+}
 
-            focusedLabelColor = MaterialTheme.colorScheme.primary,
-            unfocusedLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
-
-            cursorColor = MaterialTheme.colorScheme.primary,
-
-            focusedLeadingIconColor = MaterialTheme.colorScheme.primary,
-            unfocusedLeadingIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
-
-            focusedTrailingIconColor = MaterialTheme.colorScheme.primary,
-            unfocusedTrailingIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
-
-            focusedTextColor = MaterialTheme.colorScheme.onSurface,
-            unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
-
-            errorLeadingIconColor = MaterialTheme.colorScheme.error,
-            errorTrailingIconColor = MaterialTheme.colorScheme.error
-        )
+// Outlined Button
+@Composable
+fun SpoolOutlinedTextField(
+    value: TextFieldValue,
+    onValueChange: (TextFieldValue) -> Unit,
+    label: String,
+    modifier: Modifier = Modifier,
+    placeholder: String = "",
+    isError: Boolean = false,
+    leadingIcon: ImageVector,
+    trailingIcon: ImageVector? = null,
+    singleLine: Boolean = true,
+    supportingText: String? = "",
+    keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
+    keyboardActions: KeyboardActions = KeyboardActions.Default
+) {
+    OutlinedTextField(
+        value = value,
+        onValueChange = onValueChange,
+        label = { Text(label) },
+        placeholder = { Text(placeholder, color = Color.Gray) },
+        modifier = modifier.fillMaxWidth(),
+        shape = MaterialTheme.shapes.medium,
+        singleLine = singleLine,
+        isError = isError,
+        supportingText = {
+            if (isError) {
+                if (supportingText != null) {
+                    Text(
+                        text = supportingText,
+                        color = MaterialTheme.colorScheme.error
+                    )
+                }
+            }
+        },
+        leadingIcon = {
+            Icon(
+                imageVector = leadingIcon,
+                contentDescription = null
+            )
+        },
+        trailingIcon = {
+            if (trailingIcon != null) {
+                Icon(
+                    imageVector = trailingIcon,
+                    contentDescription = null
+                )
+            }
+        },
+        keyboardOptions = keyboardOptions,
+        keyboardActions = keyboardActions,
+        colors = spoolTextFieldColors()
     )
 }
 

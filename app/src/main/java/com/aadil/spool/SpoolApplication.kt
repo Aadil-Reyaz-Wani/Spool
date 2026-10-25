@@ -8,6 +8,7 @@ import com.aadil.spool.feature.details.di.detailsModule
 import com.aadil.spool.feature.entry.di.entryModule
 import com.aadil.spool.feature.history.di.historyModule
 import com.aadil.spool.feature.settings.di.settingsModule
+import com.aadil.spool.notifications.androidNotificationsModule
 import org.koin.android.ext.koin.androidContext
 import org.koin.android.ext.koin.androidLogger
 import org.koin.core.context.startKoin
@@ -21,6 +22,7 @@ class SpoolApplication : Application() {
             modules(
                 platformDatabaseModule,
                 dataModule,
+                androidNotificationsModule,
                 dashboardModule,
                 detailsModule,
                 entryModule,

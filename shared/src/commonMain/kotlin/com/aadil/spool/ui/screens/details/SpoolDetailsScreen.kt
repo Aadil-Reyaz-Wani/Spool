@@ -25,6 +25,7 @@ import androidx.compose.material.icons.outlined.Apps
 import androidx.compose.material.icons.outlined.Bathtub
 import androidx.compose.material.icons.outlined.DeleteOutline
 import androidx.compose.material.icons.outlined.DeviceThermostat
+import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material.icons.outlined.Print
 import androidx.compose.material.icons.outlined.Scale
 import androidx.compose.material.icons.outlined.Thermostat
@@ -57,6 +58,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import spool.shared.generated.resources.*
 import com.aadil.spool.core.model.MoistureLevel
+import com.aadil.spool.ui.components.SpoolIconActionButton
 import com.aadil.spool.core.model.SpoolLists
 import com.aadil.spool.core.model.moistureVerdict
 import com.aadil.spool.feature.details.PrintObjectUiState
@@ -96,13 +98,21 @@ fun SpoolDetailsScreen(
     onWeighNow: (Double, Double) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    var showAlertSheet by rememberSaveable { mutableStateOf(false) }
     Scaffold(
         modifier = modifier,
         topBar = {
             SpoolAppBar(
                 title = stringResource(Res.string.spool_details),
                 navigateUp = navigateUp,
-                canNavigateBack = true
+                canNavigateBack = true,
+                actions = {
+                    SpoolIconActionButton(
+                        icon = Icons.Outlined.Notifications,
+                        contentDescription = stringResource(Res.string.low_stock_alerts),
+                        onClick = { showAlertSheet = true },
+                    )
+                }
             )
         }
     ) { paddingValues ->
@@ -134,13 +144,21 @@ fun SpoolDetailsScreen(
             onPrintHistoryClick = onPrintHistoryClick,
             onMarkAsDried = onMarkAsDried,
             onWeighNow = onWeighNow,
+            spoolId = spoolDetails.id,
             modifier = Modifier.padding(paddingValues = paddingValues)
+        )
+
+        LowStockAlertSheet(
+            spoolId = spoolDetails.id,
+            showSheet = showAlertSheet,
+            onDismiss = { showAlertSheet = false }
         )
     }
 }
 
 @Composable
 fun DetailsScreen(
+    spoolId: Int,
     totalWeight: Double,
     currentWeight: Double,
     colorHex: Long,
@@ -284,6 +302,7 @@ fun DetailsScreen(
 @Composable
 fun DetailsScreenPreview() {
     DetailsScreen(
+        spoolId = 1,
         totalWeight = 1000.0,
         currentWeight = 23.0,
         colorHex = 0xFF4CAF50,
