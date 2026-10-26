@@ -3,12 +3,10 @@ package com.aadil.spool.core.database
 import android.content.Context
 import android.database.sqlite.SQLiteDatabase
 import androidx.room.Room
-import androidx.sqlite.driver.bundled.BundledSQLiteDriver
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.aadil.spool.data.SpoolDatabase
-import com.aadil.spool.data.entity.Filament
-import com.aadil.spool.data.entity.UsageLog
+import com.aadil.spool.data.getSpoolDatabase
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
@@ -83,7 +81,7 @@ class MigrationTest {
             """.trimIndent()
         )
         legacyDb.execSQL(
-            "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'mock_hash')"
+            "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '1d3a8a111104259d56fa28ebe6b484ce')"
         )
 
         // Insert Legacy Filament Record
@@ -101,15 +99,14 @@ class MigrationTest {
             VALUES (100, 1, 'Benchy Test', 15.5, 1700000001000, 0, 0.46)
             """.trimIndent()
         )
+        legacyDb.version = 14
         legacyDb.close()
 
         // 2. Open with Room 2.7.0+ KMP Builder
-        val kmpDatabase = Room.databaseBuilder<SpoolDatabase>(
+        val kmpDatabase = getSpoolDatabase(Room.databaseBuilder<SpoolDatabase>(
             context = context,
             name = dbFile.absolutePath
-        ).setDriver(BundledSQLiteDriver())
-            .fallbackToDestructiveMigration() // Safe fallback if hash mismatch in test, but schema matches 100%
-            .build()
+        ))
 
         val dao = kmpDatabase.spoolDao()
 

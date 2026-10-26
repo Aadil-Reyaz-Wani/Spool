@@ -2,10 +2,14 @@ package com.aadil.spool.data.entity
 
 import androidx.room.ColumnInfo
 import androidx.room.Entity
+import androidx.room.Index
 import androidx.room.PrimaryKey
 import com.aadil.spool.core.model.currentTimeMillis
+import kotlin.uuid.ExperimentalUuidApi
+import kotlin.uuid.Uuid
 
-@Entity("filaments")
+@OptIn(ExperimentalUuidApi::class)
+@Entity(tableName = "filaments", indices = [Index(value = ["uuid"], unique = true)])
 data class Filament(
     @PrimaryKey(autoGenerate = true)
     val id: Int = 0,
@@ -36,5 +40,6 @@ data class Filament(
     @ColumnInfo(name = "last_weighed_tare_grams")
     val lastWeighedTareGrams: Double? = null,
     @ColumnInfo(name = "last_dried_at")
-    val lastDriedAt: Long? = null
+    val lastDriedAt: Long? = null,
+    val uuid: String = Uuid.random().toString()
 )

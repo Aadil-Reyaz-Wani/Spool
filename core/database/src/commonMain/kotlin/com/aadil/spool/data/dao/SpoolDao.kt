@@ -4,7 +4,6 @@ import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy.Companion.IGNORE
-import androidx.room.OnConflictStrategy.Companion.REPLACE
 import androidx.room.Query
 import androidx.room.Transaction
 import androidx.room.Update
@@ -62,7 +61,8 @@ interface SpoolDao {
     fun getSpoolsByColorHex(colorHex: Long): Flow<List<Filament>>
 
     // Usage Log - Print History
-    @Insert(onConflict = REPLACE)
+    // A duplicate UUID must not replace and delete an existing history record.
+    @Insert
     suspend fun insertUsageLog(log: UsageLog)
 
     @Delete

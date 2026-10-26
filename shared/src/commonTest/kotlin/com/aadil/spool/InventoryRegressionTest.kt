@@ -173,6 +173,8 @@ class InventoryRegressionTest {
         assertEquals(50.0, repo.logs.value.single().gramsUsed)
         assertEquals(10.0, repo.logs.value.single().pricePerPrint)
         assertEquals("Edited", repo.logs.value.single().title)
+        assertEquals(log.uuid, repo.logs.value.single().uuid)
+        assertEquals(log.timestamp, repo.logs.value.single().timestamp)
         assertNull(vm.isError.value)
     }
 

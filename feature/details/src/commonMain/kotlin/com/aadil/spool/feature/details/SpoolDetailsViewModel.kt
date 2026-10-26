@@ -24,7 +24,8 @@ data class PrintObjectUiState(
     val spoolId: Int = 0,
     val gramsUsed: String = "",
     val printTitle: String = "",
-    val isFailed: Boolean = false
+    val isFailed: Boolean = false,
+    val existingLog: UsageLog? = null
 )
 
 open class SpoolDetailsViewModel(
@@ -156,14 +157,6 @@ open class SpoolDetailsViewModel(
     }
 
     fun prepareEditLog(log: UsageLog) {
-        _printObjectUiState.update {
-            it.copy(
-                id = log.id,
-                spoolId = log.spoolId,
-                gramsUsed = log.gramsUsed.toString(),
-                printTitle = log.title,
-                isFailed = log.isFailure
-            )
-        }
+        _printObjectUiState.value = log.toPrintObjectUiState()
     }
 }

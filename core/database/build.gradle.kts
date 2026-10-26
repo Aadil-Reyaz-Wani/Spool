@@ -27,6 +27,10 @@ kotlin {
     iosSimulatorArm64()
 
     sourceSets {
+        commonTest.dependencies {
+            implementation(libs.kotlin.test)
+            implementation(libs.kotlinx.serialization.json)
+        }
         commonMain.dependencies {
             api(project(":core:model"))
             api(libs.koin.core)
@@ -44,6 +48,10 @@ kotlin {
             }
         }
     }
+}
+
+tasks.withType<org.jetbrains.kotlin.gradle.targets.native.tasks.KotlinNativeSimulatorTest>().configureEach {
+    environment("SIMCTL_CHILD_SPOOL_SCHEMA_DIR", layout.projectDirectory.dir("schemas").asFile.absolutePath)
 }
 
 room {
