@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
@@ -85,20 +86,17 @@ open class SpoolDetailsViewModel(
         val currentState = _printObjectUiState.value
         val parsedDeductedWeight = inputWeight.toDoubleOrNull() ?: 0.0
 
-        if (parsedDeductedWeight <= 0 || currentState.printTitle.isBlank()) return
-
-        val filament = spoolDetails.value
-        val pricePerGram = if (filament.totalWeight > 0) filament.price / filament.totalWeight else 0.0
-        val totalCost = pricePerGram * parsedDeductedWeight
-
-        val newUsageLog = currentState.toUsageLog().copy(
-            id = currentState.id,
-            spoolId = id,
-            pricePerPrint = totalCost
-        )
+        if (!parsedDeductedWeight.isFinite() || parsedDeductedWeight <= 0 || currentState.printTitle.isBlank()) return
 
         viewModelScope.launch {
             try {
+                val filament = spoolRepository.getSpoolStream(id).first() ?: return@launch
+                val pricePerGram = if (filament.totalWeight > 0) filament.price / filament.totalWeight else 0.0
+                val newUsageLog = currentState.toUsageLog().copy(
+                    spoolId = id,
+                    gramsUsed = parsedDeductedWeight,
+                    pricePerPrint = pricePerGram * parsedDeductedWeight,
+                )
                 if (currentState.id == 0) {
                     val newCurrentWeight = filament.currentWeight - parsedDeductedWeight
                     if (newCurrentWeight < 0) {

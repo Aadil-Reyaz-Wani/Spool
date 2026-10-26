@@ -108,7 +108,7 @@ fun PrintHistoryScreen(
                         ),
                         onGramsUsedValueChange = onGramsUsedValueChange,
                         onPrintTitleValueChange = onPrintTitleValueChange,
-                        onConfirm = { onConfirm(log.spoolId, log.gramsUsed.toString()) },
+                        onConfirm = { weight -> onConfirm(log.spoolId, weight) },
                         onCheckedChange = onCheckedChange,
                         isPrintErrorState = isPrintErrorState,
                         selectedCurrency = selectedCurrency

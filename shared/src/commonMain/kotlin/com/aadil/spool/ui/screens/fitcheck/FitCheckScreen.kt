@@ -1,6 +1,5 @@
 package com.aadil.spool.ui.screens.fitcheck
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -14,7 +13,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.ChevronRight
 import androidx.compose.material.icons.outlined.Scale
 import androidx.compose.material.icons.outlined.Search
@@ -22,7 +20,6 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -38,13 +35,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
-import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import com.aadil.spool.data.entity.Filament
+import com.aadil.spool.feature.dashboard.FitCheckResult
+import com.aadil.spool.feature.dashboard.FitCheckUiState
 import com.aadil.spool.ui.common.SpoolAppBar
 import com.aadil.spool.ui.components.SpoolButton
 import com.aadil.spool.ui.components.SpoolOutlinedTextField
@@ -60,36 +56,19 @@ import spool.shared.generated.resources.fit_check_na
 import spool.shared.generated.resources.fit_check_no_match
 import spool.shared.generated.resources.fit_check_results
 import spool.shared.generated.resources.fit_check_subtitle
-import kotlin.math.round
 
-
-data class FitCheckResult(
-    val spool: Filament,
-    val fits: Boolean,
-    val excess: Double,
-)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FitCheckScreen(
     gramsNeededInitial: Double = 0.0,
-    listOfSpools: List<Filament>,
+    uiState: FitCheckUiState,
+    onGramsChange: (String) -> Unit,
+    onCheck: () -> Unit,
     navigateUp: () -> Unit,
     onSpoolClick: (Int) -> Unit = {},
 ) {
-    var gramsValue by rememberSaveable(stateSaver = TextFieldValue.Saver) {
-        mutableStateOf(
-            if (gramsNeededInitial > 0.0) {
-                val text = gramsNeededInitial.toString()
-                TextFieldValue(text = text, selection = TextRange(text.length))
-            } else {
-                TextFieldValue("")
-            }
-        )
-    }
     var hasAutoFocused by rememberSaveable { mutableStateOf(false) }
-    var results by rememberSaveable { mutableStateOf<List<FitCheckResult>>(emptyList()) }
-    var hasChecked by rememberSaveable { mutableStateOf(gramsNeededInitial > 0.0) }
     val keyboardController = LocalSoftwareKeyboardController.current
     val focusRequester = remember { FocusRequester() }
 
@@ -100,34 +79,6 @@ fun FitCheckScreen(
             keyboardController?.show()
         } else if (gramsNeededInitial > 0.0) {
             hasAutoFocused = true
-        }
-    }
-
-    fun runCheck() {
-        keyboardController?.hide()
-        val needed = gramsValue.text.toDoubleOrNull() ?: 0.0
-        if (needed <= 0.0) {
-            results = emptyList()
-            hasChecked = false
-            return
-        }
-        val all = listOfSpools.map { spool ->
-            FitCheckResult(
-                spool = spool,
-                fits = spool.currentWeight >= needed,
-                excess = spool.currentWeight - needed,
-            )
-        }
-        results = all.sortedWith(
-            compareByDescending<FitCheckResult> { it.fits }
-                .thenBy { if (it.fits) it.excess else -it.excess }
-        )
-        hasChecked = true
-    }
-
-    LaunchedEffect(gramsNeededInitial) {
-        if (gramsNeededInitial > 0.0) {
-            runCheck()
         }
     }
 
@@ -160,8 +111,8 @@ fun FitCheckScreen(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         SpoolOutlinedTextField(
-                            value = gramsValue,
-                            onValueChange = { gramsValue = it },
+                            value = uiState.gramsText,
+                            onValueChange = onGramsChange,
                             label = stringResource(Res.string.fit_check_grams_needed),
                             placeholder = stringResource(Res.string.fit_check_grams_needed),
                             modifier = Modifier.weight(1f).focusRequester(focusRequester),
@@ -172,15 +123,18 @@ fun FitCheckScreen(
                     SpoolButton(
                         text = stringResource(Res.string.fit_check_check),
                         icon = Icons.Outlined.Search,
-                        onClick = { runCheck() },
+                        onClick = {
+                            keyboardController?.hide()
+                            onCheck()
+                        },
                         modifier = Modifier.fillMaxWidth()
                     )
                 }
             }
 
-            if (hasChecked) {
-                val fitsList = results.filter { it.fits }
-                val noFits = results.filter { !it.fits }
+            if (uiState.checkedGrams > 0.0) {
+                val fitsList = uiState.results.filter { it.fits }
+                val noFits = uiState.results.filter { !it.fits }
                 if (fitsList.isNotEmpty()) {
                     item {
                         Text(
@@ -190,7 +144,7 @@ fun FitCheckScreen(
                         )
                     }
                     items(fitsList) { result ->
-                        FitCheckCard(result = result, gramsText = gramsValue.text, onSpoolClick = onSpoolClick)
+                        FitCheckCard(result = result, gramsText = uiState.checkedGrams.toString(), onSpoolClick = onSpoolClick)
                     }
                 }
                 if (noFits.isNotEmpty()) {
@@ -202,7 +156,7 @@ fun FitCheckScreen(
                         )
                     }
                     items(noFits.take(5)) { result ->
-                        FitCheckCard(result = result, gramsText = gramsValue.text, onSpoolClick = onSpoolClick)
+                        FitCheckCard(result = result, gramsText = uiState.checkedGrams.toString(), onSpoolClick = onSpoolClick)
                     }
                 }
             }
