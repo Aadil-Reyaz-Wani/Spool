@@ -2,6 +2,7 @@ package com.aadil.spool
 
 import android.app.Application
 import com.aadil.spool.core.data.di.dataModule
+import com.aadil.spool.core.network.di.networkModule
 import com.aadil.spool.data.di.platformDatabaseModule
 import com.aadil.spool.feature.dashboard.di.dashboardModule
 import com.aadil.spool.feature.details.di.detailsModule
@@ -22,6 +23,7 @@ class SpoolApplication : Application() {
             modules(
                 platformDatabaseModule,
                 dataModule,
+                networkModule,
                 androidNotificationsModule,
                 dashboardModule,
                 detailsModule,

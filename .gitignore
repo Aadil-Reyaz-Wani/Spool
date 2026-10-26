@@ -1,6 +1,7 @@
 *.iml
 **/.gradle/
 /local.properties
+/supabase.local.properties
 /.idea/caches
 /.idea/libraries
 /.idea/modules.xml

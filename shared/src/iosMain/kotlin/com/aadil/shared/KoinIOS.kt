@@ -1,6 +1,7 @@
 package com.aadil.shared
 
 import com.aadil.spool.core.data.di.dataModule
+import com.aadil.spool.core.network.di.networkModule
 import com.aadil.spool.data.di.platformDatabaseModule
 import com.aadil.spool.feature.dashboard.di.dashboardModule
 import com.aadil.spool.feature.details.di.detailsModule
@@ -15,6 +16,7 @@ fun startKoinIOS() {
         modules(
             platformDatabaseModule,
             dataModule,
+            networkModule,
             iosNotificationsModule,
             dashboardModule,
             detailsModule,
