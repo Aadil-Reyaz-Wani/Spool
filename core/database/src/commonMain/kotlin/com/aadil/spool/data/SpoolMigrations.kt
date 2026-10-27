@@ -71,6 +71,14 @@ val MIGRATION_15_16 = object : Migration(15, 16) {
     }
 }
 
+val MIGRATION_16_17 = object : Migration(16, 17) {
+    override fun migrate(connection: SQLiteConnection) {
+        // ALTER keeps IDs, UUIDs, child rows and sqlite_sequence high-water marks intact.
+        connection.execSQL("ALTER TABLE `filaments` ADD COLUMN `owner_id` TEXT NOT NULL DEFAULT ''")
+        connection.execSQL("CREATE INDEX `index_filaments_owner_id` ON `filaments` (`owner_id`)")
+    }
+}
+
 private fun SQLiteConnection.sequence(table: String): Long =
     prepare("SELECT seq FROM sqlite_sequence WHERE name = ?").use {
         it.bindText(1, table)

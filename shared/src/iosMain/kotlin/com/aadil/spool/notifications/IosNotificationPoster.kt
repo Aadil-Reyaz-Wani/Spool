@@ -14,7 +14,12 @@ import org.koin.dsl.module
 
 // ponytail: no BGTaskScheduler background refresh on iOS — checks run when the app opens;
 // add a BGAppRefreshTask in AppDelegate if background checks are ever needed.
-class IosNotificationPoster : NotificationPoster {
+class IosNotificationPoster : NotificationPoster, com.aadil.spool.core.data.repository.InventoryNotifications {
+
+    override fun clearInventoryNotifications() {
+        center.removeAllPendingNotificationRequests()
+        center.removeAllDeliveredNotifications()
+    }
 
     private val center = UNUserNotificationCenter.currentNotificationCenter()
 
@@ -70,5 +75,7 @@ class IosNotificationPoster : NotificationPoster {
 }
 
 val iosNotificationsModule = module {
-    single<NotificationPoster> { IosNotificationPoster() }
+    single { IosNotificationPoster() }
+    single<NotificationPoster> { get<IosNotificationPoster>() }
+    single<com.aadil.spool.core.data.repository.InventoryNotifications> { get<IosNotificationPoster>() }
 }

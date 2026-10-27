@@ -9,7 +9,7 @@ import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
 @OptIn(ExperimentalUuidApi::class)
-@Entity(tableName = "filaments", indices = [Index(value = ["uuid"], unique = true)])
+@Entity(tableName = "filaments", indices = [Index(value = ["uuid"], unique = true), Index(value = ["owner_id"])])
 data class Filament(
     @PrimaryKey(autoGenerate = true)
     val id: Int = 0,
@@ -41,5 +41,7 @@ data class Filament(
     val lastWeighedTareGrams: Double? = null,
     @ColumnInfo(name = "last_dried_at")
     val lastDriedAt: Long? = null,
-    val uuid: String = Uuid.random().toString()
+    val uuid: String = Uuid.random().toString(),
+    @ColumnInfo(name = "owner_id", defaultValue = "''")
+    val ownerId: String = ""
 )

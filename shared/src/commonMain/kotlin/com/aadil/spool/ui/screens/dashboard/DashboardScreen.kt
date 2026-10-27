@@ -85,6 +85,7 @@ fun DashboardScreen(
     onHelpClick: () -> Unit,
     onFitCheckClick: () -> Unit = {},
     onAccountClick: () -> Unit = {},
+    guestInventoryCount: Int = 0,
 ) {
 
     var showBottomSheet by rememberSaveable { mutableStateOf(false) }
@@ -201,6 +202,7 @@ fun DashboardScreen(
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
+                if (guestInventoryCount > 0) GuestInventoryCard(guestInventoryCount, onAccountClick)
                 GhostCard(
                     text = stringResource(Res.string.dashboard_empty),
                     icon = Icons.Outlined.AddTask,
@@ -215,6 +217,9 @@ fun DashboardScreen(
                 columns = GridCells.Fixed(2),
                 contentPadding = PaddingValues(bottom = 72.dp)
             ) {
+                if (guestInventoryCount > 0) {
+                    item(span = { GridItemSpan(maxLineSpan) }) { GuestInventoryCard(guestInventoryCount, onAccountClick) }
+                }
                 items(
                     listOfSpools,
                     key = { it.id },
@@ -381,6 +386,20 @@ fun DropdownMenuWithDetails(
             text = { Text("Help") },
             trailingIcon = { Icon(Icons.AutoMirrored.Outlined.HelpOutline, contentDescription = null) },
             onClick = onHelpClick
+        )
+    }
+}
+@Composable
+private fun GuestInventoryCard(count: Int, onAccountClick: () -> Unit) {
+    Card(
+        onClick = onAccountClick,
+        modifier = Modifier.fillMaxWidth().padding(Dimens.PaddingMedium),
+        shape = MaterialTheme.shapes.medium,
+    ) {
+        Text(
+            text = stringResource(Res.string.inventory_guest_available, count),
+            modifier = Modifier.padding(Dimens.PaddingMedium),
+            style = MaterialTheme.typography.bodyLarge,
         )
     }
 }

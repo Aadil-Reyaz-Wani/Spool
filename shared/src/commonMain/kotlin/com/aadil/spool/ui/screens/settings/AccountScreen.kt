@@ -10,6 +10,9 @@ import androidx.compose.material.icons.outlined.Badge
 import androidx.compose.material.icons.outlined.Email
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.Logout
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.TextButton
+import androidx.compose.material.icons.outlined.MoveToInbox
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -55,6 +58,26 @@ fun AccountScreen(navigateUp: () -> Unit) {
                 if (state.session.needsConnection) {
                     Text(stringResource(Res.string.account_offline_session), style = MaterialTheme.typography.bodyMedium)
                 }
+                Text(stringResource(Res.string.inventory_account_local_notice), style = MaterialTheme.typography.bodyMedium)
+                if (state.guestSpoolCount > 0) {
+                    Text(stringResource(Res.string.inventory_guest_available, state.guestSpoolCount), style = MaterialTheme.typography.bodyMedium)
+                    SpoolButton(
+                        text = stringResource(Res.string.inventory_import_button),
+                        icon = Icons.Outlined.MoveToInbox,
+                        enabled = !state.busy,
+                        onClick = viewModel::requestGuestImport,
+                    )
+                }
+                if (state.confirmImport) {
+                    AlertDialog(
+                        onDismissRequest = viewModel::dismissGuestImport,
+                        shape = MaterialTheme.shapes.medium,
+                        title = { Text(stringResource(Res.string.inventory_import_title)) },
+                        text = { Text(stringResource(Res.string.inventory_import_confirmation, state.guestSpoolCount, account.email ?: account.name ?: stringResource(Res.string.inventory_this_account))) },
+                        confirmButton = { TextButton(onClick = viewModel::confirmGuestImport) { Text(stringResource(Res.string.inventory_import_button)) } },
+                        dismissButton = { TextButton(onClick = viewModel::dismissGuestImport) { Text(stringResource(Res.string.inventory_keep_guest)) } },
+                    )
+                }
                 SpoolButton(
                     text = stringResource(Res.string.account_sign_out),
                     icon = Icons.AutoMirrored.Outlined.Logout,
@@ -83,6 +106,7 @@ fun AccountScreen(navigateUp: () -> Unit) {
                         AccountError.SignIn -> Res.string.account_sign_in_error
                         AccountError.Session -> Res.string.account_session_error
                         AccountError.SignOut -> Res.string.account_sign_out_error
+                        AccountError.Import -> Res.string.inventory_import_error
                     }),
                     color = MaterialTheme.colorScheme.error,
                     style = MaterialTheme.typography.bodyMedium,

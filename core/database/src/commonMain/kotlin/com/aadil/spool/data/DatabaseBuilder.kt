@@ -9,7 +9,7 @@ expect class SpoolDatabaseBuilder {
 
 fun getSpoolDatabase(builder: RoomDatabase.Builder<SpoolDatabase>): SpoolDatabase {
     return builder
-        .addMigrations(MIGRATION_15_16)
+        .addMigrations(MIGRATION_15_16, MIGRATION_16_17)
         .setDriver(BundledSQLiteDriver())
         .build()
 }

@@ -43,9 +43,11 @@ import com.aadil.spool.feature.settings.SpoolSettingsViewModel
 import com.aadil.spool.ui.screens.splash.SplashScreen
 import com.mikepenz.aboutlibraries.ui.compose.m3.LibrariesContainer
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.first
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 import com.aadil.spool.core.data.repository.NotificationPreferencesRepository
+import com.aadil.spool.core.data.repository.InventorySession
 import com.aadil.spool.core.data.repository.SpoolRepository
 import com.aadil.spool.notifications.NotificationPoster
 import com.aadil.spool.notifications.runLowStockCheck
@@ -76,6 +78,9 @@ fun MySpoolApp(modifier: Modifier = Modifier, initialSpoolId: Int? = null) {
 
     // Print History
     val spoolPrintUsageHistoryDetails by printHistoryViewModel.spoolPrintUsageHistoryDetails.collectAsStateWithLifecycle()
+
+    val inventorySession = koinInject<InventorySession>()
+    val guestCount by inventorySession.guestSpoolCount.collectAsStateWithLifecycle(initialValue = 0)
 
     // Settings
     val selectedCurrency by spoolSettingsViewModel.selectedCurrency.collectAsStateWithLifecycle()
@@ -131,7 +136,7 @@ fun MySpoolApp(modifier: Modifier = Modifier, initialSpoolId: Int? = null) {
     // the splash transition handles that case.
     LaunchedEffect(initialSpoolId) {
         val id = initialSpoolId ?: return@LaunchedEffect
-        if (backStack.lastOrNull() !is Routes.Splash) {
+        if (backStack.lastOrNull() !is Routes.Splash && spoolRepository.getSpool(id).first() != null) {
             backStack.add(Routes.SpoolDetails(id))
         }
     }
@@ -150,7 +155,7 @@ fun MySpoolApp(modifier: Modifier = Modifier, initialSpoolId: Int? = null) {
                 SplashScreen()
                 LaunchedEffect(Unit) {
                     delay(1500L)
-                    if (initialSpoolId != null) {
+                    if (initialSpoolId != null && spoolRepository.getSpool(initialSpoolId).first() != null) {
                         backStack.add(Routes.SpoolDetails(initialSpoolId))
                     } else {
                         backStack.add(Routes.Dashboard)
@@ -170,6 +175,7 @@ fun MySpoolApp(modifier: Modifier = Modifier, initialSpoolId: Int? = null) {
                     onCardClick = { id ->
                         backStack.add(Routes.SpoolDetails(id))
                     },
+                    guestInventoryCount = if (inventorySession.scope.value?.ownerId?.isNotEmpty() == true) guestCount else 0,
                     listOfSpools = listOfSpools,
                     listOfUniqueBrandStrings = listOfUniqueBrandStrings,
                     listOfUniqueMaterialTypeStrings = listOfUniqueMaterialTypeStrings,

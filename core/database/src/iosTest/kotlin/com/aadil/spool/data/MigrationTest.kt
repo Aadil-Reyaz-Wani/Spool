@@ -36,7 +36,7 @@ class MigrationTest {
     private val driver = BundledSQLiteDriver()
 
     @Test fun everySupportedVersionPreservesInventoryAndReopenKeepsIdentities() = runBlocking {
-        for (version in 10..15) withDatabaseFile { path ->
+        for (version in 10..16) withDatabaseFile { path ->
             createLegacy(path, version, populated = true)
             val before = snapshot(path, version)
             val database = open(path)
@@ -47,6 +47,7 @@ class MigrationTest {
                 logs = spools.flatMap { database.spoolDao().getSpoolUsage(it.id).first() }.sortedBy { it.id }
                 assertEquals(listOf(7, 19), spools.map { it.id }, "Version $version")
                 assertEquals(if (version == 10) emptyList() else listOf(31, 32, 33), logs.map { it.id })
+                spools.forEach { assertEquals("", it.ownerId, "Existing inventory remains guest-owned") }
                 val uuids = spools.map { it.uuid } + logs.map { it.uuid }
                 uuids.forEach(::assertUuid)
                 assertEquals(uuids.size, uuids.toSet().size)
@@ -64,7 +65,7 @@ class MigrationTest {
             }
             assertEquals(before, snapshot(path, version), "All pre-existing fields from version $version")
             driver.open(path).use {
-                assertEquals(listOf(listOf("16")), it.rows("PRAGMA user_version"))
+                assertEquals(listOf(listOf("17")), it.rows("PRAGMA user_version"))
                 assertTrue(it.rows("PRAGMA foreign_key_check").isEmpty())
                 assertEquals(listOf(listOf("ok")), it.rows("PRAGMA integrity_check"))
             }
@@ -229,10 +230,19 @@ class MigrationTest {
                 if (populated) {
                     val columns = entity.jsonObject["fields"]!!.jsonArray.map { it.jsonObject["columnName"]!!.jsonPrimitive.content }
                     val fixtures = if (table == "filaments") spoolRows else logRows
-                    fixtures.forEach { row ->
+                    fixtures.forEach { fixture ->
+                        val row = fixture + ("uuid" to "'00000000-0000-4000-8000-${fixture.getValue("id").padStart(12, '0')}'")
                         connection.execSQL("INSERT INTO `$table` (${columns.joinToString { "`$it`" }}) VALUES (${columns.joinToString { row.getValue(it) }})")
                     }
                     connection.execSQL("UPDATE sqlite_sequence SET seq = ${if (table == "filaments") 900 else 1200} WHERE name = '$table'")
+                }
+            }
+            if (version >= 16) {
+                for (entity in schema["entities"]!!.jsonArray) {
+                    val table = entity.jsonObject["tableName"]!!.jsonPrimitive.content
+                    entity.jsonObject["indices"]!!.jsonArray.forEach { index ->
+                        connection.execSQL(index.jsonObject["createSql"]!!.jsonPrimitive.content.replace("\${TABLE_NAME}", table))
+                    }
                 }
             }
             schema["setupQueries"]!!.jsonArray.forEach { connection.execSQL(it.jsonPrimitive.content) }

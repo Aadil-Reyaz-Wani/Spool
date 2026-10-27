@@ -7,6 +7,8 @@ import com.aadil.spool.core.network.SpoolAccount
 import com.aadil.spool.feature.settings.AccountError
 import com.aadil.spool.feature.settings.AccountViewModel
 import com.aadil.spool.feature.settings.GoogleSignInCancelled
+import androidx.lifecycle.ViewModelStore
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -82,5 +84,28 @@ class AccountViewModelTest {
         assertTrue(cleared)
         assertEquals(1, repository.signOuts)
         assertNull(vm.state.value.session.account)
+    }
+    @Test
+    fun signOutFinishesProviderCleanupAfterInventoryDisposesTheViewModel() = runTest {
+        Dispatchers.setMain(kotlinx.coroutines.test.StandardTestDispatcher(testScheduler))
+        val vm = AccountViewModel(Repository())
+        val store = ViewModelStore()
+        store.put("account", vm)
+        runCurrent()
+        val started = CompletableDeferred<Unit>()
+        val finish = CompletableDeferred<Unit>()
+        var cleared = false
+        vm.signOut {
+            started.complete(Unit)
+            finish.await()
+            cleared = true
+        }
+        runCurrent()
+        assertTrue(started.isCompleted)
+        store.clear()
+        runCurrent()
+        finish.complete(Unit)
+        runCurrent()
+        assertTrue(cleared)
     }
 }
