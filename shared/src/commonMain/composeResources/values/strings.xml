@@ -197,4 +197,19 @@
     <string name="entry_load_failed">Unable to load this spool. Go back and try again.</string>
     <string name="entry_save_failed">Could not save the spool. Please try again.</string>
     <string name="entry_saving">Saving...</string>
+    <string name="account_title">Account</string>
+    <string name="account_local_inventory_notice">Your inventory stays on this device. Sign-in is optional. Cloud backup and sync are not available yet.</string>
+    <string name="account_name">Name</string>
+    <string name="account_email">Email</string>
+    <string name="account_name_unavailable">Google did not provide a name.</string>
+    <string name="account_email_unavailable">Email is unavailable.</string>
+    <string name="account_email_managed_by_google">Your email is managed by Google.</string>
+    <string name="account_offline_session">Your account is saved on this device. Connect to the internet to refresh your session.</string>
+    <string name="account_sign_in">Sign in with Google</string>
+    <string name="account_sign_out">Sign out</string>
+    <string name="account_ios_unavailable">Sign-in is not available on iOS yet. You can continue using your local inventory.</string>
+    <string name="account_sign_in_unavailable">Google sign-in is not available in this build. You can continue using your local inventory.</string>
+    <string name="account_sign_in_error">Could not sign in. Check your internet connection and try again.</string>
+    <string name="account_session_error">Could not restore your account. Your local inventory is still available.</string>
+    <string name="account_sign_out_error">Could not finish signing out. Please try again.</string>
 </resources>

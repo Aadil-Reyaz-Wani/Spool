@@ -28,6 +28,7 @@ import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.Paid
 import androidx.compose.material.icons.outlined.Wallet
 import androidx.compose.material.icons.outlined.Balance
+import androidx.compose.material.icons.outlined.ManageAccounts
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DropdownMenu
@@ -83,6 +84,7 @@ fun DashboardScreen(
     onAboutClick: () -> Unit,
     onHelpClick: () -> Unit,
     onFitCheckClick: () -> Unit = {},
+    onAccountClick: () -> Unit = {},
 ) {
 
     var showBottomSheet by rememberSaveable { mutableStateOf(false) }
@@ -122,6 +124,10 @@ fun DashboardScreen(
                         onHelpClick = {
                             onHelpClick()
                             isSettingsMenuExpanded = false
+                        },
+                        onAccountClick = {
+                            isSettingsMenuExpanded = false
+                            onAccountClick()
                         },
                         onFitCheckClick = onFitCheckClick
                     )
@@ -335,6 +341,7 @@ fun DropdownMenuWithDetails(
     onAboutClick: () -> Unit,
     onHelpClick: () -> Unit,
     onFitCheckClick: () -> Unit = {},
+    onAccountClick: () -> Unit = {},
 ) {
     DropdownMenu(
         expanded = expanded,
@@ -342,6 +349,11 @@ fun DropdownMenuWithDetails(
         modifier = Modifier
             .widthIn(min = Dimens.MenuBarWidth)
     ) {
+        DropdownMenuItem(
+            text = { Text(stringResource(Res.string.account_title)) },
+            trailingIcon = { Icon(Icons.Outlined.ManageAccounts, contentDescription = null) },
+            onClick = onAccountClick
+        )
         DropdownMenuItem(
             text = { Text(stringResource(Res.string.fit_check)) },
             trailingIcon = { Icon(Icons.Outlined.Balance, contentDescription = null) },

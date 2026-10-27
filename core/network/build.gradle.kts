@@ -18,6 +18,10 @@ val generateSupabaseConfig = tasks.register("generateSupabaseConfig") {
         val properties = Properties().apply { load(supabaseProperties.get().reader()) }
         val url = properties.getProperty("supabase.url", "").trim()
         val key = properties.getProperty("supabase.publishableKey", "").trim()
+        val googleClientId = properties.getProperty("google.webClientId", "").trim()
+        require(googleClientId.isEmpty() || googleClientId.matches(Regex("[A-Za-z0-9_-]+\\.apps\\.googleusercontent\\.com"))) {
+            "google.webClientId must be a Google OAuth Web client ID."
+        }
         // Reject unsafe values before they can be embedded in any mobile artifact.
         require(url.isEmpty() || url.matches(Regex("https://[A-Za-z0-9.-]+(?::443)?/?"))) {
             "supabase.url must be an HTTPS origin without credentials, paths, query or fragment."
@@ -34,6 +38,7 @@ val generateSupabaseConfig = tasks.register("generateSupabaseConfig") {
             internal object SupabaseBuildConfig {
                 const val URL = "$url"
                 const val PUBLISHABLE_KEY = "$key"
+                const val GOOGLE_WEB_CLIENT_ID = "$googleClientId"
             }
             """.trimIndent() + "\n"
         )

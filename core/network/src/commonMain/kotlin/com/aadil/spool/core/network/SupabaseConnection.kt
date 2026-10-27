@@ -2,6 +2,7 @@ package com.aadil.spool.core.network
 
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.annotations.SupabaseInternal
+import io.github.jan.supabase.auth.SessionManager
 import io.github.jan.supabase.auth.Auth
 import io.github.jan.supabase.auth.minimalConfig
 import io.github.jan.supabase.createSupabaseClient
@@ -22,10 +23,14 @@ sealed interface SupabaseConnectionResult {
 
 class SupabaseConnection internal constructor(
     private val configuration: SupabaseConfiguration,
+    private val sessionManager: SessionManager? = null,
+    private val setupAuthPlatform: Boolean = sessionManager != null,
     private val engineFactory: () -> HttpClientEngine = ::createSupabaseEngine,
 ) {
     private val engineDelegate = lazy(engineFactory)
     private val clientDelegate = lazy { createClient() }
+
+    internal val accountSessionsEnabled: Boolean get() = sessionManager != null
 
     /** Shared Auth/Storage client, or null when configuration is missing/invalid. */
     val client: SupabaseClient? by clientDelegate
@@ -72,9 +77,15 @@ class SupabaseConnection internal constructor(
                 followRedirects = false
             }
             install(Auth) {
-                // Session persistence and lifecycle behavior belong to the future sign-in flow.
                 minimalConfig()
                 autoSetupPlatform = false
+                this@SupabaseConnection.sessionManager?.let { manager ->
+                    this.sessionManager = manager
+                    autoLoadFromStorage = true
+                    autoSaveToStorage = true
+                    alwaysAutoRefresh = true
+                    autoSetupPlatform = setupAuthPlatform
+                }
             }
             install(Storage)
         }

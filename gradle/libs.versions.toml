@@ -38,6 +38,9 @@ ktor = "3.4.0"
 desugarJdkLibs = "2.1.5"
 
 [libraries]
+androidx-credentials = { module = "androidx.credentials:credentials", version = "1.6.0" }
+androidx-credentials-play-services-auth = { module = "androidx.credentials:credentials-play-services-auth", version = "1.6.0" }
+googleid = { module = "com.google.android.libraries.identity.googleid:googleid", version = "1.1.1" }
 supabase-auth = { module = "io.github.jan-tennert.supabase:auth-kt", version.ref = "supabase" }
 supabase-storage = { module = "io.github.jan-tennert.supabase:storage-kt", version.ref = "supabase" }
 ktor-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktor" }

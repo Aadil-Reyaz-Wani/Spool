@@ -3,6 +3,8 @@ package com.aadil.spool.ui.components
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.Image
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -70,7 +72,7 @@ import com.aadil.spool.ui.theme.Dimens
 fun SpoolButton(
     modifier: Modifier = Modifier,
     text: String,
-    icon: ImageVector,
+    icon: ImageVector? = null,
     contentDescription: String = "",
     onClick: () -> Unit,
     buttonContainerColor: Color = MaterialTheme.colorScheme.primary,
@@ -79,6 +81,7 @@ fun SpoolButton(
     hasBorder: Boolean = false,
     buttonDefaultElevation: Dp = 4.dp,
     buttonPressedElevation: Dp = 2.dp,
+    iconPainter: Painter? = null,
 ) {
     Button(
         onClick = onClick,
@@ -101,11 +104,14 @@ fun SpoolButton(
             color = MaterialTheme.colorScheme.primary
         ) else null
     ) {
-        Icon(
-            imageVector = icon,
-            contentDescription = contentDescription
-        )
-        Spacer(modifier = Modifier.width(Dimens.HeightOrWidth))
+        if (iconPainter != null) {
+            Image(painter = iconPainter, contentDescription = null, modifier = Modifier.size(Dimens.IconSmall))
+        } else if (icon != null) {
+            Icon(imageVector = icon, contentDescription = contentDescription)
+        }
+        if (iconPainter != null || icon != null) {
+            Spacer(modifier = Modifier.width(if (iconPainter != null) Dimens.PaddingSmall else Dimens.HeightOrWidth))
+        }
         Text(
             text = text,
             style = MaterialTheme.typography.labelLarge,

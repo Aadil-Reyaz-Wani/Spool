@@ -1,10 +1,21 @@
 package com.aadil.spool.core.network.di
 
+import com.aadil.spool.core.network.AccountRepository
+import com.aadil.spool.core.network.SupabaseAccountRepository
+import io.github.jan.supabase.auth.SessionManager
+import org.koin.core.module.Module
 import com.aadil.spool.core.network.SupabaseConfiguration
 import com.aadil.spool.core.network.SupabaseConnection
 import org.koin.dsl.module
 
+internal expect val platformNetworkModule: Module
+
 val networkModule = module {
+    includes(platformNetworkModule)
     single { SupabaseConfiguration.fromBuildConfig() }
-    single { SupabaseConnection(get()) }
+    single {
+        val configuration = get<SupabaseConfiguration>()
+        SupabaseConnection(configuration, sessionManager = if (configuration is SupabaseConfiguration.Configured) getOrNull<SessionManager>() else null)
+    }
+    single<AccountRepository> { SupabaseAccountRepository(get()) }
 }

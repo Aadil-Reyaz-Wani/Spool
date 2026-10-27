@@ -36,6 +36,7 @@ import com.aadil.spool.ui.screens.entry.SpoolEntryScreen
 import com.aadil.spool.feature.entry.SpoolEntryViewModel
 import com.aadil.spool.ui.screens.history.PrintHistoryScreen
 import com.aadil.spool.feature.history.PrintHistoryViewModel
+import com.aadil.spool.ui.screens.settings.AccountScreen
 import com.aadil.spool.ui.screens.settings.AboutScreen
 import com.aadil.spool.ui.screens.settings.HelpScreen
 import com.aadil.spool.feature.settings.SpoolSettingsViewModel
@@ -91,6 +92,7 @@ fun MySpoolApp(modifier: Modifier = Modifier, initialSpoolId: Int? = null) {
                     subclass(serializer = Routes.PrintHistory.serializer())
                     subclass(serializer = Routes.Filter.serializer())
                     subclass(serializer = Routes.About.serializer())
+                    subclass(serializer = Routes.Account.serializer())
                     subclass(serializer = Routes.OpenSourceLicenses.serializer())
                     subclass(serializer = Routes.Help.serializer())
                     subclass(serializer = Routes.FitCheck.serializer())
@@ -183,6 +185,7 @@ fun MySpoolApp(modifier: Modifier = Modifier, initialSpoolId: Int? = null) {
                     },
                     selectedOption = filterAppliedState.whichFilter,
                     selectedCurrency = selectedCurrency,
+                    onAccountClick = { backStack.add(Routes.Account) },
                     onAboutClick = {
                         backStack.add(Routes.About)
                     },
@@ -193,6 +196,10 @@ fun MySpoolApp(modifier: Modifier = Modifier, initialSpoolId: Int? = null) {
                         backStack.add(Routes.FitCheck())
                     }
                 )
+            }
+
+            entry<Routes.Account> {
+                AccountScreen(navigateUp = safePopBackStack)
             }
 
             // Entry Screen Entry

@@ -44,3 +44,6 @@ iosApp/Pods/
 .opencode/
 graphify-out/
 
+/.lavish/
+/SUPABASE.md
+/supabase.local.properties.example
