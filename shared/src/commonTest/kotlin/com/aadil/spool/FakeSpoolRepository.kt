@@ -34,6 +34,11 @@ internal class FakeSpoolRepository(initial: List<Filament> = emptyList()) : Spoo
         updateSpool(filament)
         updateAllUsageCosts(filament.id, filament.price / filament.totalWeight)
     }
+    override suspend fun updateSpoolFromDraft(filament: Filament, expected: Filament): Boolean {
+        if (spools.value.find { it.id == filament.id } != expected) return false
+        updateSpoolAndUsageCosts(filament)
+        return true
+    }
     override suspend fun deleteSpool(filament: Filament) { spools.value = spools.value.filterNot { it.id == filament.id } }
     override suspend fun getCurrentWeight(id: Int) = spools.value.first { it.id == id }.currentWeight
     override suspend fun updateCurrentWeight(id: Int, currentWeight: Double) {

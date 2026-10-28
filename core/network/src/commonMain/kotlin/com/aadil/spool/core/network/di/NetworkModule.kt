@@ -1,5 +1,7 @@
 package com.aadil.spool.core.network.di
 
+import com.aadil.spool.core.network.InventoryPullRemote
+import com.aadil.spool.core.network.SupabaseInventoryPullRemote
 import com.aadil.spool.core.network.InventoryUploadRemote
 import com.aadil.spool.core.network.SupabaseInventoryUploadRemote
 import com.aadil.spool.core.network.AccountRepository
@@ -19,6 +21,7 @@ val networkModule = module {
         val configuration = get<SupabaseConfiguration>()
         SupabaseConnection(configuration, sessionManager = if (configuration is SupabaseConfiguration.Configured) getOrNull<SessionManager>() else null)
     }
+    single<InventoryPullRemote> { SupabaseInventoryPullRemote(get()) }
     single<InventoryUploadRemote> { SupabaseInventoryUploadRemote(get()) }
     single<AccountRepository> { SupabaseAccountRepository(get()) }
 }

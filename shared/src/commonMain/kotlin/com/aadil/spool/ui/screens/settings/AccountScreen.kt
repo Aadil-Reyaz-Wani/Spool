@@ -85,7 +85,7 @@ fun AccountScreen(navigateUp: () -> Unit) {
                 SpoolButton(
                     text = stringResource(Res.string.inventory_upload_retry),
                     icon = Icons.Outlined.Refresh,
-                    enabled = upload.queue.ready > 0 && !state.busy && upload.mode != InventoryUploadMode.Uploading,
+                    enabled = !state.busy && upload.mode != InventoryUploadMode.Uploading && upload.mode != InventoryUploadMode.Checking,
                     onClick = viewModel::retryUploads,
                 )
                 if (state.guestSpoolCount > 0) {

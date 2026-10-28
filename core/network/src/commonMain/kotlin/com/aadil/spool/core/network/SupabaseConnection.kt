@@ -33,6 +33,9 @@ class SupabaseConnection internal constructor(
     internal val inventoryUploadUrl: String?
         get() = (configuration as? SupabaseConfiguration.Configured)?.url?.let { "$it/rest/v1/rpc/upload_inventory_batch" }
 
+    internal val inventoryPullUrl: String?
+        get() = (configuration as? SupabaseConfiguration.Configured)?.url?.let { "$it/rest/v1/rpc/pull_inventory" }
+
     internal val accountSessionsEnabled: Boolean get() = sessionManager != null
 
     /** Shared Auth/Storage client, or null when configuration is missing/invalid. */

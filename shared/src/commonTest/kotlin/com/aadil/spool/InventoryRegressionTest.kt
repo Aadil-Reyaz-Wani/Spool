@@ -287,4 +287,29 @@ class InventoryRegressionTest {
         assertFalse(vm.isLoading.value)
         assertEquals(0, repo.writes)
     }
+
+    @Test fun cloudChangeWhileEditingDoesNotGetOverwrittenAndDraftSurvivesRecreation() = runTest {
+        val repo = FakeSpoolRepository(listOf(testSpool()))
+        val saved = SavedStateHandle()
+        val vm = keep(SpoolEntryViewModel(repo, saved))
+        vm.loadSpool(7)
+        advanceUntilIdle()
+        vm.update { copy(brand = "Unsaved local brand") }
+        val remote = testSpool().copy(currentWeight = 500.0, note = "Another device")
+        repo.spools.value = listOf(remote)
+        vm.saveOrUpdateSpool(7)
+        advanceUntilIdle()
+        assertEquals(SpoolEntryError.CONCURRENT_UPDATE, vm.error.value)
+        assertEquals(remote, repo.spools.value.single())
+        assertEquals("Unsaved local brand", vm.spoolEntryUiState.value.brand)
+        assertFalse(vm.saveCompleted.value)
+        val recreated = keep(SpoolEntryViewModel(repo, restored(saved)))
+        recreated.loadSpool(7)
+        advanceUntilIdle()
+        recreated.saveOrUpdateSpool(7)
+        advanceUntilIdle()
+        assertEquals(SpoolEntryError.CONCURRENT_UPDATE, recreated.error.value)
+        assertEquals(remote, repo.spools.value.single())
+        assertEquals(0, repo.writes)
+    }
 }

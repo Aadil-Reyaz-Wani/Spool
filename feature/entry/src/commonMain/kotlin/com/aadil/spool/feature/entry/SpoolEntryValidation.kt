@@ -1,6 +1,6 @@
 package com.aadil.spool.feature.entry
 
-enum class SpoolEntryError { INVALID_INPUT, INVALID_RESTOCK, LOAD_FAILED, SAVE_FAILED }
+enum class SpoolEntryError { INVALID_INPUT, INVALID_RESTOCK, LOAD_FAILED, SAVE_FAILED, CONCURRENT_UPDATE }
 
 internal fun String.entryNumber(): Double? = trim().replace(',', '.').toDoubleOrNull()?.takeIf { it.isFinite() }
 private fun String.optionalNumber(): Double? = if (isBlank()) 0.0 else entryNumber()

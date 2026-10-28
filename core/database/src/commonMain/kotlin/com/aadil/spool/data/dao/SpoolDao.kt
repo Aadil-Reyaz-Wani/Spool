@@ -171,6 +171,14 @@ interface SpoolDao {
     }
 
     @Transaction
+    suspend fun updateOwnedSpoolFromDraft(ownerId: String, filament: Filament, expected: Filament): Boolean {
+        val stored = ownedSpool(ownerId, filament.id) ?: return false
+        if (stored != expected || filament.ownerId != ownerId || filament.uuid != stored.uuid) return false
+        updateSpoolAndUsageCosts(filament)
+        return true
+    }
+
+    @Transaction
     suspend fun deleteOwnedSpool(ownerId: String, filament: Filament) {
         val stored = ownedSpool(ownerId, filament.id) ?: return
         if (stored.uuid == filament.uuid) deleteSpool(stored)

@@ -45,6 +45,7 @@ class InventoryUploadCoordinator(
     private val uploader: InventoryUploader,
     private val accounts: AccountRepository,
     private val scheduler: InventoryUploadScheduler,
+    private val downloader: InventoryDownloader? = null,
     private val coroutineScope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Default),
 ) {
     private val mutableStatus = MutableStateFlow(InventoryUploadStatus())
@@ -92,7 +93,7 @@ class InventoryUploadCoordinator(
                                     backoff = (backoff * 2).coerceAtMost(300_000)
                                 }
                                 InventoryUploadResult.StaleScope -> return@collectLatest
-                                else -> { backoff = 30_000; signals.receive() }
+                                else -> { backoff = 30_000; withTimeoutOrNull(60_000) { signals.receive() } }
                             }
                         }
                     }
@@ -124,10 +125,19 @@ class InventoryUploadCoordinator(
         setMode(expected, InventoryUploadMode.Uploading)
         try {
             val result = withTimeoutOrNull(90_000) {
-                repeat(20) {
+                for (index in 0 until 20) {
                     when (val result = uploader.uploadNext(expected)) {
                         InventoryUploadResult.Applied -> Unit
-                        InventoryUploadResult.Conflict -> if (dao.nextSpool(expected.ownerId) == null) return@withTimeoutOrNull result
+                        InventoryUploadResult.Conflict -> if (dao.nextSpool(expected.ownerId) == null) break
+                        InventoryUploadResult.NoWork -> break
+                        else -> return@withTimeoutOrNull result
+                    }
+                }
+                if (dao.nextSpool(expected.ownerId) != null) return@withTimeoutOrNull InventoryUploadResult.RetryLater
+                if (downloader == null) return@withTimeoutOrNull InventoryUploadResult.NoWork
+                repeat(20) {
+                    when (val result = downloader.downloadNext(expected)) {
+                        InventoryUploadResult.Applied -> Unit
                         else -> return@withTimeoutOrNull result
                     }
                 }

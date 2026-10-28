@@ -17,6 +17,7 @@ interface SpoolRepository {
 
     suspend fun insertSpool(filament: Filament)
     suspend fun updateSpool(filament: Filament)
+    suspend fun updateSpoolFromDraft(filament: Filament, expected: Filament): Boolean
     suspend fun updateSpoolAndUsageCosts(filament: Filament)
     suspend fun deleteSpool(filament: Filament)
 
@@ -89,6 +90,7 @@ class DefaultSpoolRepository(
     override suspend fun insertSpool(filament: Filament) = write { spoolDao.insertOwnedSpool(ownerId, filament) }
     override suspend fun updateSpool(filament: Filament) = write { spoolDao.updateOwnedSpool(ownerId, filament, false) }
     override suspend fun updateSpoolAndUsageCosts(filament: Filament) = write { spoolDao.updateOwnedSpool(ownerId, filament, true) }
+    override suspend fun updateSpoolFromDraft(filament: Filament, expected: Filament): Boolean = active(false) { spoolDao.updateOwnedSpoolFromDraft(ownerId, filament, expected) }
     override suspend fun deleteSpool(filament: Filament) = write { spoolDao.deleteOwnedSpool(ownerId, filament) }
     override suspend fun getCurrentWeight(id: Int): Double = active(0.0) { spoolDao.ownedSpool(ownerId, id)?.currentWeight ?: 0.0 }
     override suspend fun updateCurrentWeight(id: Int, currentWeight: Double) = write { spoolDao.updateOwnedWeight(ownerId, id, currentWeight) }

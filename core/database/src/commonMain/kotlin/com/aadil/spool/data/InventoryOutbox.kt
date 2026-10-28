@@ -35,8 +35,13 @@ internal val inventoryOutboxCallback = object : RoomDatabase.Callback() {
 
 /** Triggers run in the writer's transaction, including bulk updates and foreign-key cascades. */
 internal fun installInventoryOutbox(connection: SQLiteConnection) {
+    connection.execSQL("CREATE TABLE IF NOT EXISTS inventory_remote_apply (owner_id TEXT NOT NULL PRIMARY KEY)")
     fun trigger(name: String, event: String, table: String, condition: String, body: String) {
-        connection.execSQL("CREATE TRIGGER IF NOT EXISTS $name $event ON $table WHEN $condition BEGIN $body END")
+        val owner = when (table) {
+            "filaments" -> if (event.contains("DELETE")) "OLD.owner_id" else "NEW.owner_id"
+            else -> "(SELECT owner_id FROM filaments WHERE id = " + (if (event.contains("DELETE")) "OLD" else "NEW") + ".spoolId)"
+        }
+        connection.execSQL("CREATE TRIGGER IF NOT EXISTS $name $event ON $table WHEN ($condition) AND NOT EXISTS (SELECT 1 FROM inventory_remote_apply WHERE owner_id = $owner) BEGIN $body END")
     }
     for (event in listOf("INSERT", "UPDATE")) {
         val importedHistory = if (event == "UPDATE") {

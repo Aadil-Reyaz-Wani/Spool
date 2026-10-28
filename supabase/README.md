@@ -1,7 +1,8 @@
 # Spool cloud database
 
 Versioned cloud migrations and rollback-only SQL tests. Room remains the app's
-source of data. Automatic uploads are connected; downloads and restore are not enabled yet.
+source of data. Automatic account-scoped uploads and downloads are connected.
+Conflict resolution and recovery UI are not enabled yet.
 
 ## Schema and access
 
@@ -97,7 +98,7 @@ one-aggregate protocol entry point. Guest scopes cannot upload. The transport
 captures one account/token pair, uses a 30-second timeout and never logs
 credentials, inventory or server bodies.
 
-Room schema 19 stores immutable upload batches, their exact operation IDs and the
+Room schema 20 stores immutable upload batches, their exact operation IDs and the
 last acknowledged server revision per account/spool. Preparation is transactional.
 Network waits never hold the inventory lock, so local saves remain available.
 Edits made during an upload stay queued for the next batch. A lost response,
@@ -117,25 +118,81 @@ Larger aggregates are rejected and kept queued until a future safe splitting
 protocol is available. Receipts and acknowledged deletion snapshots have no
 automatic expiry.
 
-## Next step
+## Downloads and restoration
 
-The scheduling change passed 84 automated tests, Android build/lint and shared
-iOS compilation. Eight new integration cases use real temporary Room databases
-and simulated network/OS scheduling. A requested focused Redmi Note 8 Pro pass
-also verified initial upload, offline edits/retry/restart, automatic reconnect,
-actual WorkManager upload while the launcher was foreground, pending sign-out
-warnings, and two-account isolation with pending work resuming on return.
-A throwaway spool and four prints were deleted through the app; cloud soft
-deletion uploaded successfully. Original 24 spools and 31 history records remain
-unchanged locally and in the cloud, with zero pending changes. UI action movement
-and cold deep-link Back navigation found during testing were fixed and rechecked.
-Phone conflict injection, iOS runtime and full app end-to-end tests were not run.
-This upload-only service is not completed cloud sync.
+Migration `20261028075451_inventory_pull` adds a private per-account transactional
+counter and coalesced aggregate change feed. Counter updates serialize on the
+account row until commit, avoiding gaps caused by timestamp/sequence allocation
+before a transaction commits. Feed positions roll back with failed writes.
+Existing live and soft-deleted aggregates are seeded without changing inventory.
+No feed/tombstone pruning is enabled.
 
-Downloads must avoid upload loops, persist pulled base revisions and use a cursor
-that handles transaction ordering. Server timestamps alone are insufficient.
-Restore/merge previews, conflict resolution UI, recovery operations, retention and
-iOS authentication remain later steps.
+`pull_inventory(expected_owner, cursor)` requires an authenticated matching subject
+and a nonnegative cursor. Only authenticated execution is granted; private tables
+and trigger functions are inaccessible to mobile roles. A page contains one full
+spool/history snapshot, its next position and whether more pages were visible.
+Parent revisions make duplicate/replayed pages harmless. Deleted parents and
+history remain available to offline devices. Missing records are never inferred
+from a truncated history response: the SQL aggregates the complete history.
+
+`InventoryDownloader` captures the active account/session scope, cancels when it
+changes, and rechecks it before Room writes. The transport captures the matching
+unexpired account/token pair, validates owner/UUID relationships, cursors,
+revisions, unique history UUIDs and finite nonnegative values, and sanitizes errors.
+The cursor, parent/history changes and base revision commit in one transaction.
+Stable UUIDs map to existing local IDs or newly allocated device IDs. Global UUID
+collisions with guests/other accounts fail safely without transferring data or
+advancing the cursor.
+
+Remote application temporarily suppresses that account's outbox triggers inside
+the same transaction. The guard is removed before commit; rollback/process death
+cannot leave capture disabled. Subsequent local edits queue normally and upload
+against the pulled revision. Pending local writes/deletions and frozen batches
+are never overwritten or acknowledged by downloads. A newer remote revision is
+saved beside a frozen local request as a conflict; the cursor can continue to
+other aggregates. Resolving a conflict remains a later user action.
+
+The existing coordinator/Android worker runs uploads before downloads, so lost
+upload replies are retried through their receipts before a pull can misclassify
+them as conflicts. Each pass downloads at most 20 pages within the shared 90-second
+budget; remaining work retries later. Resume, connection events and Sync now wake
+work. Foreground polling checks every minute while idle; the existing 15-minute
+Android periodic work checks for changes even without local pending edits.
+Android controls background timing. iOS authentication/background tasks remain
+unavailable, although shared code compiles.
+
+## Verification and next step
+
+Step 8 passed 154 automated tests (one opt-in network probe skipped), Android debug
+build, lint (zero errors, 56 existing warnings), and shared iOS simulator compilation.
+Fourteen new real-Room download tests cover restoration, IDs/fields/history,
+restart, deletions/stale replay, concurrent local edits, preserved conflicts,
+account-switch cancellation, guest/other-account collisions, cursor-write rollback,
+outbox suppression/re-enabling, pulled base revisions, bounded background restore,
+and upload-receipt ordering. Migration coverage now includes versions 10 through
+19, preserving current frozen batches, revisions, operation IDs and inventory.
+Transport tests reject malformed/foreign responses and classify auth/network errors.
+An entry-form regression test preserves stale drafts across recreation. The form
+compares its original editable baseline before saving; a transactional compare
+and update also rejects changes arriving between that check and the write.
+
+All 27 pull SQL assertions passed in a rolled-back deployment rehearsal and again
+against the deployed endpoint. Existing access/upload SQL suites also passed after
+deployment, with all test fixtures rolled back. Anonymous public REST execution
+returned HTTP 401 / PostgreSQL 42501. Existing inventory/tombstone fingerprints and
+receipt count were unchanged; no real user session was extracted. A requested focused
+Redmi Note 8 Pro pass also verified upgrade preservation, automatic restore into an
+empty account, remote edits/deletions, reconnect, stale-draft rejection, conflict
+preservation across restart/account switching, and no upload echoes. Remote writes
+were simulated through the public upload RPC; two physical devices were not used.
+Throwaway fixtures were cleaned up, with original 24 spools/31 logs unchanged,
+pending/conflicts zero and network settings restored. A pre-existing currency
+formatter defect (1.20 displayed as 1.19) was fixed using rounded integer cents
+and rechecked on the phone. iOS runtime/full E2E were not tested.
+
+Next: conflict-resolution and recovery UI/retention. Do not claim those
+later features are available. No automatic deletion of receipts, tombstones or
+recovery snapshots is enabled.
 
 References: [RLS](https://supabase.com/docs/guides/database/postgres/row-level-security),
 [column permissions](https://supabase.com/docs/guides/database/postgres/column-level-security),

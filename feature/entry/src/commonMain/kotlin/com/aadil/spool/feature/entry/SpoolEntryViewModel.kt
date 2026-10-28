@@ -56,7 +56,11 @@ open class SpoolEntryViewModel(
                     _error.value = SpoolEntryError.LOAD_FAILED
                 } else {
                     // Reload the record after process death, but retain the user's saved draft.
-                    if (restoredDraft?.id != id) setDraft(spool.toSpoolEntryUiState())
+                    if (restoredDraft?.id != id) {
+                        val baseline = spool.toSpoolEntryUiState()
+                        setDraft(baseline)
+                        savedStateHandle["editBaseline"] = json.encodeToString(baseline)
+                    }
                     loadedFor = id
                     _error.value = null
                 }
@@ -92,6 +96,11 @@ open class SpoolEntryViewModel(
                         _error.value = SpoolEntryError.LOAD_FAILED
                         return@launch
                     }
+                    val baseline = savedStateHandle.get<String>("editBaseline")
+                    if (baseline != json.encodeToString(existing.toSpoolEntryUiState())) {
+                        _error.value = SpoolEntryError.CONCURRENT_UPDATE
+                        return@launch
+                    }
                     // Copy editable values onto the stored entity to retain drying metadata and timestamp.
                     val edited = state.toFilament(existing)
                     val extraWeight = state.addedWeight.entryNumber() ?: 0.0
@@ -109,7 +118,10 @@ open class SpoolEntryViewModel(
                         lastWeighedTareGrams = null,
                         lastDriedAt = null,
                     ) else updated
-                    spoolRepository.updateSpoolAndUsageCosts(toSave)
+                    if (!spoolRepository.updateSpoolFromDraft(toSave, existing)) {
+                        _error.value = SpoolEntryError.CONCURRENT_UPDATE
+                        return@launch
+                    }
                 } else {
                     spoolRepository.insertSpool(state.toFilament())
                 }

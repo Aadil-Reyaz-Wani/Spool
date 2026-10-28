@@ -36,7 +36,7 @@ class MigrationTest {
     private val driver = BundledSQLiteDriver()
 
     @Test fun everySupportedVersionPreservesInventoryAndReopenKeepsIdentities() = runBlocking {
-        for (version in 10..18) withDatabaseFile { path ->
+        for (version in 10..19) withDatabaseFile { path ->
             createLegacy(path, version, populated = true)
             val before = snapshot(path, version)
             val database = open(path)
@@ -65,7 +65,7 @@ class MigrationTest {
             }
             assertEquals(before, snapshot(path, version), "All pre-existing fields from version $version")
             driver.open(path).use {
-                assertEquals(listOf(listOf("19")), it.rows("PRAGMA user_version"))
+                assertEquals(listOf(listOf("20")), it.rows("PRAGMA user_version"))
                 assertTrue(it.rows("PRAGMA foreign_key_check").isEmpty())
                 assertEquals(listOf(listOf("ok")), it.rows("PRAGMA integrity_check"))
             }
@@ -249,6 +249,27 @@ class MigrationTest {
         }
     }
 
+    @Test fun version19PreservesFrozenBatchesRevisionsAndPendingOperations() = runBlocking {
+        withDatabaseFile { path ->
+            createLegacy(path, 19, populated = true)
+            driver.open(path).use {
+                it.execSQL("UPDATE filaments SET owner_id = 'account-a' WHERE id = 7")
+                it.execSQL("INSERT INTO inventory_sync_state SELECT owner_id, uuid, 9 FROM filaments WHERE id = 7")
+                it.execSQL("INSERT INTO inventory_upload_batches SELECT owner_id, uuid, 'saved-batch', 9, '{}', '[]', NULL FROM filaments WHERE id = 7")
+                it.execSQL("DROP TABLE inventory_remote_apply")
+            }
+            val before = snapshot(path, 19)
+            val db = open(path)
+            try {
+                assertEquals(3, db.spoolDao().pendingInventoryChanges("account-a").size)
+                val spool = db.spoolDao().getAllSpools().first().single { it.id == 7 }
+                assertEquals(9L, db.inventorySyncDao().serverRevision("account-a", spool.uuid))
+                assertEquals("saved-batch", db.inventorySyncDao().batch("account-a", spool.uuid)?.batchId)
+            } finally { db.close() }
+            assertEquals(before, snapshot(path, 19))
+        }
+    }
+
     private fun open(path: String) = getSpoolDatabase(Room.databaseBuilder<SpoolDatabase>(
         name = path,
         factory = { SpoolDatabaseConstructor.initialize() },
@@ -269,7 +290,7 @@ class MigrationTest {
             for (entity in schema["entities"]!!.jsonArray) {
                 val table = entity.jsonObject["tableName"]!!.jsonPrimitive.content
                 connection.execSQL(entity.jsonObject["createSql"]!!.jsonPrimitive.content.replace("\${TABLE_NAME}", table))
-                if (populated && table != "pending_inventory_changes") {
+                if (populated && table in listOf("filaments", "usage_log")) {
                     val columns = entity.jsonObject["fields"]!!.jsonArray.map { it.jsonObject["columnName"]!!.jsonPrimitive.content }
                     val fixtures = if (table == "filaments") spoolRows else logRows
                     fixtures.forEach { fixture ->
@@ -282,7 +303,7 @@ class MigrationTest {
             if (version >= 16) {
                 for (entity in schema["entities"]!!.jsonArray) {
                     val table = entity.jsonObject["tableName"]!!.jsonPrimitive.content
-                    entity.jsonObject["indices"]!!.jsonArray.forEach { index ->
+                    entity.jsonObject["indices"]?.jsonArray?.forEach { index ->
                         connection.execSQL(index.jsonObject["createSql"]!!.jsonPrimitive.content.replace("\${TABLE_NAME}", table))
                     }
                 }
@@ -299,7 +320,7 @@ class MigrationTest {
                 val table = entity.jsonObject["tableName"]!!.jsonPrimitive.content
                 val columns = entity.jsonObject["fields"]!!.jsonArray.map { it.jsonObject["columnName"]!!.jsonPrimitive.content }
                     .filterNot { version == 11 && table == "usage_log" && it == "price_per_print" }
-                table to connection.rows("SELECT ${columns.joinToString { "`$it`" }} FROM `$table` ORDER BY id")
+                table to connection.rows("SELECT ${columns.joinToString { "`$it`" }} FROM `$table` ORDER BY `${columns.first()}`")
             }
         }
 
