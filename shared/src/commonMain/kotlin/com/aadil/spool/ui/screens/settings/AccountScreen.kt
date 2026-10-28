@@ -6,6 +6,9 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.outlined.CloudUpload
+import androidx.compose.material.icons.outlined.Refresh
+import com.aadil.spool.core.data.sync.InventoryUploadMode
 import androidx.compose.material.icons.outlined.Badge
 import androidx.compose.material.icons.outlined.Email
 import androidx.compose.material.icons.Icons
@@ -59,6 +62,32 @@ fun AccountScreen(navigateUp: () -> Unit) {
                     Text(stringResource(Res.string.account_offline_session), style = MaterialTheme.typography.bodyMedium)
                 }
                 Text(stringResource(Res.string.inventory_account_local_notice), style = MaterialTheme.typography.bodyMedium)
+                val upload = state.uploads
+                SpoolHeadingText(text = stringResource(Res.string.inventory_upload_title), icon = Icons.Outlined.CloudUpload)
+                Text(
+                    stringResource(when (upload.mode) {
+                        InventoryUploadMode.Checking -> Res.string.inventory_upload_checking
+                        InventoryUploadMode.Uploading -> Res.string.inventory_upload_active
+                        InventoryUploadMode.Waiting -> Res.string.inventory_upload_waiting
+                        InventoryUploadMode.SignInRequired -> Res.string.inventory_upload_session
+                        InventoryUploadMode.NeedsAttention -> Res.string.inventory_upload_attention
+                        InventoryUploadMode.Idle -> if (upload.queue.pending > 0) Res.string.inventory_upload_pending else Res.string.inventory_upload_complete
+                    }),
+                    style = MaterialTheme.typography.bodyMedium,
+                    minLines = 2,
+                )
+                Text(stringResource(Res.string.inventory_upload_count, upload.queue.pending), style = MaterialTheme.typography.bodyMedium)
+                if (upload.queue.conflicts > 0) {
+                    Text(stringResource(Res.string.inventory_upload_conflicts, upload.queue.conflicts), style = MaterialTheme.typography.bodyMedium)
+                }
+                Text(stringResource(Res.string.inventory_upload_restore_notice), style = MaterialTheme.typography.bodySmall)
+                // Keep action positions stable as uploads start and finish.
+                SpoolButton(
+                    text = stringResource(Res.string.inventory_upload_retry),
+                    icon = Icons.Outlined.Refresh,
+                    enabled = upload.queue.ready > 0 && !state.busy && upload.mode != InventoryUploadMode.Uploading,
+                    onClick = viewModel::retryUploads,
+                )
                 if (state.guestSpoolCount > 0) {
                     Text(stringResource(Res.string.inventory_guest_available, state.guestSpoolCount), style = MaterialTheme.typography.bodyMedium)
                     SpoolButton(
@@ -82,8 +111,28 @@ fun AccountScreen(navigateUp: () -> Unit) {
                     text = stringResource(Res.string.account_sign_out),
                     icon = Icons.AutoMirrored.Outlined.Logout,
                     enabled = !state.busy,
-                    onClick = { viewModel.signOut(google::clearCredentialState) },
+                    onClick = {
+                        if (state.uploads.queue.pending > 0) viewModel.requestSignOutConfirmation()
+                        else viewModel.signOut(google::clearCredentialState)
+                    },
                 )
+                if (state.confirmSignOut) {
+                    AlertDialog(
+                        onDismissRequest = viewModel::dismissSignOutConfirmation,
+                        shape = MaterialTheme.shapes.medium,
+                        title = { Text(stringResource(Res.string.account_sign_out)) },
+                        text = { Text(stringResource(Res.string.inventory_upload_sign_out_pending)) },
+                        confirmButton = {
+                            TextButton(onClick = {
+                                viewModel.dismissSignOutConfirmation()
+                                viewModel.signOut(google::clearCredentialState)
+                            }) { Text(stringResource(Res.string.account_sign_out)) }
+                        },
+                        dismissButton = {
+                            TextButton(onClick = viewModel::dismissSignOutConfirmation) { Text(stringResource(Res.string.btn_cancel)) }
+                        },
+                    )
+                }
             } else if (!google.supported) {
                 Text(stringResource(Res.string.account_ios_unavailable), style = MaterialTheme.typography.bodyMedium)
             } else {

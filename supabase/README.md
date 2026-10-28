@@ -1,7 +1,7 @@
 # Spool cloud database
 
 Versioned cloud migrations and rollback-only SQL tests. Room remains the app's
-source of data. Upload scheduling, downloads and restore are not enabled yet.
+source of data. Automatic uploads are connected; downloads and restore are not enabled yet.
 
 ## Schema and access
 
@@ -65,12 +65,37 @@ The upload migration was rehearsed with both suites in rolled-back transactions
 before deployment. Public REST endpoints are also checked without a user session.
 No real-account inventory is uploaded or modified by these tests.
 
-## App upload entry point
+## Automatic uploads
 
-Koin registers one shared `InventoryUploader`. `uploadNext(expectedScope)` explicitly
-uploads one spool aggregate; it is not called at startup, on save or by a scheduler
-yet. Guest scopes cannot upload. The transport captures one account/token pair,
-uses a 30-second timeout and never logs credentials, inventory or server bodies.
+Koin starts `InventoryUploadCoordinator` at application initialization. It observes
+the current account's durable queue, schedules OS work, and enables in-process
+uploads while the shared Compose lifecycle is resumed. New changes, reconnect
+events, refreshed authentication, resume and manual retry wake foreground work.
+Transient failures back off from 30 seconds to 5 minutes while the app is visible.
+Network waits never block local saves.
+
+Android uses unique WorkManager requests with a connected-network constraint and
+exponential backoff. One-time work handles pending changes; 15-minute periodic
+work covers process death and the final-enqueue race while a previous job finishes.
+The OS decides execution timing. Work is bound to an account and session revision,
+cancelled on account changes, and revalidated by the worker before uploading.
+Stale persisted jobs cancel themselves instead of using the new account.
+Each drain processes at most 20 aggregates or 90 seconds, leaving more work queued
+for a later pass. Foreground and worker drains share a mutex.
+
+The Account screen shows checking/uploading/waiting/error state, pending-operation
+and conflicting-spool counts, and a retry button for uploadable work. Counts are
+filtered to the displayed account. Sign-out with pending work explains that it
+stays on the device and resumes only for the same account. Guest import explicitly
+explains that imported data will upload when connected.
+
+iOS compiles the shared foreground coordinator, but sign-in is still unavailable
+and no iOS background task is registered. Do not promise iOS background execution.
+
+The explicit `InventoryUploader.uploadNext(expectedScope)` remains the
+one-aggregate protocol entry point. Guest scopes cannot upload. The transport
+captures one account/token pair, uses a 30-second timeout and never logs
+credentials, inventory or server bodies.
 
 Room schema 19 stores immutable upload batches, their exact operation IDs and the
 last acknowledged server revision per account/spool. Preparation is transactional.
@@ -94,9 +119,18 @@ automatic expiry.
 
 ## Next step
 
-Connect foreground/background scheduling, expose pending/conflict status, then run
-a requested phone pass for offline changes, reconnection, retries and switching
-accounts. This upload-only service is not completed cloud backup or sync.
+The scheduling change passed 84 automated tests, Android build/lint and shared
+iOS compilation. Eight new integration cases use real temporary Room databases
+and simulated network/OS scheduling. A requested focused Redmi Note 8 Pro pass
+also verified initial upload, offline edits/retry/restart, automatic reconnect,
+actual WorkManager upload while the launcher was foreground, pending sign-out
+warnings, and two-account isolation with pending work resuming on return.
+A throwaway spool and four prints were deleted through the app; cloud soft
+deletion uploaded successfully. Original 24 spools and 31 history records remain
+unchanged locally and in the cloud, with zero pending changes. UI action movement
+and cold deep-link Back navigation found during testing were fixed and rechecked.
+Phone conflict injection, iOS runtime and full app end-to-end tests were not run.
+This upload-only service is not completed cloud sync.
 
 Downloads must avoid upload loops, persist pulled base revisions and use a cursor
 that handles transaction ordering. Server timestamps alone are insufficient.
@@ -106,4 +140,5 @@ iOS authentication remain later steps.
 References: [RLS](https://supabase.com/docs/guides/database/postgres/row-level-security),
 [column permissions](https://supabase.com/docs/guides/database/postgres/column-level-security),
 [migrations](https://supabase.com/docs/guides/local-development/database-migrations),
-[migration API](https://supabase.com/docs/reference/api/v1-apply-a-migration).
+[migration API](https://supabase.com/docs/reference/api/v1-apply-a-migration),
+[WorkManager constraints and retries](https://developer.android.com/develop/background-work/background-tasks/persistent/getting-started/define-work).

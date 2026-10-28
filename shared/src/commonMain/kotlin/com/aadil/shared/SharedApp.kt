@@ -12,6 +12,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.compose.LifecycleResumeEffect
+import com.aadil.spool.core.data.sync.InventoryUploadCoordinator
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
 import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
@@ -23,6 +25,11 @@ import org.koin.compose.koinInject
 
 @Composable
 fun SharedApp(initialSpoolId: Int? = null) {
+    val uploads = koinInject<InventoryUploadCoordinator>()
+    LifecycleResumeEffect(uploads) {
+        uploads.setForeground(true)
+        onPauseOrDispose { uploads.setForeground(false) }
+    }
     val session = koinInject<InventorySession>()
     val scope by session.scope.collectAsStateWithLifecycle()
     SpoolTheme {

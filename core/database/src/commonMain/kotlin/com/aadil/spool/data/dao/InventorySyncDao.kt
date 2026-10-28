@@ -5,6 +5,8 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Transaction
+import kotlinx.coroutines.flow.Flow
+import com.aadil.spool.data.entity.InventoryUploadQueue
 import com.aadil.spool.core.model.currentTimeMillis
 import com.aadil.spool.data.entity.InventorySyncState
 import com.aadil.spool.data.entity.InventoryUploadBatch
@@ -14,6 +16,15 @@ import kotlin.uuid.Uuid
 @Dao
 @OptIn(ExperimentalUuidApi::class)
 interface InventorySyncDao {
+    @Query("""SELECT COUNT(*) AS pending, COALESCE(MAX(id), 0) AS latest,
+        (SELECT COUNT(*) FROM inventory_upload_batches b WHERE b.owner_id = :ownerId AND b.conflict_snapshot IS NOT NULL) AS conflicts,
+        (SELECT COUNT(*) FROM pending_inventory_changes p WHERE p.owner_id = :ownerId AND p.acknowledged_at IS NULL
+            AND NOT EXISTS (SELECT 1 FROM inventory_upload_batches b WHERE b.owner_id = p.owner_id
+                AND b.spool_uuid = p.spool_uuid AND b.conflict_snapshot IS NOT NULL)) AS ready
+        FROM pending_inventory_changes WHERE owner_id = :ownerId AND acknowledged_at IS NULL""")
+    fun observeQueue(ownerId: String): Flow<InventoryUploadQueue>
+
+
     @Query("""SELECT spool_uuid FROM pending_inventory_changes p WHERE owner_id = :ownerId AND acknowledged_at IS NULL
         AND NOT EXISTS (SELECT 1 FROM inventory_upload_batches b WHERE b.owner_id = p.owner_id AND b.spool_uuid = p.spool_uuid AND b.conflict_snapshot IS NOT NULL)
         ORDER BY id LIMIT 1""")

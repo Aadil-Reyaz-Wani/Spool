@@ -2,6 +2,8 @@ package com.aadil.spool.feature.settings
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.aadil.spool.core.data.sync.InventoryUploadCoordinator
+import com.aadil.spool.core.data.sync.InventoryUploadStatus
 import com.aadil.spool.core.data.repository.InventorySession
 import com.aadil.spool.core.data.repository.InventoryScope
 import com.aadil.spool.core.network.AccountRepository
@@ -25,11 +27,14 @@ data class AccountUiState(
     val error: AccountError? = null,
     val guestSpoolCount: Int = 0,
     val confirmImport: Boolean = false,
+    val uploads: InventoryUploadStatus = InventoryUploadStatus(),
+    val confirmSignOut: Boolean = false,
 )
 
 class AccountViewModel(
     private val repository: AccountRepository,
     private val inventory: InventorySession? = null,
+    private val uploads: InventoryUploadCoordinator? = null,
 ) : ViewModel() {
     private var pendingImport: InventoryScope? = null
     private val mutableState = MutableStateFlow(AccountUiState())
@@ -37,6 +42,13 @@ class AccountViewModel(
     val googleWebClientId: String get() = repository.googleWebClientId
 
     init {
+        uploads?.let { coordinator ->
+            viewModelScope.launch {
+                coordinator.status.collect { status ->
+                    mutableState.value = state.value.copy(uploads = status.forAccount(state.value.session.account?.id))
+                }
+            }
+        }
         inventory?.let { session ->
             viewModelScope.launch {
                 session.guestSpoolCount.collect { count ->
@@ -47,7 +59,11 @@ class AccountViewModel(
         viewModelScope.launch {
             try {
                 repository.sessions.collect { session ->
-                    mutableState.value = mutableState.value.copy(session = session)
+                    mutableState.value = mutableState.value.copy(
+                        session = session,
+                        uploads = uploads?.status?.value?.forAccount(session.account?.id) ?: InventoryUploadStatus(),
+                        confirmSignOut = state.value.confirmSignOut && session.account?.id == state.value.session.account?.id,
+                    )
                 }
             } catch (cancelled: CancellationException) {
                 throw cancelled
@@ -57,6 +73,19 @@ class AccountViewModel(
                 )
             }
         }
+    }
+
+    private fun InventoryUploadStatus.forAccount(id: String?): InventoryUploadStatus =
+        if (id != null && scope?.ownerId == id) this else InventoryUploadStatus()
+
+    fun retryUploads() { uploads?.retry() }
+
+    fun requestSignOutConfirmation() {
+        mutableState.value = state.value.copy(confirmSignOut = true)
+    }
+
+    fun dismissSignOutConfirmation() {
+        mutableState.value = state.value.copy(confirmSignOut = false)
     }
 
     fun requestGuestImport() {

@@ -1,6 +1,7 @@
 package com.aadil.spool.core.data.di
 
 import com.aadil.spool.core.data.sync.InventoryUploader
+import com.aadil.spool.core.data.sync.InventoryUploadCoordinator
 import com.aadil.spool.core.data.repository.InventoryNotifications
 import com.aadil.spool.core.data.repository.InventorySession
 import com.aadil.spool.core.data.repository.CurrencyPreferencesRepository
@@ -19,6 +20,7 @@ val dataModule = module {
     includes(platformDataStoreModule)
     single { InventorySession(get(), get(), getOrNull<InventoryNotifications>(), get()) } onClose { it?.close() }
     single { InventoryUploader(get(), get(), get()) }
+    single { InventoryUploadCoordinator(get(), get(), get(), get(), get()) } onClose { it?.close() }
     factory<SpoolRepository> {
         val session = get<InventorySession>()
         DefaultSpoolRepository(get(), session, checkNotNull(session.scope.value))

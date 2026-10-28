@@ -9,5 +9,5 @@ import org.koin.dsl.module
 
 val settingsModule: Module = module {
     viewModelOf(::SpoolSettingsViewModel)
-    viewModel { AccountViewModel(get(), get()) }
+    viewModel { AccountViewModel(get(), get(), get()) }
 }

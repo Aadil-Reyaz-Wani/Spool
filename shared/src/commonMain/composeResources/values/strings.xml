@@ -198,7 +198,7 @@
     <string name="entry_save_failed">Could not save the spool. Please try again.</string>
     <string name="entry_saving">Saving...</string>
     <string name="account_title">Account</string>
-    <string name="account_local_inventory_notice">Inventory is stored on this device. Sign-in is optional. Cloud backup and sync are not available yet.</string>
+    <string name="account_local_inventory_notice">Inventory saves on this device first and works offline. Sign-in is optional. Signed-in inventory uploads automatically when connected.</string>
     <string name="account_name">Name</string>
     <string name="account_email">Email</string>
     <string name="account_name_unavailable">Google did not provide a name.</string>
@@ -212,12 +212,25 @@
     <string name="account_sign_in_error">Could not sign in. Check your internet connection and try again.</string>
     <string name="account_session_error">Could not restore your account. Your local inventory is still available.</string>
     <string name="account_sign_out_error">Could not finish signing out. Please try again.</string>
-    <string name="inventory_account_local_notice">This account has its own local inventory. Signing out hides it on this device; signing back into the same account restores access.</string>
+    <string name="inventory_account_local_notice">Signing out hides this account’s inventory on this device. Pending uploads resume when you sign back into the same account.</string>
     <string name="inventory_guest_available">%1$d spools are safe in guest inventory. Open Account to import them with their print history.</string>
     <string name="inventory_import_button">Import guest inventory</string>
     <string name="inventory_import_title">Move guest inventory to this account?</string>
-    <string name="inventory_import_confirmation">Move %1$d spools and their print history to %2$s? They will belong to this account and will no longer appear in guest mode. IDs and inventory values are preserved. Nothing is uploaded to the cloud.</string>
+    <string name="inventory_import_confirmation">Move %1$d spools and their print history to %2$s? They will belong to this account and leave guest mode. They will upload automatically when connected.</string>
     <string name="inventory_keep_guest">Keep in guest mode</string>
     <string name="inventory_this_account">this account</string>
     <string name="inventory_import_error">Could not import guest inventory. Your data has not been deleted. Please try again.</string>
+    <string name="inventory_upload_title">Cloud uploads</string>
+    <string name="inventory_upload_checking">Checking pending changes…</string>
+    <string name="inventory_upload_active">Uploading changes…</string>
+    <string name="inventory_upload_waiting">Waiting to retry. Changes are saved on this device.</string>
+    <string name="inventory_upload_session">Connect to refresh your sign-in and resume uploads.</string>
+    <string name="inventory_upload_attention">Uploads need attention. Pending changes remain on this device.</string>
+    <string name="inventory_upload_pending">Changes are waiting to upload.</string>
+    <string name="inventory_upload_complete">All changes have uploaded.</string>
+    <string name="inventory_upload_count">Pending changes: %1$d</string>
+    <string name="inventory_upload_conflicts">Spools with conflicting edits: %1$d. Both versions are preserved. Conflict resolution is not available yet.</string>
+    <string name="inventory_upload_restore_notice">Uploads only. Download and restore to another device are not available yet.</string>
+    <string name="inventory_upload_retry">Retry uploads</string>
+    <string name="inventory_upload_sign_out_pending">Some changes have not uploaded yet. They stay on this device and resume uploading when you sign back into this account.</string>
 </resources>

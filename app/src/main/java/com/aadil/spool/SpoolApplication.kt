@@ -2,6 +2,8 @@ package com.aadil.spool
 
 import android.app.Application
 import com.aadil.spool.core.data.di.dataModule
+import com.aadil.spool.core.data.sync.InventoryUploadCoordinator
+import com.aadil.spool.sync.platformInventoryUploadModule
 import com.aadil.spool.core.network.di.networkModule
 import com.aadil.spool.data.di.platformDatabaseModule
 import com.aadil.spool.feature.dashboard.di.dashboardModule
@@ -17,12 +19,13 @@ import org.koin.core.context.startKoin
 class SpoolApplication : Application() {
     override fun onCreate() {
         super.onCreate()
-        startKoin {
+        val application = startKoin {
             androidLogger()
             androidContext(this@SpoolApplication)
             modules(
                 platformDatabaseModule,
                 dataModule,
+                platformInventoryUploadModule,
                 networkModule,
                 androidNotificationsModule,
                 dashboardModule,
@@ -32,5 +35,6 @@ class SpoolApplication : Application() {
                 settingsModule
             )
         }
+        application.koin.get<InventoryUploadCoordinator>().start()
     }
 }

@@ -156,6 +156,8 @@ fun MySpoolApp(modifier: Modifier = Modifier, initialSpoolId: Int? = null) {
                 LaunchedEffect(Unit) {
                     delay(1500L)
                     if (initialSpoolId != null && spoolRepository.getSpool(initialSpoolId).first() != null) {
+                        // Cold links need a destination to return to.
+                        backStack.add(Routes.Dashboard)
                         backStack.add(Routes.SpoolDetails(initialSpoolId))
                     } else {
                         backStack.add(Routes.Dashboard)
