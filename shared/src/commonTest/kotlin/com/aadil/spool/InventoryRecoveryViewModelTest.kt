@@ -28,9 +28,15 @@ class InventoryRecoveryViewModelTest {
         var value = InventoryRecoveryPreview(InventoryRecoverySource("a", "copy", "deleted_device", "{}", 123, null), snapshot)
         var previews = 0
         var restores = 0
+        var removals = 0
+        var removalResult = InventoryRecoveryRemovalResult.Removed
+        var removeHandler: (suspend () -> InventoryRecoveryRemovalResult)? = null
         var result = InventoryRecoveryResult.Restored
         var handler: (suspend () -> InventoryRecoveryPreview?)? = null
         var restoreHandler: (suspend () -> InventoryRecoveryResult)? = null
+        override suspend fun remove(scope: InventoryScope, id: String): InventoryRecoveryRemovalResult {
+            removals++; return removeHandler?.invoke() ?: removalResult
+        }
         override fun observe(scope: InventoryScope) = rows
         override suspend fun preview(scope: InventoryScope, id: String): InventoryRecoveryPreview? { previews++; return handler?.invoke() ?: value }
         override suspend fun restore(scope: InventoryScope, preview: InventoryRecoveryPreview): InventoryRecoveryResult {
@@ -89,4 +95,41 @@ class InventoryRecoveryViewModelTest {
         assertTrue(vm.state.value.busy); assertEquals(1, repo.restores)
         write.complete(InventoryRecoveryResult.Restored); runCurrent(); assertTrue(vm.state.value.restored)
     }
+    @Test fun removalRequiresExplicitConfirmationAndDoesNotWakeSyncOrRestore() = runTest {
+        val repo = Repository(); var retries = 0; val vm = vm(repo, retry = { retries++ })
+        vm.requestRemoval("missing"); vm.confirmRemoval(); assertEquals(0, repo.removals)
+        vm.requestRemoval("copy"); vm.dismissRemoval(); vm.confirmRemoval(); assertEquals(0, repo.removals)
+        vm.open("copy"); runCurrent(); vm.requestRemoval("copy"); vm.confirmRemoval(); runCurrent(); vm.confirmRemoval()
+        assertEquals(1, repo.removals); assertTrue(vm.state.value.removed)
+        assertNull(vm.state.value.preview); assertNull(vm.state.value.selected)
+        assertEquals(0, retries); assertEquals(0, repo.restores)
+    }
+
+    @Test fun removalConfirmationSurvivesSameViewModelButIsNotReplayedAfterRecreation() = runTest {
+        val repo = Repository(); val saved = SavedStateHandle(); val first = vm(repo, saved)
+        first.open("copy"); runCurrent(); first.requestRemoval("copy")
+        assertEquals("copy", first.state.value.removal?.id)
+        val second = vm(repo, SavedStateHandle(saved.keys().associateWith { saved.get<Any?>(it) })); runCurrent()
+        assertNull(second.state.value.removal); second.confirmRemoval(); assertEquals(0, repo.removals)
+        repo.rows.value = emptyList(); runCurrent(); assertNull(first.state.value.removal)
+    }
+
+    @Test fun busyRemovalIgnoresDuplicateTapAndFailureNeedsAnotherConfirmation() = runTest {
+        val repo = Repository(); val vm = vm(repo); val write = CompletableDeferred<InventoryRecoveryRemovalResult>()
+        repo.removeHandler = { write.await() }; vm.requestRemoval("copy"); vm.confirmRemoval()
+        vm.requestRemoval("copy"); vm.confirmRemoval(); assertEquals(1, repo.removals); assertTrue(vm.state.value.busy)
+        write.complete(InventoryRecoveryRemovalResult.Unavailable); runCurrent()
+        assertTrue(vm.state.value.error); assertFalse(vm.state.value.removed); assertFalse(vm.state.value.busy)
+        vm.confirmRemoval(); assertEquals(1, repo.removals)
+        repo.removeHandler = null; vm.requestRemoval("copy"); vm.confirmRemoval(); runCurrent()
+        assertTrue(vm.state.value.removed); assertEquals(2, repo.removals)
+    }
+
+    @Test fun staleScopeRemovalClosesPreviewWithoutSuccess() = runTest {
+        val repo = Repository(); repo.removalResult = InventoryRecoveryRemovalResult.StaleScope
+        val vm = vm(repo); vm.open("copy"); runCurrent(); vm.requestRemoval("copy"); vm.confirmRemoval(); runCurrent()
+        assertNull(vm.state.value.selected); assertNull(vm.state.value.removal)
+        assertFalse(vm.state.value.removed); assertFalse(vm.state.value.busy)
+    }
+
 }

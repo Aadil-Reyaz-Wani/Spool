@@ -275,4 +275,121 @@ class InventoryRecoveryTest {
             assertEquals(2, db.spoolDao().getOwnedSpools("a").first().size)
         }
     }
+    @Test fun removingRestoredDeviceCopyKeepsInventoryReceiptsAndPendingWorkAcrossRestart() = runBlocking {
+        fixture {
+            seedDeleted(); val original = preview(); val scope = ready()
+            repository().restore(scope, original)
+            val copy = db.spoolDao().getOwnedSpools("a").first().single()
+            val logs = sync.logsForSpool(copy.id)
+            val pending = db.spoolDao().pendingInventoryChanges("a")
+            val batch = sync.prepareSpool("a", uuid)
+            assertEquals(InventoryRecoveryRemovalResult.Removed, repository().remove(scope, sourceId))
+            assertNull(recovery.source("a", sourceId)); assertTrue(recovery.isRemoved("a", sourceId))
+            BundledSQLiteDriver().open(path).use { connection ->
+                connection.prepare("SELECT spool_uuid FROM inventory_recovery_restores WHERE owner_id='a'").use {
+                    assertTrue(it.step()); assertEquals(copy.uuid, it.getText(0))
+                }
+            }
+            assertEquals(pending, db.spoolDao().pendingInventoryChanges("a"))
+            assertEquals(batch, sync.batch("a", uuid))
+            assertEquals(copy, db.spoolDao().getOwnedSpools("a").first().single())
+            assertEquals(logs, sync.logsForSpool(copy.id))
+            assertEquals(InventoryRecoveryResult.Changed, repository().restore(scope, original))
+            assertEquals(InventoryRecoveryRemovalResult.Removed, repository().remove(scope, sourceId))
+            restart()
+            assertTrue(repository().observe(ready()).first().isEmpty())
+            // Re-capturing the same source is suppressed without blocking the active copy's own deletion.
+            sync.deleteRemoteSpool("a", copy.uuid)
+            assertNotNull(recovery.source("a", "deleted:device:${copy.uuid}"))
+            assertTrue(recovery.isRemoved("a", sourceId))
+        }
+    }
+
+    @Test fun removedCloudCopyCannotReturnOnRepeatedPullAndDoesNotChangeRemoteRevisionOrCursor() = runBlocking {
+        fixture {
+            val scope = ready(); val cloud = snapshot(deleted = true)
+            val text = json.encodeToString(RemoteInventorySnapshot.serializer(), cloud)
+            val id = "deleted:cloud:$uuid"
+            sync.applyPull(InventoryPullPage("a", 0, 10, false, cloud), "{}", text)
+            assertEquals(InventoryRecoveryRemovalResult.Removed, repository().remove(scope, id))
+            assertEquals(10L, sync.pullCursor("a")); assertEquals(1L, sync.serverRevision("a", uuid))
+            assertTrue(db.spoolDao().pendingInventoryChanges("a").isEmpty())
+            restart()
+            sync.applyPull(InventoryPullPage("a", 10, 11, false, cloud), "{}", text)
+            assertNull(recovery.source("a", id)); assertEquals(11L, sync.pullCursor("a"))
+            assertTrue(repository().observe(ready()).first().isEmpty())
+            sync.saveDeletedCloud("b", uuid, text, 100)
+            assertNotNull(recovery.source("b", id)); assertFalse(recovery.isRemoved("b", id))
+        }
+    }
+
+    @Test fun removingConflictSidesClearsOnlyChosenPayloadAndKeepsOtherVersionRestorable() = runBlocking {
+        fixture {
+            val scope = ready(); sync.applyRemoteSnapshot("a", snapshot())
+            val text = json.encodeToString(RemoteInventorySnapshot.serializer(), snapshot())
+            sync.archiveResolution(InventoryConflictResolution("archive", "a", uuid, "cloud", text, text, 123))
+            val local = "conflict:archive:local"; val cloud = "conflict:archive:cloud"
+            assertEquals(InventoryRecoveryRemovalResult.Removed, repository().remove(scope, local))
+            val archive = sync.resolutions("a").single()
+            assertEquals("{}", archive.localSnapshot); assertEquals(text, archive.cloudSnapshot)
+            assertNull(recovery.source("a", local)); assertEquals(cloud, repository().observe(scope).first().single().id)
+            assertEquals(InventoryRecoveryResult.Restored, repository().restore(scope, preview(cloud)))
+            val spools = db.spoolDao().getOwnedSpools("a").first(); val pending = db.spoolDao().pendingInventoryChanges("a")
+            assertEquals(InventoryRecoveryRemovalResult.Removed, repository().remove(scope, cloud))
+            assertEquals("{}", sync.resolutions("a").single().cloudSnapshot)
+            assertEquals(spools, db.spoolDao().getOwnedSpools("a").first())
+            assertEquals(pending, db.spoolDao().pendingInventoryChanges("a"))
+            assertTrue(repository().observe(scope).first().isEmpty())
+        }
+    }
+
+    @Test fun guestOtherAccountAndStaleSessionCannotRemoveCopiesOrAddExclusions() = runBlocking {
+        fixture {
+            seedDeleted(); val a = ready()
+            accounts.sessions.value = AccountSession(SpoolAccount("b", null, null)); val b = ready("b")
+            assertEquals(InventoryRecoveryRemovalResult.StaleScope, repository().remove(a, sourceId))
+            assertEquals(InventoryRecoveryRemovalResult.Unavailable, repository().remove(b, sourceId))
+            assertFalse(recovery.isRemoved("a", sourceId)); assertFalse(recovery.isRemoved("b", sourceId))
+            accounts.signOut(); val guest = ready("")
+            assertEquals(InventoryRecoveryRemovalResult.StaleScope, repository().remove(guest, sourceId))
+            assertNotNull(recovery.source("a", sourceId))
+        }
+    }
+
+    @Test fun failedRemovalRollsBackExclusionAndRetainsSnapshotAndQueue() = runBlocking {
+        fixture {
+            seedDeleted(); val before = preview(); val pending = db.spoolDao().pendingInventoryChanges("a")
+            sql("CREATE TRIGGER reject_remove BEFORE DELETE ON inventory_recovery_versions BEGIN SELECT RAISE(ABORT,'test failure'); END")
+            assertEquals(InventoryRecoveryRemovalResult.Unavailable, repository().remove(ready(), sourceId))
+            assertFalse(recovery.isRemoved("a", sourceId)); assertEquals(before.source, recovery.source("a", sourceId))
+            assertEquals(pending, db.spoolDao().pendingInventoryChanges("a"))
+            sql("DROP TRIGGER reject_remove")
+            assertEquals(InventoryRecoveryRemovalResult.Removed, repository().remove(ready(), sourceId))
+        }
+    }
+
+    @Test fun corruptSavedCopyCanBeRemovedWithoutDecodingOrTouchingSyncData() = runBlocking {
+        fixture {
+            seedDeleted(); val pending = db.spoolDao().pendingInventoryChanges("a")
+            sql("UPDATE inventory_recovery_versions SET snapshot='invalid'")
+            assertNull(repository().preview(ready(), sourceId))
+            assertEquals(InventoryRecoveryRemovalResult.Removed, repository().remove(ready(), sourceId))
+            assertNull(recovery.source("a", sourceId)); assertTrue(recovery.isRemoved("a", sourceId))
+            assertEquals(pending, db.spoolDao().pendingInventoryChanges("a"))
+        }
+    }
+
+    @Test fun suppressingRecaptureDoesNotBlockSubsequentInventoryDeletionOrItsOutbox() = runBlocking {
+        fixture {
+            seedDeleted(); repository().remove(ready(), sourceId)
+            // A conflict can restore the original live cloud UUID after an earlier local deletion.
+            sync.applyRemoteSnapshot("a", snapshot())
+            val count = db.spoolDao().pendingInventoryChanges("a").size
+            sync.deleteRemoteSpool("a", uuid)
+            assertNull(sync.spoolByUuid(uuid)); assertNull(sync.logByUuid(logUuid))
+            assertEquals(count + 2, db.spoolDao().pendingInventoryChanges("a").size)
+            assertNull(recovery.source("a", sourceId)); assertTrue(recovery.isRemoved("a", sourceId))
+        }
+    }
+
 }

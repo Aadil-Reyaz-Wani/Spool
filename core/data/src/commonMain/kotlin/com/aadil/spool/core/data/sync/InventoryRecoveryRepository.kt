@@ -17,12 +17,14 @@ import kotlin.uuid.Uuid
 
 data class InventoryRecoveryItem(val id: String, val kind: String, val brand: String?, val savedAt: Long, val restored: Boolean)
 data class InventoryRecoveryPreview(val source: InventoryRecoverySource, val version: RemoteInventorySnapshot)
+enum class InventoryRecoveryRemovalResult { Removed, Unavailable, StaleScope }
 enum class InventoryRecoveryResult { Restored, Changed, Unavailable, StaleScope }
 
 interface InventoryRecoveryRepository {
     fun observe(scope: InventoryScope): Flow<List<InventoryRecoveryItem>>
     suspend fun preview(scope: InventoryScope, id: String): InventoryRecoveryPreview?
     suspend fun restore(scope: InventoryScope, preview: InventoryRecoveryPreview): InventoryRecoveryResult
+    suspend fun remove(scope: InventoryScope, id: String): InventoryRecoveryRemovalResult
 }
 
 class LocalInventoryRecoveryRepository(private val dao: InventoryRecoveryDao, private val session: InventorySession) : InventoryRecoveryRepository {
@@ -63,6 +65,14 @@ class LocalInventoryRecoveryRepository(private val dao: InventoryRecoveryDao, pr
         } }
     } catch (cancelled: CancellationException) { throw cancelled }
     catch (_: Exception) { InventoryRecoveryResult.Unavailable }
+
+    override suspend fun remove(scope: InventoryScope, id: String): InventoryRecoveryRemovalResult = try {
+        if (scope.ownerId.isBlank()) InventoryRecoveryRemovalResult.StaleScope
+        else withContext(Dispatchers.Default) { session.withScope(scope, InventoryRecoveryRemovalResult.StaleScope) {
+            if (dao.remove(scope.ownerId, id)) InventoryRecoveryRemovalResult.Removed else InventoryRecoveryRemovalResult.Unavailable
+        } }
+    } catch (cancelled: CancellationException) { throw cancelled }
+    catch (_: Exception) { InventoryRecoveryRemovalResult.Unavailable }
 
     @OptIn(ExperimentalUuidApi::class)
     private fun decode(source: InventoryRecoverySource): RemoteInventorySnapshot {

@@ -29,3 +29,10 @@ data class InventoryRecoverySource(
     @ColumnInfo(name = "created_at") val createdAt: Long,
     @ColumnInfo(name = "restored_uuid") val restoredUuid: String?,
 )
+
+/** Device-only exclusion; contains no saved inventory payload. */
+@Entity(tableName = "inventory_recovery_removals", primaryKeys = ["owner_id", "source_id"])
+data class InventoryRecoveryRemoval(
+    @ColumnInfo(name = "owner_id") val ownerId: String,
+    @ColumnInfo(name = "source_id") val sourceId: String,
+)

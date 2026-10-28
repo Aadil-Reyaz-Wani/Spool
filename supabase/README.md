@@ -3,7 +3,8 @@
 Versioned cloud migrations and rollback-only SQL tests. Room remains the app's
 source of data. Automatic account-scoped uploads and downloads are connected.
 Conflict review and account-scoped Recovery are available from Account. Recovery
-creates new copies from versions retained on this device; no automatic expiry is enabled.
+creates new copies from versions retained on this device. Individual saved copies
+can be removed from Recovery on this installation; no automatic expiry is enabled.
 
 ## Schema and access
 
@@ -175,7 +176,7 @@ live/deleted print history, amounts, dates and failure flags, then confirm eithe
 version. Opening, refreshing or cancelling a comparison does not modify inventory.
 A fresh connection is required to review and confirm; ordinary inventory saves
 continue offline. Both reviewed copies are retained locally and can be previewed from Account /
-Recovery. There is no purge UI.
+Recovery. Device-only removal is available; cloud purge is not.
 
 `InventoryConflictResolver` refetches the cloud snapshot on confirmation and
 requires it to match the reviewed version. An account/session switch cancels it.
@@ -320,14 +321,77 @@ retained its six-print device snapshot and downloaded cloud tombstone. Cleanup
 restored the original signed-in account and exact original inventory; pending
 uploads/conflicts are zero and database integrity/foreign-key checks passed.
 
-Network-off restore/reconnect remains pending on the phone: an active call was
-visible and network changes await the user's answer. Complete screenshot layout
-review was obscured by that call. Local-side archive restoration, iOS runtime,
-real two-device behavior and full E2E were not phone-tested. No product defect
-was observed in the covered cases.
+The follow-up offline Android pass (29 October 2026) also passed. With no active
+network verified before confirmation, a deleted device copy restored with fresh
+IDs and all four retained prints; five new-copy operations remained queued.
+The copy survived stopping/reopening offline. After reconnecting with Spool in
+the background, the OS retry job uploaded automatically without opening the app
+or tapping Sync now. The actual cloud snapshot matched every copied field and
+history UUID; pending changes became zero without duplicate rows or receipts.
+Disposable copies were deleted through the app and verified tombstoned in the
+cloud. Final inventory is exactly the original 24 spools and 31 prints, with no
+pending changes/conflicts and restored network settings. No product defect was
+observed in the covered cases.
 
-Next: finish the network-off/visual phone checks when the phone is available,
-then agree on a retention and deletion policy.
+Complete screenshot layout review was obscured by a floating call. Local-side
+archive restoration, iOS runtime, real two-device behavior and full E2E were not
+phone-tested.
+
+An unobscured visual review can be completed separately when the phone is available.
+
+
+## Device-only recovery removal (Step 11)
+
+Saved copies remain until manually removed. Recovery offers "Remove from this
+device" from the list and preview, with a confirmation identifying the brand,
+source kind and saved date. Removal also works for copies with an unreadable
+preview. The confirmation explicitly limits removal to this installation and
+explains that cloud copies may be available elsewhere or after reinstalling.
+No automatic expiry, cloud deletion or account deletion is introduced.
+
+Room schema23 adds an owner/source exclusion table without changing existing
+entities. One transaction records the exclusion and deletes the selected retained
+deleted-version row or clears only its selected conflict snapshot column. The
+other conflict version and archive metadata remain intact. List, preview and
+restore exclude removed sources; a trigger suppresses recapture of that same
+source during normal sync on this installation. Repeated cloud pages still
+advance the cursor. Removal is idempotent, scoped to the current account/session,
+and can run offline. Failures roll back both payload removal and exclusion.
+
+Active inventory/history, restored copies, pending operations/frozen requests,
+restore receipts, remote revisions and pull cursors are untouched by removal.
+It never queues a cloud delete or wakes the uploader. Sync records can retain
+inventory payloads needed by the existing protocol. This is removal from local
+Recovery, not secure erasure or deletion of every copy of that inventory. Clearing
+app data/reinstalling removes local exclusions; a downloaded cloud snapshot may
+then be available again.
+
+Verification:153 selected tests passed (data/native73, database/native15, shared
+Android host65), including12 new cases covering migration22 preservation,
+individual conflict-side removal, failed-write rollback, owner/session isolation,
+corrupt copies, duplicate confirmation and saved-state recreation, retained
+receipts, offline removal and suppression after restart/repeated cloud pages.
+The recapture test also verifies that exclusion cannot block a subsequent real
+spool/history deletion or its outbox. Android build/lint and shared iOS compilation
+passed.
+
+A focused Android phone pass (29 October 2026) also passed upgrade22-to-23
+preservation, cancellation, list/preview removal of two retained test copies,
+persistence after reopening and normal sync, and read-only cloud verification
+that every saved spool field and all four retained prints stay unchanged there.
+All other application tables, including receipts, outbox and cursors, remained
+unchanged. Final inventory is the exact original24 spools/31 prints, pending0,
+conflicts0, integrityok and foreign-key errors0.
+
+The pass found clipped removal-confirmation text in landscape. The text area now
+scrolls; portrait/landscape screenshots and UI trees confirm the whole explanation
+is accessible and action buttons stay visible. Rotation/cancellation after the
+fix preserve every data table. Android build/lint,65 shared host tests and shared
+iOS compilation passed again after this UI-only fix.
+
+Conflict-side/unreadable-copy removal, offline removal, failed writes and account
+switches were covered by automated tests rather than this phone pass. No iOS
+runtime, actual two-device or full E2E pass; no server mutation from removal.
 
 References: [RLS](https://supabase.com/docs/guides/database/postgres/row-level-security),
 [column permissions](https://supabase.com/docs/guides/database/postgres/column-level-security),

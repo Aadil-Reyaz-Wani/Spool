@@ -37,3 +37,19 @@ internal fun installInventoryRecovery(connection: SQLiteConnection) {
                 'is_failure',is_failure,'price_per_print',price_per_print)) FROM usage_log WHERE spoolId=OLD.id))),
             CAST((julianday('now')-2440587.5)*86400000 AS INTEGER)); END""")
 }
+
+val MIGRATION_22_23 = object : Migration(22, 23) {
+    override fun migrate(connection: SQLiteConnection) {
+        connection.execSQL("""CREATE TABLE IF NOT EXISTS inventory_recovery_removals (
+            owner_id TEXT NOT NULL,source_id TEXT NOT NULL,PRIMARY KEY(owner_id,source_id))""")
+        installInventoryRecoveryRemovals(connection)
+    }
+}
+
+internal fun installInventoryRecoveryRemovals(connection: SQLiteConnection) {
+    // A repeated cloud page must not recreate a copy removed on this installation.
+    connection.execSQL("""CREATE TRIGGER IF NOT EXISTS recovery_skip_removed BEFORE INSERT ON inventory_recovery_versions
+        WHEN EXISTS (SELECT 1 FROM inventory_recovery_removals
+            WHERE owner_id=NEW.owner_id AND source_id=NEW.id)
+        BEGIN SELECT RAISE(IGNORE); END""")
+}

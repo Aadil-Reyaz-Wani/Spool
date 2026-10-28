@@ -10,6 +10,8 @@ import kotlinx.coroutines.flow.Flow
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
+private const val VISIBLE = "NOT EXISTS (SELECT 1 FROM inventory_recovery_removals m WHERE m.owner_id=s.owner_id AND m.source_id=s.id)"
+
 private const val SOURCES = """SELECT s.*, r.spool_uuid AS restored_uuid FROM (
     SELECT owner_id,id,kind,snapshot,created_at FROM inventory_recovery_versions
     UNION ALL SELECT owner_id,'conflict:'||id||':local','conflict_local',local_snapshot,created_at FROM inventory_conflict_resolutions
@@ -19,11 +21,41 @@ private const val SOURCES = """SELECT s.*, r.spool_uuid AS restored_uuid FROM (
 @Dao
 @OptIn(ExperimentalUuidApi::class)
 interface InventoryRecoveryDao {
-    @Query("$SOURCES WHERE s.owner_id=:ownerId ORDER BY s.created_at DESC,s.id")
+    @Query("$SOURCES WHERE s.owner_id=:ownerId AND $VISIBLE ORDER BY s.created_at DESC,s.id")
     fun observeSources(ownerId: String): Flow<List<InventoryRecoverySource>>
 
-    @Query("$SOURCES WHERE s.owner_id=:ownerId AND s.id=:id")
+    @Query("$SOURCES WHERE s.owner_id=:ownerId AND s.id=:id AND $VISIBLE")
     suspend fun source(ownerId: String, id: String): InventoryRecoverySource?
+
+    @Query("SELECT EXISTS (SELECT 1 FROM inventory_recovery_removals WHERE owner_id=:ownerId AND source_id=:id)")
+    suspend fun isRemoved(ownerId: String, id: String): Boolean
+
+    @Insert
+    suspend fun insertRemoval(removal: InventoryRecoveryRemoval)
+
+    @Query("DELETE FROM inventory_recovery_versions WHERE owner_id=:ownerId AND id=:id")
+    suspend fun deleteVersion(ownerId: String, id: String)
+
+    @Query("UPDATE inventory_conflict_resolutions SET local_snapshot='{}' WHERE owner_id=:ownerId AND 'conflict:'||id||':local'=:sourceId")
+    suspend fun clearLocalVersion(ownerId: String, sourceId: String)
+
+    @Query("UPDATE inventory_conflict_resolutions SET cloud_snapshot='{}' WHERE owner_id=:ownerId AND 'conflict:'||id||':cloud'=:sourceId")
+    suspend fun clearCloudVersion(ownerId: String, sourceId: String)
+
+    @Transaction
+    suspend fun remove(ownerId: String, id: String): Boolean {
+        require(ownerId.isNotBlank())
+        if (isRemoved(ownerId, id)) return true
+        val current = source(ownerId, id) ?: return false
+        insertRemoval(InventoryRecoveryRemoval(ownerId, id))
+        when (current.kind) {
+            "conflict_local" -> clearLocalVersion(ownerId, id)
+            "conflict_cloud" -> clearCloudVersion(ownerId, id)
+            else -> deleteVersion(ownerId, id)
+        }
+        // Keep restore receipts and sync metadata: removing a copy never replays a restore or syncs a deletion.
+        return true
+    }
 
     @Insert
     suspend fun insertReceipt(receipt: InventoryRecoveryRestore)

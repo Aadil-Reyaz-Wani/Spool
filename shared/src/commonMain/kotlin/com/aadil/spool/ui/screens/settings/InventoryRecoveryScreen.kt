@@ -1,6 +1,8 @@
 package com.aadil.spool.ui.screens.settings
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
@@ -38,6 +40,7 @@ fun InventoryRecoveryScreen(navigateUp: () -> Unit) {
             if (state.busy) item { CircularProgressIndicator() }
             if (state.error) item { Text(stringResource(Res.string.recovery_error), color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodyMedium) }
             if (state.restored) item { Text(stringResource(Res.string.recovery_success), style = MaterialTheme.typography.bodyMedium) }
+            if (state.removed) item { Text(stringResource(Res.string.recovery_removed), style = MaterialTheme.typography.bodyMedium) }
             if (state.selected == null) {
                 if (state.items.isEmpty() && !state.busy) item { Text(stringResource(Res.string.recovery_empty), style = MaterialTheme.typography.bodyMedium) }
                 items(state.items, key = { it.id }) { item ->
@@ -47,15 +50,24 @@ fun InventoryRecoveryScreen(navigateUp: () -> Unit) {
                         if (item.restored) Text(stringResource(Res.string.recovery_already_restored), style = MaterialTheme.typography.bodyMedium)
                         SpoolButton(text = item.brand?.takeIf { it.isNotBlank() } ?: stringResource(Res.string.conflict_unnamed),
                             enabled = !state.busy, onClick = { viewModel.open(item.id) })
+                        TextButton(enabled = !state.busy, onClick = { viewModel.requestRemoval(item.id) }) {
+                            Text(stringResource(Res.string.recovery_remove))
+                        }
                     }
                 }
             } else if (preview == null) {
+                item { TextButton(enabled = !state.busy, onClick = { state.selected?.let(viewModel::requestRemoval) }) {
+                    Text(stringResource(Res.string.recovery_remove))
+                } }
                 item { SpoolButton(text = stringResource(Res.string.recovery_reload), enabled = !state.busy, onClick = { state.selected?.let(viewModel::open) }) }
             } else {
                 item { Text(recoveryKind(preview.source.kind), style = MaterialTheme.typography.titleMedium) }
                 item { Text(stringResource(Res.string.recovery_saved_at, preview.source.createdAt.toReadableDate()), style = MaterialTheme.typography.bodySmall) }
                 item { Text(stringResource(Res.string.recovery_history_notice), style = MaterialTheme.typography.bodyMedium) }
                 item { SpoolButton(text = stringResource(Res.string.recovery_restore), enabled = !state.busy && preview.source.restoredUuid == null, onClick = viewModel::requestRestore) }
+                item { TextButton(enabled = !state.busy, onClick = { viewModel.requestRemoval(preview.source.id) }) {
+                    Text(stringResource(Res.string.recovery_remove))
+                } }
                 if (preview.source.restoredUuid != null) item { Text(stringResource(Res.string.recovery_already_restored), style = MaterialTheme.typography.bodyMedium) }
                 item {
                     Column(verticalArrangement = Arrangement.spacedBy(Dimens.PaddingMedium)) {
@@ -77,6 +89,21 @@ fun InventoryRecoveryScreen(navigateUp: () -> Unit) {
             text = { Text(stringResource(Res.string.recovery_confirm_body, preview.version.logs.size)) },
             confirmButton = { TextButton(onClick = viewModel::confirmRestore) { Text(stringResource(Res.string.recovery_restore)) } },
             dismissButton = { TextButton(onClick = viewModel::dismissConfirmation) { Text(stringResource(Res.string.btn_cancel)) } })
+    }
+    state.removal?.let { item ->
+        AlertDialog(onDismissRequest = viewModel::dismissRemoval, shape = MaterialTheme.shapes.medium,
+            title = { Text(stringResource(Res.string.recovery_remove_title)) },
+            text = {
+                Column(modifier = Modifier.verticalScroll(rememberScrollState()),
+                    verticalArrangement = Arrangement.spacedBy(Dimens.PaddingMedium)) {
+                    Text(item.brand?.takeIf { it.isNotBlank() } ?: stringResource(Res.string.conflict_unnamed))
+                    Text(recoveryKind(item.kind))
+                    Text(stringResource(Res.string.recovery_saved_at, item.savedAt.toReadableDate()))
+                    Text(stringResource(Res.string.recovery_remove_body))
+                }
+            },
+            confirmButton = { TextButton(onClick = viewModel::confirmRemoval) { Text(stringResource(Res.string.recovery_remove)) } },
+            dismissButton = { TextButton(onClick = viewModel::dismissRemoval) { Text(stringResource(Res.string.btn_cancel)) } })
     }
 }
 

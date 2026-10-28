@@ -288,7 +288,7 @@
     <string name="recovery_title">Recovery</string>
     <string name="recovery_intro">Review this account’s saved copies on this device. Restore a copy without replacing existing inventory. Deleted cloud versions appear here after they download.</string>
     <string name="recovery_empty">No saved copies are available on this device yet.</string>
-    <string name="recovery_error">Could not read or restore this saved copy. Nothing has been replaced. Try opening it again.</string>
+    <string name="recovery_error">Could not read, restore or remove this saved copy. Nothing has been replaced. Try opening it again.</string>
     <string name="recovery_success">Copy restored on this device. It will sync automatically when connected.</string>
     <string name="recovery_already_restored">This saved version has already been restored as a copy.</string>
     <string name="recovery_saved_at">Saved on this device: %1$s</string>
@@ -302,5 +302,9 @@
     <string name="recovery_print_count">Prints to copy: %1$d</string>
     <string name="recovery_confirm_title">Restore this saved version?</string>
     <string name="recovery_confirm_body">Create a new spool with all %1$d prints shown in the preview. New IDs will be used. Existing inventory and the saved version stay unchanged. The copy saves offline and syncs when connected.</string>
-    <string name="recovery_retention">Saved copies are retained without automatic expiry. They are private to this account on this device. Older copies that were never saved here may be unavailable.</string>
+    <string name="recovery_retention">Saved copies stay until you remove them. Removal affects Recovery on this device only. Cloud copies may be available on another device or after reinstalling. Older copies that were never saved here may be unavailable.</string>
+    <string name="recovery_remove">Remove from this device</string>
+    <string name="recovery_remove_title">Remove this saved copy?</string>
+    <string name="recovery_remove_body">Remove this saved copy from Recovery on this installation. Your active inventory, restored spools and syncing stay unchanged. Cloud copies and copies on other devices are kept. Cloud copies may be available after reinstalling.</string>
+    <string name="recovery_removed">Saved copy removed from Recovery on this device.</string>
 </resources>

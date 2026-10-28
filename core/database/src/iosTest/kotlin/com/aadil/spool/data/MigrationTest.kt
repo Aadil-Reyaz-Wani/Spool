@@ -36,7 +36,7 @@ class MigrationTest {
     private val driver = BundledSQLiteDriver()
 
     @Test fun everySupportedVersionPreservesInventoryAndReopenKeepsIdentities() = runBlocking {
-        for (version in 10..21) withDatabaseFile { path ->
+        for (version in 10..22) withDatabaseFile { path ->
             createLegacy(path, version, populated = true)
             val before = snapshot(path, version)
             val database = open(path)
@@ -65,7 +65,7 @@ class MigrationTest {
             }
             assertEquals(before, snapshot(path, version), "All pre-existing fields from version $version")
             driver.open(path).use {
-                assertEquals(listOf(listOf("22")), it.rows("PRAGMA user_version"))
+                assertEquals(listOf(listOf("23")), it.rows("PRAGMA user_version"))
                 assertTrue(it.rows("PRAGMA foreign_key_check").isEmpty())
                 assertEquals(listOf(listOf("ok")), it.rows("PRAGMA integrity_check"))
             }
@@ -325,6 +325,33 @@ class MigrationTest {
         }
     }
 
+    @Test fun version22PreservesRecoveryAndReceiptsThenInstallsRemovalSuppression() = runBlocking {
+        withDatabaseFile { path ->
+            createLegacy(path, 22, populated = true)
+            driver.open(path).use {
+                it.execSQL("INSERT INTO inventory_recovery_versions VALUES ('account-a','deleted:cloud:old','deleted_cloud','{}',123)")
+                it.execSQL("INSERT INTO inventory_recovery_restores VALUES ('account-a','deleted:cloud:old','restored-uuid',456)")
+                it.execSQL("INSERT INTO inventory_conflict_resolutions VALUES ('old-copy','account-a','saved-uuid','cloud','{}','{}',123)")
+            }
+            val before = snapshot(path, 22)
+            val db = open(path)
+            try { assertEquals(3, db.inventoryRecoveryDao().observeSources("account-a").first().size) }
+            finally { db.close() }
+            assertEquals(before, snapshot(path, 22))
+            val reopened = open(path)
+            try {
+                assertTrue(reopened.inventoryRecoveryDao().remove("account-a", "deleted:cloud:old"))
+                reopened.inventorySyncDao().saveDeletedCloud("account-a", "old", "{}", 999)
+                assertNull(reopened.inventoryRecoveryDao().source("account-a", "deleted:cloud:old"))
+                assertTrue(reopened.inventoryRecoveryDao().isRemoved("account-a", "deleted:cloud:old"))
+            } finally { reopened.close() }
+            driver.open(path).use {
+                assertEquals(listOf(listOf("restored-uuid")), it.rows("SELECT spool_uuid FROM inventory_recovery_restores"))
+                assertTrue(it.rows("PRAGMA foreign_key_check").isEmpty())
+            }
+        }
+    }
+
     private fun open(path: String) = getSpoolDatabase(Room.databaseBuilder<SpoolDatabase>(
         name = path,
         factory = { SpoolDatabaseConstructor.initialize() },
@@ -364,6 +391,7 @@ class MigrationTest {
                 }
             }
             if (version >= 18) installInventoryOutbox(connection)
+            if (version >= 22) installInventoryRecovery(connection)
             schema["setupQueries"]!!.jsonArray.forEach { connection.execSQL(it.jsonPrimitive.content) }
             connection.execSQL("PRAGMA user_version = $version")
         }

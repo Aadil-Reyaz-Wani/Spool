@@ -33,6 +33,7 @@ internal val inventoryOutboxCallback = object : RoomDatabase.Callback() {
     override fun onCreate(connection: SQLiteConnection) {
         installInventoryOutbox(connection)
         installInventoryRecovery(connection)
+        installInventoryRecoveryRemovals(connection)
     }
 }
 

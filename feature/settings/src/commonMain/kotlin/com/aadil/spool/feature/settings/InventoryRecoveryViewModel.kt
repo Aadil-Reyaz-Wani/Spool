@@ -19,6 +19,8 @@ data class InventoryRecoveryUiState(
     val busy: Boolean = false,
     val error: Boolean = false,
     val restored: Boolean = false,
+    val removed: Boolean = false,
+    val removal: InventoryRecoveryItem? = null,
     val currency: String = defaultCurrencyCode(),
 )
 
@@ -37,7 +39,7 @@ class InventoryRecoveryViewModel(
     init {
         viewModelScope.launch {
             repository.observe(scope).catch { mutableState.update { it.copy(error = true) } }.collect { items ->
-                mutableState.update { it.copy(items = items) }
+                mutableState.update { it.copy(items = items, removal = it.removal?.takeIf { selected -> items.any { item -> item.id == selected.id } }) }
                 if (!state.value.busy && state.value.selected != null && items.none { it.id == state.value.selected }) closePreview()
             }
         }
@@ -50,7 +52,7 @@ class InventoryRecoveryViewModel(
         val request = ++generation
         operation?.cancel()
         saved["recovery_source"] = id
-        mutableState.update { it.copy(selected = id, preview = null, confirm = false, busy = true, error = false, restored = false) }
+        mutableState.update { it.copy(selected = id, preview = null, confirm = false, busy = true, error = false, restored = false, removed = false, removal = null) }
         operation = viewModelScope.launch {
             try {
                 val preview = repository.preview(scope, id)
@@ -63,7 +65,7 @@ class InventoryRecoveryViewModel(
 
     fun requestRestore() {
         if (!state.value.busy && state.value.preview?.source?.restoredUuid == null && state.value.preview != null) {
-            mutableState.update { it.copy(confirm = true) }
+            mutableState.update { it.copy(confirm = true, removal = null) }
         }
     }
     fun dismissConfirmation() { mutableState.update { it.copy(confirm = false) } }
@@ -89,10 +91,41 @@ class InventoryRecoveryViewModel(
         }
     }
 
+    fun requestRemoval(id: String) {
+        if (state.value.busy) return
+        val item = state.value.items.firstOrNull { it.id == id } ?: return
+        mutableState.update { it.copy(removal = item, confirm = false, error = false) }
+    }
+
+    fun dismissRemoval() { mutableState.update { it.copy(removal = null) } }
+
+    fun confirmRemoval() {
+        val item = state.value.removal ?: return
+        if (state.value.busy) return
+        val request = ++generation
+        mutableState.update { it.copy(removal = null, busy = true, error = false, restored = false, removed = false) }
+        operation = viewModelScope.launch {
+            try {
+                val result = repository.remove(scope, item.id)
+                if (request != generation) return@launch
+                when (result) {
+                    InventoryRecoveryRemovalResult.Removed -> {
+                        saved["recovery_source"] = null
+                        mutableState.update { it.copy(selected = null, preview = null, removed = true) }
+                    }
+                    InventoryRecoveryRemovalResult.StaleScope -> closePreview()
+                    InventoryRecoveryRemovalResult.Unavailable -> mutableState.update { it.copy(error = true) }
+                }
+            } catch (cancelled: CancellationException) { throw cancelled }
+            catch (_: Exception) { if (request == generation) mutableState.update { it.copy(error = true) } }
+            finally { if (request == generation) mutableState.update { it.copy(busy = false) } }
+        }
+    }
+
     fun closePreview() {
         ++generation
         operation?.cancel()
         saved["recovery_source"] = null
-        mutableState.update { it.copy(selected = null, preview = null, confirm = false, busy = false, error = false) }
+        mutableState.update { it.copy(selected = null, preview = null, confirm = false, busy = false, error = false, removal = null) }
     }
 }
