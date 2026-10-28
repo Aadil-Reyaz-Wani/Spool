@@ -169,7 +169,7 @@ interface InventorySyncDao {
 
     /** Cursor, conflict preservation and inventory commit together. Never acknowledge local work here. */
     @Transaction
-    suspend fun applyPull(page: InventoryPullPage, conflictSnapshot: String) {
+    suspend fun applyPull(page: InventoryPullPage, conflictSnapshot: String, deletedSnapshot: String? = null) {
         val owner = page.ownerId
         require(owner.isNotBlank() && page.cursor == (pullCursor(owner) ?: 0L))
         require(page.nextCursor >= page.cursor)
@@ -178,6 +178,7 @@ interface InventorySyncDao {
             val remote = snapshot.spool
             require(remote.ownerId == owner && remote.revision > 0 && page.nextCursor > page.cursor)
             require(snapshot.logs.all { it.ownerId == owner && it.spoolUuid == remote.uuid })
+            if (remote.deletedAt != null && deletedSnapshot != null) saveDeletedCloud(owner, remote.uuid, deletedSnapshot, currentTimeMillis())
             val base = serverRevision(owner, remote.uuid) ?: 0L
             if (remote.revision > base) {
                 if (hasPending(owner, remote.uuid) || batch(owner, remote.uuid) != null) {
@@ -190,6 +191,10 @@ interface InventorySyncDao {
         } else require(page.nextCursor == page.cursor && !page.hasMore)
         savePullState(InventoryPullState(owner, page.nextCursor))
     }
+
+    @Query("""INSERT OR IGNORE INTO inventory_recovery_versions
+        VALUES (:owner, 'deleted:cloud:'||:uuid, 'deleted_cloud', :snapshot, :at)""")
+    suspend fun saveDeletedCloud(owner: String, uuid: String, snapshot: String, at: Long)
 
     @Transaction
     suspend fun applyRemoteSnapshot(owner: String, snapshot: RemoteInventorySnapshot) {

@@ -1,5 +1,6 @@
 package com.aadil.spool.feature.settings.di
 
+import com.aadil.spool.feature.settings.InventoryRecoveryViewModel
 import com.aadil.spool.feature.settings.InventoryConflictsViewModel
 import com.aadil.spool.core.data.repository.InventorySession
 import com.aadil.spool.core.data.repository.CurrencyPreferencesRepository
@@ -17,6 +18,11 @@ val settingsModule: Module = module {
         val session = get<InventorySession>()
         val uploads = get<InventoryUploadCoordinator>()
         InventoryConflictsViewModel(get(), checkNotNull(session.scope.value), get(), get<CurrencyPreferencesRepository>().currencyCodeFlow, uploads::retry)
+    }
+    viewModel {
+        val session = get<InventorySession>()
+        val uploads = get<InventoryUploadCoordinator>()
+        InventoryRecoveryViewModel(get(), checkNotNull(session.scope.value), get(), get<CurrencyPreferencesRepository>().currencyCodeFlow, uploads::retry)
     }
     viewModel { AccountViewModel(get(), get(), get()) }
 }

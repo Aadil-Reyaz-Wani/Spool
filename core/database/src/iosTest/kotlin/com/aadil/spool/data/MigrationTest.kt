@@ -36,7 +36,7 @@ class MigrationTest {
     private val driver = BundledSQLiteDriver()
 
     @Test fun everySupportedVersionPreservesInventoryAndReopenKeepsIdentities() = runBlocking {
-        for (version in 10..20) withDatabaseFile { path ->
+        for (version in 10..21) withDatabaseFile { path ->
             createLegacy(path, version, populated = true)
             val before = snapshot(path, version)
             val database = open(path)
@@ -65,7 +65,7 @@ class MigrationTest {
             }
             assertEquals(before, snapshot(path, version), "All pre-existing fields from version $version")
             driver.open(path).use {
-                assertEquals(listOf(listOf("21")), it.rows("PRAGMA user_version"))
+                assertEquals(listOf(listOf("22")), it.rows("PRAGMA user_version"))
                 assertTrue(it.rows("PRAGMA foreign_key_check").isEmpty())
                 assertEquals(listOf(listOf("ok")), it.rows("PRAGMA integrity_check"))
             }
@@ -287,6 +287,41 @@ class MigrationTest {
                 assertTrue(db.inventorySyncDao().resolutions("account-a").isEmpty())
             } finally { db.close() }
             assertEquals(before, snapshot(path, 20))
+        }
+    }
+
+    @Test fun version21BackfillsAcknowledgedDeletesWithoutChangingExistingState() = runBlocking {
+        withDatabaseFile { path ->
+            createLegacy(path, 21, populated = true)
+            driver.open(path).use {
+                it.execSQL("PRAGMA foreign_keys=ON")
+                it.execSQL("UPDATE filaments SET owner_id='account-a' WHERE id=7")
+                it.execSQL("INSERT INTO inventory_pull_state VALUES ('account-a',77)")
+                it.execSQL("INSERT INTO inventory_conflict_resolutions VALUES ('old-copy','account-a','saved-uuid','cloud','{}','{}',123)")
+                it.execSQL("DELETE FROM filaments WHERE id=7")
+                it.execSQL("UPDATE pending_inventory_changes SET acknowledged_at=555")
+            }
+            val before = snapshot(path, 21)
+            val db = open(path)
+            try {
+                assertEquals(77L, db.inventorySyncDao().pullCursor("account-a"))
+                assertEquals(1, db.inventorySyncDao().resolutions("account-a").size)
+                val sources = db.inventoryRecoveryDao().observeSources("account-a").first()
+                assertEquals(3, sources.size)
+                val deleted = sources.single { it.kind == "deleted_device" }
+                val payload = Json.parseToJsonElement(deleted.snapshot).jsonObject
+                assertEquals("Prusament", payload.getValue("spool").jsonObject.getValue("brand").jsonPrimitive.content)
+                assertEquals(setOf("Benchy Test", "Failed print"), payload.getValue("logs").jsonArray.map {
+                    it.jsonObject.getValue("title").jsonPrimitive.content
+                }.toSet())
+                assertNull(deleted.restoredUuid)
+                assertTrue(db.inventoryRecoveryDao().observeSources("other").first().isEmpty())
+                assertTrue(db.spoolDao().pendingInventoryChanges("account-a").isEmpty())
+            } finally { db.close() }
+            assertEquals(before, snapshot(path, 21))
+            val reopened = open(path)
+            try { assertEquals(3, reopened.inventoryRecoveryDao().observeSources("account-a").first().size) }
+            finally { reopened.close() }
         }
     }
 

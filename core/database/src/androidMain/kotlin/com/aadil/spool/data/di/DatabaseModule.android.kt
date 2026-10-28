@@ -12,4 +12,5 @@ actual val platformDatabaseModule: Module = module {
     }
     single { get<SpoolDatabase>().spoolDao() }
     single { get<SpoolDatabase>().inventorySyncDao() }
+    single { get<SpoolDatabase>().inventoryRecoveryDao() }
 }

@@ -33,6 +33,9 @@ sealed interface Routes : NavKey {
     @Serializable
     object InventoryConflicts : Routes
 
+    @Serializable
+    object InventoryRecovery : Routes
+
 
     @Serializable
     object OpenSourceLicenses: Routes

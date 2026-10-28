@@ -2,6 +2,9 @@ package com.aadil.spool.data
 
 import com.aadil.spool.data.entity.InventoryPullState
 import com.aadil.spool.data.entity.InventoryRemoteApply
+import com.aadil.spool.data.entity.InventoryRecoveryVersion
+import com.aadil.spool.data.entity.InventoryRecoveryRestore
+import com.aadil.spool.data.dao.InventoryRecoveryDao
 import com.aadil.spool.data.entity.InventoryConflictResolution
 import androidx.room.AutoMigration
 import androidx.room.ConstructedBy
@@ -19,8 +22,8 @@ import com.aadil.spool.data.entity.Filament
 import com.aadil.spool.data.entity.UsageLog
 
 @Database(
-    entities = [Filament::class, UsageLog::class, PendingInventoryChange::class, InventorySyncState::class, InventoryUploadBatch::class, InventoryPullState::class, InventoryRemoteApply::class, InventoryConflictResolution::class],
-    version = 21,
+    entities = [Filament::class, UsageLog::class, PendingInventoryChange::class, InventorySyncState::class, InventoryUploadBatch::class, InventoryPullState::class, InventoryRemoteApply::class, InventoryConflictResolution::class, InventoryRecoveryVersion::class, InventoryRecoveryRestore::class],
+    version = 22,
     autoMigrations = [
         AutoMigration(from = 10, to = 11),
         AutoMigration(from = 11, to = 12, spec = SpoolDatabase.DeletePriceSpec::class),
@@ -34,6 +37,7 @@ import com.aadil.spool.data.entity.UsageLog
 abstract class SpoolDatabase : RoomDatabase() {
     abstract fun spoolDao(): SpoolDao
     abstract fun inventorySyncDao(): InventorySyncDao
+    abstract fun inventoryRecoveryDao(): InventoryRecoveryDao
 
     @DeleteColumn(tableName = "usage_log", columnName = "price_per_print")
     class DeletePriceSpec : AutoMigrationSpec

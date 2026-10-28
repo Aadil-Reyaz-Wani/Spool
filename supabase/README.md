@@ -2,7 +2,8 @@
 
 Versioned cloud migrations and rollback-only SQL tests. Room remains the app's
 source of data. Automatic account-scoped uploads and downloads are connected.
-Conflict review is available from Account; saved-copy recovery UI is not enabled yet.
+Conflict review and account-scoped Recovery are available from Account. Recovery
+creates new copies from versions retained on this device; no automatic expiry is enabled.
 
 ## Schema and access
 
@@ -173,8 +174,8 @@ Account links to a shared conflict screen. Users can compare every spool field,
 live/deleted print history, amounts, dates and failure flags, then confirm either
 version. Opening, refreshing or cancelling a comparison does not modify inventory.
 A fresh connection is required to review and confirm; ordinary inventory saves
-continue offline. Both reviewed copies are retained locally, with no recovery or
-purge UI in this step.
+continue offline. Both reviewed copies are retained locally and can be previewed from Account /
+Recovery. There is no purge UI.
 
 `InventoryConflictResolver` refetches the cloud snapshot on confirmation and
 requires it to match the reviewed version. An account/session switch cancels it.
@@ -262,10 +263,71 @@ and 31 history rows and primary cloud inventory remained unchanged, with no pend
 changes or conflicts. Six secondary-account resolution archives remain intentionally
 retained on the device.
 
-Next: saved-copy/deleted-inventory recovery UI and retention policy. Reliable Android
-process-death simulation, iOS runtime, real two-device and full E2E tests were not
-covered by this phone pass. Do not claim recovery controls or automatic expiry are
-available.
+The Step 9 phone pass did not cover reliable Android process-death simulation,
+iOS runtime, real two-device or full E2E tests. Recovery is implemented in Step 10
+below; automatic expiry remains disabled.
+
+## Local recovery (Step 10)
+
+Account / Recovery lists the account's retained deleted spools and both versions
+of each saved conflict resolution. Preview shows every spool field and every
+print that will be copied. Explicit confirmation creates a new spool and fresh
+history UUIDs, keeping the source, existing inventory, server tombstones, pull
+cursor and original identities unchanged. Restoration works offline; normal
+outbox triggers queue the new aggregate for the existing automatic uploader.
+No additional server migration, credential or permission is required.
+
+Room schema 22 adds private account-scoped deleted-version storage and restore
+receipts. A BEFORE DELETE trigger captures a signed-in local spool and its whole
+live history before cascade; remote-apply suppression prevents download echoes.
+Deleted aggregates delivered by the existing pull RPC are cached in the same
+cursor/application transaction, including empty-account restore. Repeated pages
+keep the first retained deleted version. A failed capture aborts deletion, and a
+failed restore rolls back its copy, receipt and queue. A receipt permits only one
+restoration per saved version, even after restart or deleting the restored copy;
+the latter deletion becomes a separate recoverable version.
+
+Migration 21-to-22 preserves existing tables, inventory, outbox, conflicts and
+cursors, backfilling retained local deletion payloads, including acknowledged
+ones. Conflict archives remain in their existing table. Account and session scope
+checks prevent reading or restoring another account's versions. Restore compares
+the exact retained source and re-decodes the preview before writing. Only the
+selected source ID persists across process recreation; confirmation is never
+replayed. The Recovery route is covered by the actual navigation serializer test.
+
+Recovery availability is limited to saved copies on the current device. Existing
+phones do not reset their pull cursor, so remote deletions consumed before this
+upgrade may be unavailable unless another retained copy exists. A new device
+can cache deleted cloud aggregates as its initial download proceeds. Local saved
+conflict copies and restore receipts are not themselves synchronized. Deleted
+snapshots can include previously deleted prints; the preview and confirmation
+explicitly state that every displayed print will be copied under a new identity.
+Live conflict versions exclude prints already deleted in that version. No records
+are automatically purged, regardless of advisory server expiry metadata.
+
+Verification: 141 selected tests passed (66 data/native, 14 database/native,
+61 shared Android host), including 18 new recovery/migration/ViewModel cases.
+Android build, shared iOS compilation and lint passed (zero errors, 56 existing
+warnings). Migration preservation covers versions 10 through 21; all previous
+schema entity definitions remain unchanged in version 22.
+
+Focused Android phone checks (28-29 October 2026) passed upgrade preservation
+(exactly 24 existing spools and 31 prints), preview/cancel, confirmation rotation,
+account/guest isolation, restoring a cloud conflict version as a fresh copy with
+all six prints, automatic upload verified against the cloud snapshot, and
+receipt-based duplicate prevention after reopening. Deleting the disposable copy
+retained its six-print device snapshot and downloaded cloud tombstone. Cleanup
+restored the original signed-in account and exact original inventory; pending
+uploads/conflicts are zero and database integrity/foreign-key checks passed.
+
+Network-off restore/reconnect remains pending on the phone: an active call was
+visible and network changes await the user's answer. Complete screenshot layout
+review was obscured by that call. Local-side archive restoration, iOS runtime,
+real two-device behavior and full E2E were not phone-tested. No product defect
+was observed in the covered cases.
+
+Next: finish the network-off/visual phone checks when the phone is available,
+then agree on a retention and deletion policy.
 
 References: [RLS](https://supabase.com/docs/guides/database/postgres/row-level-security),
 [column permissions](https://supabase.com/docs/guides/database/postgres/column-level-security),

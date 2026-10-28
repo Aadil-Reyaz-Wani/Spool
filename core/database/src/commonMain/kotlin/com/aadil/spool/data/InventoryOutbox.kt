@@ -30,7 +30,10 @@ val MIGRATION_17_18 = object : Migration(17, 18) {
 }
 
 internal val inventoryOutboxCallback = object : RoomDatabase.Callback() {
-    override fun onCreate(connection: SQLiteConnection) = installInventoryOutbox(connection)
+    override fun onCreate(connection: SQLiteConnection) {
+        installInventoryOutbox(connection)
+        installInventoryRecovery(connection)
+    }
 }
 
 /** Triggers run in the writer's transaction, including bulk updates and foreign-key cascades. */
@@ -69,7 +72,7 @@ private fun enqueue(owner: String, type: String, uuid: String, spoolUuid: String
 """.trimIndent()
 
 // Version 1 payloads use stable UUID relationships; device-local integer IDs never leave Room.
-private fun spoolPayload(row: String): String = jsonPayload(row, listOf(
+internal fun spoolPayload(row: String): String = jsonPayload(row, listOf(
     "uuid", "brand", "material", "color_name", "color_hex", "total_weight", "current_weight",
     "temp_nozzle", "temp_bed", "note", "price", "timestamp", "dry_baseline_weight",
     "dry_baseline_tare_grams", "last_weighed_tare_grams", "last_dried_at",

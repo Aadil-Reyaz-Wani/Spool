@@ -50,7 +50,9 @@ class InventoryDownloader(
                             put("server", Json.encodeToJsonElement(RemoteInventorySnapshot.serializer(), it))
                         }
                     }.toString()
-                    dao.applyPull(page, conflict)
+                    dao.applyPull(page, conflict, page.snapshot?.takeIf { it.spool.deletedAt != null }?.let {
+                        Json.encodeToString(RemoteInventorySnapshot.serializer(), it)
+                    })
                     if (page.hasMore) InventoryUploadResult.Applied else InventoryUploadResult.NoWork
                 }
                 InventoryPullReply.NotAuthenticated -> InventoryUploadResult.NotAuthenticated

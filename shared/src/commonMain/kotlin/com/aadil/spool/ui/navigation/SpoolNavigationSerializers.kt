@@ -16,6 +16,7 @@ internal val spoolNavigationSerializers = SerializersModule {
         subclass(serializer = Routes.About.serializer())
         subclass(serializer = Routes.Account.serializer())
         subclass(serializer = Routes.InventoryConflicts.serializer())
+        subclass(serializer = Routes.InventoryRecovery.serializer())
         subclass(serializer = Routes.OpenSourceLicenses.serializer())
         subclass(serializer = Routes.Help.serializer())
         subclass(serializer = Routes.FitCheck.serializer())

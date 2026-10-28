@@ -37,7 +37,7 @@ import org.koin.compose.viewmodel.koinViewModel
 import spool.shared.generated.resources.*
 
 @Composable
-fun AccountScreen(navigateUp: () -> Unit, reviewConflicts: () -> Unit) {
+fun AccountScreen(navigateUp: () -> Unit, reviewConflicts: () -> Unit, openRecovery: () -> Unit) {
     val viewModel: AccountViewModel = koinViewModel()
     val state by viewModel.state.collectAsStateWithLifecycle()
     val google = rememberGoogleSignIn(viewModel.googleWebClientId)
@@ -89,6 +89,7 @@ fun AccountScreen(navigateUp: () -> Unit, reviewConflicts: () -> Unit) {
                     enabled = !state.busy && upload.mode != InventoryUploadMode.Uploading && upload.mode != InventoryUploadMode.Checking,
                     onClick = viewModel::retryUploads,
                 )
+                SpoolButton(text = stringResource(Res.string.recovery_title), enabled = !state.busy, onClick = openRecovery)
                 if (state.guestSpoolCount > 0) {
                     Text(stringResource(Res.string.inventory_guest_available, state.guestSpoolCount), style = MaterialTheme.typography.bodyMedium)
                     SpoolButton(

@@ -247,7 +247,7 @@
     <string name="conflict_keep_cloud">Use cloud</string>
     <string name="conflict_refresh">Refresh comparison</string>
     <string name="conflict_compare_notice">The choice applies to the whole spool and its print history. Review both versions before continuing.</string>
-    <string name="conflict_archive_notice">Both reviewed copies are retained on this device. Recovery controls are not available yet.</string>
+    <string name="conflict_archive_notice">Both reviewed copies are retained on this device. Find saved copies in Account / Recovery.</string>
     <string name="conflict_changed">One of the versions changed. Refresh the comparison and review it again. Your pending changes are still saved.</string>
     <string name="conflict_unavailable">Could not check the latest cloud version. Connect and try again. Both versions remain saved.</string>
     <string name="conflict_confirm_local">Use this device’s version?</string>
@@ -285,4 +285,22 @@
     <string name="conflict_success">Successful print</string>
     <string name="conflict_failure">Failed print</string>
     <string name="conflict_print_values">%1$s used, cost %2$s</string>
+    <string name="recovery_title">Recovery</string>
+    <string name="recovery_intro">Review this account’s saved copies on this device. Restore a copy without replacing existing inventory. Deleted cloud versions appear here after they download.</string>
+    <string name="recovery_empty">No saved copies are available on this device yet.</string>
+    <string name="recovery_error">Could not read or restore this saved copy. Nothing has been replaced. Try opening it again.</string>
+    <string name="recovery_success">Copy restored on this device. It will sync automatically when connected.</string>
+    <string name="recovery_already_restored">This saved version has already been restored as a copy.</string>
+    <string name="recovery_saved_at">Saved on this device: %1$s</string>
+    <string name="recovery_conflict_local">Saved conflict version from this device</string>
+    <string name="recovery_conflict_cloud">Saved conflict version from the cloud</string>
+    <string name="recovery_deleted_device">Deleted spool saved on this device</string>
+    <string name="recovery_deleted_cloud">Deleted spool downloaded from the cloud</string>
+    <string name="recovery_reload">Open saved copy again</string>
+    <string name="recovery_restore">Restore as new copy</string>
+    <string name="recovery_history_notice">All prints shown below will be copied. A saved deleted version can include previously deleted prints. Review the history before restoring.</string>
+    <string name="recovery_print_count">Prints to copy: %1$d</string>
+    <string name="recovery_confirm_title">Restore this saved version?</string>
+    <string name="recovery_confirm_body">Create a new spool with all %1$d prints shown in the preview. New IDs will be used. Existing inventory and the saved version stay unchanged. The copy saves offline and syncs when connected.</string>
+    <string name="recovery_retention">Saved copies are retained without automatic expiry. They are private to this account on this device. Older copies that were never saved here may be unavailable.</string>
 </resources>

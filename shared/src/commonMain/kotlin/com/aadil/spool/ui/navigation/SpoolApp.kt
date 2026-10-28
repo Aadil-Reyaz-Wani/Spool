@@ -32,6 +32,7 @@ import com.aadil.spool.ui.screens.entry.SpoolEntryScreen
 import com.aadil.spool.feature.entry.SpoolEntryViewModel
 import com.aadil.spool.ui.screens.history.PrintHistoryScreen
 import com.aadil.spool.feature.history.PrintHistoryViewModel
+import com.aadil.spool.ui.screens.settings.InventoryRecoveryScreen
 import com.aadil.spool.ui.screens.settings.InventoryConflictsScreen
 import com.aadil.spool.ui.screens.settings.AccountScreen
 import com.aadil.spool.ui.screens.settings.AboutScreen
@@ -189,12 +190,17 @@ fun MySpoolApp(modifier: Modifier = Modifier, initialSpoolId: Int? = null) {
                 )
             }
 
+            entry<Routes.InventoryRecovery> {
+                InventoryRecoveryScreen(navigateUp = safePopBackStack)
+            }
+
             entry<Routes.InventoryConflicts> {
                 InventoryConflictsScreen(navigateUp = safePopBackStack)
             }
 
             entry<Routes.Account> {
-                AccountScreen(navigateUp = safePopBackStack, reviewConflicts = { backStack.add(Routes.InventoryConflicts) })
+                AccountScreen(navigateUp = safePopBackStack, reviewConflicts = { backStack.add(Routes.InventoryConflicts) },
+                    openRecovery = { backStack.add(Routes.InventoryRecovery) })
             }
 
             // Entry Screen Entry
