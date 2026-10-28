@@ -37,7 +37,7 @@ import org.koin.compose.viewmodel.koinViewModel
 import spool.shared.generated.resources.*
 
 @Composable
-fun AccountScreen(navigateUp: () -> Unit) {
+fun AccountScreen(navigateUp: () -> Unit, reviewConflicts: () -> Unit) {
     val viewModel: AccountViewModel = koinViewModel()
     val state by viewModel.state.collectAsStateWithLifecycle()
     val google = rememberGoogleSignIn(viewModel.googleWebClientId)
@@ -79,6 +79,7 @@ fun AccountScreen(navigateUp: () -> Unit) {
                 Text(stringResource(Res.string.inventory_upload_count, upload.queue.pending), style = MaterialTheme.typography.bodyMedium)
                 if (upload.queue.conflicts > 0) {
                     Text(stringResource(Res.string.inventory_upload_conflicts, upload.queue.conflicts), style = MaterialTheme.typography.bodyMedium)
+                    SpoolButton(text = stringResource(Res.string.conflict_review_button), enabled = !state.busy, onClick = reviewConflicts)
                 }
                 Text(stringResource(Res.string.inventory_upload_restore_notice), style = MaterialTheme.typography.bodySmall)
                 // Keep action positions stable as uploads start and finish.

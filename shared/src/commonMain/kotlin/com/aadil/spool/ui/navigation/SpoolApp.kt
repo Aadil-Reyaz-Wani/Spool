@@ -13,15 +13,11 @@ import androidx.compose.ui.Modifier
 import org.jetbrains.compose.resources.stringResource
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
-import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
 import androidx.savedstate.serialization.SavedStateConfiguration
-import kotlinx.serialization.modules.SerializersModule
-import kotlinx.serialization.modules.polymorphic
-import kotlinx.serialization.modules.subclass
 import spool.shared.generated.resources.*
 import com.aadil.spool.utils.PlatformBackHandler
 import com.aadil.spool.ui.common.SpoolAppBar
@@ -36,6 +32,7 @@ import com.aadil.spool.ui.screens.entry.SpoolEntryScreen
 import com.aadil.spool.feature.entry.SpoolEntryViewModel
 import com.aadil.spool.ui.screens.history.PrintHistoryScreen
 import com.aadil.spool.feature.history.PrintHistoryViewModel
+import com.aadil.spool.ui.screens.settings.InventoryConflictsScreen
 import com.aadil.spool.ui.screens.settings.AccountScreen
 import com.aadil.spool.ui.screens.settings.AboutScreen
 import com.aadil.spool.ui.screens.settings.HelpScreen
@@ -88,21 +85,7 @@ fun MySpoolApp(modifier: Modifier = Modifier, initialSpoolId: Int? = null) {
     // Navigation
     val backStack = rememberNavBackStack(
         configuration = SavedStateConfiguration {
-            serializersModule = SerializersModule {
-                polymorphic(baseClass = NavKey::class) {
-                    subclass(serializer = Routes.Splash.serializer())
-                    subclass(serializer = Routes.Dashboard.serializer())
-                    subclass(serializer = Routes.SpoolEntry.serializer())
-                    subclass(serializer = Routes.SpoolDetails.serializer())
-                    subclass(serializer = Routes.PrintHistory.serializer())
-                    subclass(serializer = Routes.Filter.serializer())
-                    subclass(serializer = Routes.About.serializer())
-                    subclass(serializer = Routes.Account.serializer())
-                    subclass(serializer = Routes.OpenSourceLicenses.serializer())
-                    subclass(serializer = Routes.Help.serializer())
-                    subclass(serializer = Routes.FitCheck.serializer())
-                }
-            }
+            serializersModule = spoolNavigationSerializers
         },
         Routes.Splash
     )
@@ -206,8 +189,12 @@ fun MySpoolApp(modifier: Modifier = Modifier, initialSpoolId: Int? = null) {
                 )
             }
 
+            entry<Routes.InventoryConflicts> {
+                InventoryConflictsScreen(navigateUp = safePopBackStack)
+            }
+
             entry<Routes.Account> {
-                AccountScreen(navigateUp = safePopBackStack)
+                AccountScreen(navigateUp = safePopBackStack, reviewConflicts = { backStack.add(Routes.InventoryConflicts) })
             }
 
             // Entry Screen Entry

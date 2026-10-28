@@ -2,6 +2,7 @@ package com.aadil.spool.data
 
 import com.aadil.spool.data.entity.InventoryPullState
 import com.aadil.spool.data.entity.InventoryRemoteApply
+import com.aadil.spool.data.entity.InventoryConflictResolution
 import androidx.room.AutoMigration
 import androidx.room.ConstructedBy
 import androidx.room.Database
@@ -18,8 +19,8 @@ import com.aadil.spool.data.entity.Filament
 import com.aadil.spool.data.entity.UsageLog
 
 @Database(
-    entities = [Filament::class, UsageLog::class, PendingInventoryChange::class, InventorySyncState::class, InventoryUploadBatch::class, InventoryPullState::class, InventoryRemoteApply::class],
-    version = 20,
+    entities = [Filament::class, UsageLog::class, PendingInventoryChange::class, InventorySyncState::class, InventoryUploadBatch::class, InventoryPullState::class, InventoryRemoteApply::class, InventoryConflictResolution::class],
+    version = 21,
     autoMigrations = [
         AutoMigration(from = 10, to = 11),
         AutoMigration(from = 11, to = 12, spec = SpoolDatabase.DeletePriceSpec::class),

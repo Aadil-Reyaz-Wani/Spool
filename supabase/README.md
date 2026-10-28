@@ -2,7 +2,7 @@
 
 Versioned cloud migrations and rollback-only SQL tests. Room remains the app's
 source of data. Automatic account-scoped uploads and downloads are connected.
-Conflict resolution and recovery UI are not enabled yet.
+Conflict review is available from Account; saved-copy recovery UI is not enabled yet.
 
 ## Schema and access
 
@@ -161,7 +161,50 @@ Android periodic work checks for changes even without local pending edits.
 Android controls background timing. iOS authentication/background tasks remain
 unavailable, although shared code compiles.
 
-## Verification and next step
+## Conflict review and resolution
+
+Migration `20261028134909_inventory_conflict_review` adds the authenticated,
+read-only `get_inventory_snapshot(expected_owner, spool_uuid)` RPC. It verifies
+`auth.uid()`, pins the empty search path, and revokes public/anonymous execution.
+It returns the complete current aggregate, including deleted rows. Existing
+revision/idempotency upload rules and write privileges are unchanged.
+
+Account links to a shared conflict screen. Users can compare every spool field,
+live/deleted print history, amounts, dates and failure flags, then confirm either
+version. Opening, refreshing or cancelling a comparison does not modify inventory.
+A fresh connection is required to review and confirm; ordinary inventory saves
+continue offline. Both reviewed copies are retained locally, with no recovery or
+purge UI in this step.
+
+`InventoryConflictResolver` refetches the cloud snapshot on confirmation and
+requires it to match the reviewed version. An account/session switch cancels it.
+Room then compares the complete reviewed local record, all history, every pending
+operation and the frozen batch in one transaction. Changed versions require a new
+review. Both copies, pending snapshots and the exact old frozen request are
+archived in schema 21 before anything is replaced. Failure rolls back the archive,
+queue, inventory, revision and outbox guard together. Migration 20-to-21 preserves
+existing data, cursors, conflicts and batches.
+
+Choosing cloud applies the complete reviewed snapshot without an outbox echo or
+cursor jump. Choosing local against a live cloud spool creates a new conditional
+batch based on the reviewed cloud revision. Its delta preserves common history,
+adds/updates local history and deletes cloud-only live prints so the result matches
+the selected whole version. A newer cloud edit conflicts normally rather than
+being overwritten. Local spool deletion queues a conditional cloud deletion.
+
+Deleted UUIDs are never resurrected. Keeping a local live spool after cloud deletion
+creates a new spool and new history UUIDs. Keeping a local print deleted in the
+cloud creates a new print UUID. The UI explains these consequences before
+confirmation. Confirming two deleted versions creates no replacement. Receipts,
+acknowledged deletion snapshots, tombstones and resolution archives are not pruned.
+Existing 4-MiB/10,000-changed-history-row upload limits still apply; rejected work
+remains queued and retained.
+
+The comparison and confirmation state live in a ViewModel. Configuration changes
+retain the active review. Process recreation restores only the selected spool and
+refetches it; a confirmation is never replayed. Long histories use lazy rendering.
+
+## Previous download verification
 
 Step 8 passed 154 automated tests (one opt-in network probe skipped), Android debug
 build, lint (zero errors, 56 existing warnings), and shared iOS simulator compilation.
@@ -190,9 +233,39 @@ pending/conflicts zero and network settings restored. A pre-existing currency
 formatter defect (1.20 displayed as 1.19) was fixed using rounded integer cents
 and rechecked on the phone. iOS runtime/full E2E were not tested.
 
-Next: conflict-resolution and recovery UI/retention. Do not claim those
-later features are available. No automatic deletion of receipts, tombstones or
-recovery snapshots is enabled.
+## Conflict verification and next step
+
+Step 9 passed 182 selected automated tests (one opt-in live probe skipped), Android
+build/lint (zero errors, 56 existing warnings), and shared iOS compilation. Fifteen
+new real-Room tests cover both choices, retained copies, conditional deltas,
+concurrent local/cloud changes, account switching, deletion/copy semantics,
+archive/apply/clone rollback, duplicate confirmation, restart and history beyond
+the 100-operation queue inspection limit. Five ViewModel tests cover explicit
+confirmation/cancel, stale/offline handling, process recreation and cancellation.
+Three new transport tests run on Android and native, and migration tests now cover
+versions 10 through 20 including persisted conflicts/cursors.
+
+All 33 conflict SQL assertions passed in a rolled-back rehearsal and after
+migration deployment. Existing access, upload and pull suites passed as well.
+Anonymous snapshot RPC calls returned HTTP 401 / PostgreSQL 42501. Existing cloud
+inventory/tombstone fingerprints and receipt count were unchanged; fixtures rolled
+back. No real user token was extracted.
+
+A requested focused Redmi Note 8 Pro pass verified schema 20-to-21 preservation,
+comparison/cancel, stale-cloud rejection, both choices, deleted-print identity
+replacement, a new copy of a remotely deleted spool, restoration of a locally
+deleted spool, and accepting cloud deletion. A missing saved-state route serializer
+caused a background/rotation crash during testing; it was fixed and covered by a
+route roundtrip regression test. The corrected confirmation survived backgrounding
+and landscape/portrait rotation. Test fixtures were cleaned up; original 24 spools
+and 31 history rows and primary cloud inventory remained unchanged, with no pending
+changes or conflicts. Six secondary-account resolution archives remain intentionally
+retained on the device.
+
+Next: saved-copy/deleted-inventory recovery UI and retention policy. Reliable Android
+process-death simulation, iOS runtime, real two-device and full E2E tests were not
+covered by this phone pass. Do not claim recovery controls or automatic expiry are
+available.
 
 References: [RLS](https://supabase.com/docs/guides/database/postgres/row-level-security),
 [column permissions](https://supabase.com/docs/guides/database/postgres/column-level-security),

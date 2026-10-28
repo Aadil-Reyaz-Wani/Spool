@@ -1,5 +1,7 @@
 package com.aadil.spool.core.data.di
 
+import com.aadil.spool.core.data.sync.InventoryConflictRepository
+import com.aadil.spool.core.data.sync.InventoryConflictResolver
 import com.aadil.spool.core.data.sync.InventoryDownloader
 import com.aadil.spool.core.data.sync.InventoryUploader
 import com.aadil.spool.core.data.sync.InventoryUploadCoordinator
@@ -21,6 +23,7 @@ val dataModule = module {
     includes(platformDataStoreModule)
     single { InventorySession(get(), get(), getOrNull<InventoryNotifications>(), get()) } onClose { it?.close() }
     single { InventoryUploader(get(), get(), get()) }
+    single<InventoryConflictRepository> { InventoryConflictResolver(get(), get(), get()) }
     single { InventoryDownloader(get(), get(), get()) }
     single { InventoryUploadCoordinator(get(), get(), get(), get(), get(), downloader = get()) } onClose { it?.close() }
     factory<SpoolRepository> {

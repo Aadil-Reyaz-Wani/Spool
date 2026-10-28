@@ -5,6 +5,9 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Transaction
+import com.aadil.spool.core.model.RemoteInventorySnapshot
+import com.aadil.spool.data.entity.InventoryConflictRecord
+import com.aadil.spool.data.entity.InventoryConflictResolution
 import androidx.room.Update
 import com.aadil.spool.core.model.InventoryPullPage
 import com.aadil.spool.data.entity.Filament
@@ -140,7 +143,7 @@ interface InventorySyncDao {
     @Query("SELECT * FROM usage_log WHERE uuid = :uuid")
     suspend fun logByUuid(uuid: String): UsageLog?
 
-    @Query("SELECT * FROM usage_log WHERE spoolId = :id")
+    @Query("SELECT * FROM usage_log WHERE spoolId = :id ORDER BY id")
     suspend fun logsForSpool(id: Int): List<UsageLog>
 
     @Query("SELECT EXISTS (SELECT 1 FROM pending_inventory_changes WHERE owner_id = :ownerId AND spool_uuid = :uuid AND acknowledged_at IS NULL)")
@@ -181,41 +184,147 @@ interface InventorySyncDao {
                     val frozen = prepareSpool(owner, remote.uuid)
                     saveConflict(owner, remote.uuid, frozen.batchId, conflictSnapshot)
                 } else {
-                    val existing = spoolByUuid(remote.uuid)
-                    // Local UUID indexes are global. A collision must never transfer another account's data.
-                    require(existing == null || existing.ownerId == owner)
-                    beginRemoteApply(InventoryRemoteApply(owner))
-                    try {
-                        if (remote.deletedAt != null) {
-                            deleteRemoteSpool(owner, remote.uuid)
-                        } else {
-                            val row = Filament(id = existing?.id ?: 0, brand = remote.brand, material = remote.material,
-                                colorName = remote.colorName, colorHex = remote.colorHex, totalWeight = remote.totalWeight,
-                                currentWeight = remote.currentWeight, tempNozzle = remote.tempNozzle, tempBed = remote.tempBed,
-                                note = remote.note, price = remote.price, timestamp = remote.timestamp,
-                                dryBaselineWeight = remote.dryBaselineWeight, dryBaselineTareGrams = remote.dryBaselineTareGrams,
-                                lastWeighedTareGrams = remote.lastWeighedTareGrams, lastDriedAt = remote.lastDriedAt,
-                                uuid = remote.uuid, ownerId = owner)
-                            val id = if (existing == null) insertRemoteSpool(row).toInt() else {
-                                updateRemoteSpool(row)
-                                existing.id
-                            }
-                            val live = snapshot.logs.filter { it.deletedAt == null }
-                            val liveIds = live.map { it.uuid }.toSet()
-                            logsForSpool(id).filter { it.uuid !in liveIds }.forEach { deleteRemoteLog(id, it.uuid) }
-                            for (log in live) {
-                                val previous = logByUuid(log.uuid)
-                                require(previous == null || previous.spoolId == id)
-                                val local = UsageLog(previous?.id ?: 0, id, log.title, log.gramsUsed, log.timestamp,
-                                    log.isFailure, log.pricePerPrint, log.uuid)
-                                if (previous == null) insertRemoteLog(local) else updateRemoteLog(local)
-                            }
-                        }
-                        saveState(InventorySyncState(owner, remote.uuid, remote.revision))
-                    } finally { endRemoteApply(owner) }
+                    applyRemoteSnapshot(owner, snapshot)
                 }
             }
         } else require(page.nextCursor == page.cursor && !page.hasMore)
         savePullState(InventoryPullState(owner, page.nextCursor))
+    }
+
+    @Transaction
+    suspend fun applyRemoteSnapshot(owner: String, snapshot: RemoteInventorySnapshot) {
+        val remote = snapshot.spool
+        require(owner.isNotBlank() && remote.ownerId == owner && remote.revision > 0)
+        require(snapshot.logs.all { it.ownerId == owner && it.spoolUuid == remote.uuid })
+        val existing = spoolByUuid(remote.uuid)
+        // Local UUID indexes are global. A collision must never transfer another account's data.
+        require(existing == null || existing.ownerId == owner)
+        beginRemoteApply(InventoryRemoteApply(owner))
+        try {
+            if (remote.deletedAt != null) {
+                deleteRemoteSpool(owner, remote.uuid)
+            } else {
+                val row = Filament(id = existing?.id ?: 0, brand = remote.brand, material = remote.material,
+                    colorName = remote.colorName, colorHex = remote.colorHex, totalWeight = remote.totalWeight,
+                    currentWeight = remote.currentWeight, tempNozzle = remote.tempNozzle, tempBed = remote.tempBed,
+                    note = remote.note, price = remote.price, timestamp = remote.timestamp,
+                    dryBaselineWeight = remote.dryBaselineWeight, dryBaselineTareGrams = remote.dryBaselineTareGrams,
+                    lastWeighedTareGrams = remote.lastWeighedTareGrams, lastDriedAt = remote.lastDriedAt,
+                    uuid = remote.uuid, ownerId = owner)
+                val id = if (existing == null) insertRemoteSpool(row).toInt() else {
+                    updateRemoteSpool(row)
+                    existing.id
+                }
+                val live = snapshot.logs.filter { it.deletedAt == null }
+                val liveIds = live.map { it.uuid }.toSet()
+                logsForSpool(id).filter { it.uuid !in liveIds }.forEach { deleteRemoteLog(id, it.uuid) }
+                for (log in live) {
+                    val previous = logByUuid(log.uuid)
+                    require(previous == null || previous.spoolId == id)
+                    val local = UsageLog(previous?.id ?: 0, id, log.title, log.gramsUsed, log.timestamp,
+                        log.isFailure, log.pricePerPrint, log.uuid)
+                    if (previous == null) insertRemoteLog(local) else updateRemoteLog(local)
+                }
+            }
+            saveState(InventorySyncState(owner, remote.uuid, remote.revision))
+        } finally { endRemoteApply(owner) }
+    }
+
+    @Query("SELECT * FROM inventory_upload_batches WHERE owner_id = :ownerId AND conflict_snapshot IS NOT NULL ORDER BY spool_uuid")
+    fun observeConflicts(ownerId: String): Flow<List<InventoryUploadBatch>>
+
+    @Query("""SELECT json_group_array(json_object('version',1,'uuid',l.uuid,'spool_uuid',f.uuid,
+        'title',l.title,'grams_used',l.grams_used,'timestamp',l.timestamp,'is_failure',l.is_failure,'price_per_print',l.price_per_print))
+        FROM usage_log l JOIN filaments f ON f.id=l.spoolId WHERE f.owner_id=:ownerId AND f.uuid=:uuid ORDER BY l.id""")
+    suspend fun currentHistorySnapshots(ownerId: String, uuid: String): String
+
+    @Query("""SELECT json_object('version',1,'uuid',l.uuid,'spool_uuid',f.uuid,'title',l.title,
+        'grams_used',l.grams_used,'timestamp',l.timestamp,'is_failure',l.is_failure,'price_per_print',l.price_per_print)
+        FROM usage_log l JOIN filaments f ON f.id=l.spoolId WHERE f.owner_id=:ownerId AND l.uuid=:uuid""")
+    suspend fun currentLogSnapshot(ownerId: String, uuid: String): String?
+
+    @Query("""SELECT json_group_array(json_object('id',id,'operation_id',operation_id,'entity_type',entity_type,
+        'entity_uuid',entity_uuid,'operation',operation,'payload',json(payload),'created_at',created_at))
+        FROM (SELECT * FROM pending_inventory_changes WHERE owner_id=:ownerId AND spool_uuid=:uuid AND acknowledged_at IS NULL ORDER BY id)""")
+    suspend fun pendingSnapshots(ownerId: String, uuid: String): String
+
+    @Transaction
+    suspend fun conflictRecord(ownerId: String, uuid: String): InventoryConflictRecord? {
+        val frozen = batch(ownerId, uuid)?.takeIf { it.conflictSnapshot != null } ?: return null
+        val local = spoolByUuid(uuid)
+        require(local == null || local.ownerId == ownerId)
+        return InventoryConflictRecord(frozen, local, local?.let { logsForSpool(it.id) } ?: emptyList(),
+            checkNotNull(currentSpoolSnapshot(ownerId, uuid) ?: queuedSpoolSnapshot(ownerId, uuid)),
+            currentHistorySnapshots(ownerId, uuid), pendingSnapshots(ownerId, uuid))
+    }
+
+    @Insert
+    suspend fun archiveResolution(resolution: InventoryConflictResolution)
+
+    @Query("SELECT * FROM inventory_conflict_resolutions WHERE owner_id=:ownerId ORDER BY created_at, id")
+    suspend fun resolutions(ownerId: String): List<InventoryConflictResolution>
+
+    @Query("DELETE FROM pending_inventory_changes WHERE owner_id=:ownerId AND spool_uuid=:uuid AND acknowledged_at IS NULL")
+    suspend fun removeResolvedPending(ownerId: String, uuid: String)
+
+    @Query("""INSERT INTO pending_inventory_changes(operation_id,owner_id,entity_type,entity_uuid,spool_uuid,operation,payload,created_at)
+        VALUES(lower(hex(randomblob(16))),:ownerId,:type,:uuid,:spoolUuid,:operation,:payload,:at)""")
+    suspend fun queueResolution(ownerId: String, type: String, uuid: String, spoolUuid: String, operation: String, payload: String, at: Long)
+
+    /** Compare the whole reviewed local version, archive both copies, then commit exactly one choice. */
+    @Transaction
+    suspend fun resolveConflict(expected: InventoryConflictRecord, cloud: RemoteInventorySnapshot,
+        archive: InventoryConflictResolution, remoteDeletePayloads: Map<String, String>): Boolean {
+        val owner = expected.batch.ownerId
+        val uuid = expected.batch.spoolUuid
+        require(archive.ownerId == owner && archive.spoolUuid == uuid)
+        require(cloud.spool.ownerId == owner && cloud.spool.uuid == uuid && cloud.spool.revision >= expected.batch.baseRevision)
+        require(cloud.logs.all { it.ownerId == owner && it.spoolUuid == uuid })
+        if (conflictRecord(owner, uuid) != expected) return false
+        require(archive.choice in listOf("local", "cloud"))
+        archiveResolution(archive)
+        removeResolvedPending(owner, uuid)
+        removeBatch(owner, uuid, expected.batch.batchId)
+        if (archive.choice == "cloud" || cloud.spool.deletedAt != null) {
+            applyRemoteSnapshot(owner, cloud)
+            if (archive.choice == "local" && expected.spool != null) {
+                // A deleted server UUID cannot be resurrected. Keep this version as a new aggregate.
+                val copy = expected.spool.copy(id = 0, uuid = Uuid.random().toString())
+                val id = insertRemoteSpool(copy).toInt()
+                expected.logs.forEach { insertRemoteLog(it.copy(id = 0, spoolId = id, uuid = Uuid.random().toString())) }
+            }
+        } else {
+            saveState(InventorySyncState(owner, uuid, cloud.spool.revision))
+            if (expected.spool == null) {
+                queueResolution(owner, "spool", uuid, uuid, "delete", expected.spoolPayload, archive.createdAt)
+            } else {
+                val deletedLogIds = cloud.logs.filter { it.deletedAt != null }.map { it.uuid }.toSet()
+                beginRemoteApply(InventoryRemoteApply(owner))
+                try {
+                    // Keeping a print deleted elsewhere creates a new print identity, never resurrection.
+                    expected.logs.filter { it.uuid in deletedLogIds }.forEach {
+                        updateRemoteLog(it.copy(uuid = Uuid.random().toString()))
+                    }
+                } finally { endRemoteApply(owner) }
+                val chosenLogs = logsForSpool(expected.spool.id)
+                queueResolution(owner, "spool", uuid, uuid, "upsert", checkNotNull(currentSpoolSnapshot(owner, uuid)), archive.createdAt)
+                val remoteById = cloud.logs.associateBy { it.uuid }
+                chosenLogs.forEach { log ->
+                    val remoteLog = remoteById[log.uuid]
+                    if (remoteLog == null || remoteLog.deletedAt != null || remoteLog.title != log.title ||
+                        remoteLog.gramsUsed != log.gramsUsed || remoteLog.timestamp != log.timestamp ||
+                        remoteLog.isFailure != log.isFailure || remoteLog.pricePerPrint != log.pricePerPrint) {
+                        queueResolution(owner, "usage_log", log.uuid, uuid, "upsert", checkNotNull(currentLogSnapshot(owner, log.uuid)), archive.createdAt)
+                    }
+                }
+                val chosenIds = chosenLogs.map { it.uuid }.toSet()
+                cloud.logs.filter { it.deletedAt == null && it.uuid !in chosenIds }.forEach {
+                    queueResolution(owner, "usage_log", it.uuid, uuid, "delete", remoteDeletePayloads.getValue(it.uuid), archive.createdAt)
+                }
+            }
+            // Freeze the exact confirmed version; future local edits remain separate pending work.
+            prepareSpool(owner, uuid)
+        }
+        return true
     }
 }

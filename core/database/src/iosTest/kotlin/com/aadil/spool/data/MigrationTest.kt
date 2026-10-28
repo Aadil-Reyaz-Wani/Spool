@@ -36,7 +36,7 @@ class MigrationTest {
     private val driver = BundledSQLiteDriver()
 
     @Test fun everySupportedVersionPreservesInventoryAndReopenKeepsIdentities() = runBlocking {
-        for (version in 10..19) withDatabaseFile { path ->
+        for (version in 10..20) withDatabaseFile { path ->
             createLegacy(path, version, populated = true)
             val before = snapshot(path, version)
             val database = open(path)
@@ -65,7 +65,7 @@ class MigrationTest {
             }
             assertEquals(before, snapshot(path, version), "All pre-existing fields from version $version")
             driver.open(path).use {
-                assertEquals(listOf(listOf("20")), it.rows("PRAGMA user_version"))
+                assertEquals(listOf(listOf("21")), it.rows("PRAGMA user_version"))
                 assertTrue(it.rows("PRAGMA foreign_key_check").isEmpty())
                 assertEquals(listOf(listOf("ok")), it.rows("PRAGMA integrity_check"))
             }
@@ -267,6 +267,26 @@ class MigrationTest {
                 assertEquals("saved-batch", db.inventorySyncDao().batch("account-a", spool.uuid)?.batchId)
             } finally { db.close() }
             assertEquals(before, snapshot(path, 19))
+        }
+    }
+
+    @Test fun version20PreservesConflictCursorAndAllExistingInventory() = runBlocking {
+        withDatabaseFile { path ->
+            createLegacy(path, 20, populated = true)
+            driver.open(path).use {
+                it.execSQL("UPDATE filaments SET owner_id = 'account-a' WHERE id = 7")
+                it.execSQL("INSERT INTO inventory_sync_state SELECT owner_id, uuid, 9 FROM filaments WHERE id = 7")
+                it.execSQL("INSERT INTO inventory_upload_batches SELECT owner_id, uuid, 'conflicted-batch', 9, '{}', '[]', 'saved-conflict' FROM filaments WHERE id = 7")
+                it.execSQL("INSERT INTO inventory_pull_state VALUES ('account-a', 99)")
+            }
+            val before = snapshot(path, 20)
+            val db = open(path)
+            try {
+                assertEquals(99L, db.inventorySyncDao().pullCursor("account-a"))
+                assertEquals(1, db.inventorySyncDao().conflictCount("account-a"))
+                assertTrue(db.inventorySyncDao().resolutions("account-a").isEmpty())
+            } finally { db.close() }
+            assertEquals(before, snapshot(path, 20))
         }
     }
 

@@ -1,5 +1,6 @@
 package com.aadil.spool.core.network
 
+import com.aadil.spool.core.model.RemoteInventorySnapshot
 import com.aadil.spool.core.model.InventoryPullPage
 import io.github.jan.supabase.auth.auth
 import io.ktor.client.request.header
@@ -72,6 +73,11 @@ internal fun validatePullPage(page: InventoryPullPage, ownerId: String, cursor: 
         return
     }
     require(page.nextCursor > cursor)
+    validateInventorySnapshot(snapshot, ownerId)
+}
+
+@OptIn(ExperimentalUuidApi::class)
+internal fun validateInventorySnapshot(snapshot: RemoteInventorySnapshot, ownerId: String) {
     val spool = snapshot.spool
     require(spool.ownerId == ownerId && spool.revision > 0)
     Uuid.parse(spool.uuid)
