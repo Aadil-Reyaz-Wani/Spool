@@ -36,7 +36,7 @@ class MigrationTest {
     private val driver = BundledSQLiteDriver()
 
     @Test fun everySupportedVersionPreservesInventoryAndReopenKeepsIdentities() = runBlocking {
-        for (version in 10..17) withDatabaseFile { path ->
+        for (version in 10..18) withDatabaseFile { path ->
             createLegacy(path, version, populated = true)
             val before = snapshot(path, version)
             val database = open(path)
@@ -65,7 +65,7 @@ class MigrationTest {
             }
             assertEquals(before, snapshot(path, version), "All pre-existing fields from version $version")
             driver.open(path).use {
-                assertEquals(listOf(listOf("18")), it.rows("PRAGMA user_version"))
+                assertEquals(listOf(listOf("19")), it.rows("PRAGMA user_version"))
                 assertTrue(it.rows("PRAGMA foreign_key_check").isEmpty())
                 assertEquals(listOf(listOf("ok")), it.rows("PRAGMA integrity_check"))
             }
@@ -228,6 +228,27 @@ class MigrationTest {
         }
     }
 
+    @Test fun version18PendingOperationsSurviveUpgradeWithoutRequeueingOrChangingIds() = runBlocking {
+        withDatabaseFile { path ->
+            createLegacy(path, 18, populated = true)
+            driver.open(path).use { it.execSQL("UPDATE filaments SET owner_id = 'account-a' WHERE id = 7") }
+            val before = snapshot(path, 18)
+            val db = open(path)
+            try {
+                val pending = db.spoolDao().pendingInventoryChanges("account-a")
+                assertEquals(3, pending.size)
+                assertTrue(pending.all { it.acknowledgedAt == null })
+                assertNull(db.inventorySyncDao().serverRevision("account-a", pending.first().spoolUuid))
+            } finally { db.close() }
+            assertEquals(before, snapshot(path, 18), "Inventory, UUIDs and all existing operation IDs/snapshots are preserved")
+            driver.open(path).use {
+                assertEquals(listOf(listOf("900")), it.rows("SELECT seq FROM sqlite_sequence WHERE name = 'filaments'"))
+                assertEquals(listOf(listOf("1200")), it.rows("SELECT seq FROM sqlite_sequence WHERE name = 'usage_log'"))
+                assertTrue(it.rows("PRAGMA foreign_key_check").isEmpty())
+            }
+        }
+    }
+
     private fun open(path: String) = getSpoolDatabase(Room.databaseBuilder<SpoolDatabase>(
         name = path,
         factory = { SpoolDatabaseConstructor.initialize() },
@@ -248,7 +269,7 @@ class MigrationTest {
             for (entity in schema["entities"]!!.jsonArray) {
                 val table = entity.jsonObject["tableName"]!!.jsonPrimitive.content
                 connection.execSQL(entity.jsonObject["createSql"]!!.jsonPrimitive.content.replace("\${TABLE_NAME}", table))
-                if (populated) {
+                if (populated && table != "pending_inventory_changes") {
                     val columns = entity.jsonObject["fields"]!!.jsonArray.map { it.jsonObject["columnName"]!!.jsonPrimitive.content }
                     val fixtures = if (table == "filaments") spoolRows else logRows
                     fixtures.forEach { fixture ->
@@ -266,6 +287,7 @@ class MigrationTest {
                     }
                 }
             }
+            if (version >= 18) installInventoryOutbox(connection)
             schema["setupQueries"]!!.jsonArray.forEach { connection.execSQL(it.jsonPrimitive.content) }
             connection.execSQL("PRAGMA user_version = $version")
         }

@@ -17,4 +17,5 @@ data class PendingInventoryChange(
     val operation: String,
     val payload: String,
     @ColumnInfo(name = "created_at") val createdAt: Long,
+    @ColumnInfo(name = "acknowledged_at") val acknowledgedAt: Long? = null,
 )

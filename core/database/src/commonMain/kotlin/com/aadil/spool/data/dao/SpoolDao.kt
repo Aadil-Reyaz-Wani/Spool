@@ -16,7 +16,7 @@ import kotlinx.coroutines.flow.first
 @Dao
 interface SpoolDao {
 
-    @Query("SELECT * FROM pending_inventory_changes WHERE owner_id = :ownerId ORDER BY id LIMIT :limit")
+    @Query("SELECT * FROM pending_inventory_changes WHERE owner_id = :ownerId AND acknowledged_at IS NULL ORDER BY id LIMIT :limit")
     suspend fun pendingInventoryChanges(ownerId: String, limit: Int = 100): List<PendingInventoryChange>
 
     @Transaction

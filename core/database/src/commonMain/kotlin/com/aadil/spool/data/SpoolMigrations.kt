@@ -92,3 +92,17 @@ private val RANDOM_UUID_SQL = """
     substr('89ab', (random() & 3) + 1, 1) || substr(lower(hex(randomblob(2))), 2) || '-' ||
     lower(hex(randomblob(6))))
 """.trimIndent()
+
+val MIGRATION_18_19 = object : Migration(18, 19) {
+    override fun migrate(connection: SQLiteConnection) {
+        connection.execSQL("ALTER TABLE pending_inventory_changes ADD COLUMN acknowledged_at INTEGER")
+        connection.execSQL("""CREATE TABLE inventory_upload_batches (
+            owner_id TEXT NOT NULL, spool_uuid TEXT NOT NULL, batch_id TEXT NOT NULL,
+            base_revision INTEGER NOT NULL, request TEXT NOT NULL, operation_ids TEXT NOT NULL,
+            conflict_snapshot TEXT, PRIMARY KEY (owner_id, spool_uuid))""")
+        connection.execSQL("CREATE UNIQUE INDEX index_inventory_upload_batches_batch_id ON inventory_upload_batches (batch_id)")
+        connection.execSQL("""CREATE TABLE inventory_sync_state (
+            owner_id TEXT NOT NULL, spool_uuid TEXT NOT NULL, server_revision INTEGER NOT NULL,
+            PRIMARY KEY (owner_id, spool_uuid))""")
+    }
+}

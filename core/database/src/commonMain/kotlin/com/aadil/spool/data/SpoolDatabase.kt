@@ -7,14 +7,17 @@ import androidx.room.DeleteColumn
 import androidx.room.RoomDatabase
 import androidx.room.RoomDatabaseConstructor
 import androidx.room.migration.AutoMigrationSpec
+import com.aadil.spool.data.dao.InventorySyncDao
+import com.aadil.spool.data.entity.InventorySyncState
+import com.aadil.spool.data.entity.InventoryUploadBatch
 import com.aadil.spool.data.dao.SpoolDao
 import com.aadil.spool.data.entity.PendingInventoryChange
 import com.aadil.spool.data.entity.Filament
 import com.aadil.spool.data.entity.UsageLog
 
 @Database(
-    entities = [Filament::class, UsageLog::class, PendingInventoryChange::class],
-    version = 18,
+    entities = [Filament::class, UsageLog::class, PendingInventoryChange::class, InventorySyncState::class, InventoryUploadBatch::class],
+    version = 19,
     autoMigrations = [
         AutoMigration(from = 10, to = 11),
         AutoMigration(from = 11, to = 12, spec = SpoolDatabase.DeletePriceSpec::class),
@@ -27,6 +30,7 @@ import com.aadil.spool.data.entity.UsageLog
 @ConstructedBy(SpoolDatabaseConstructor::class)
 abstract class SpoolDatabase : RoomDatabase() {
     abstract fun spoolDao(): SpoolDao
+    abstract fun inventorySyncDao(): InventorySyncDao
 
     @DeleteColumn(tableName = "usage_log", columnName = "price_per_print")
     class DeletePriceSpec : AutoMigrationSpec

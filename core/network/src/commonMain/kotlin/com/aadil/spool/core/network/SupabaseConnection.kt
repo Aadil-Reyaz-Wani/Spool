@@ -30,6 +30,9 @@ class SupabaseConnection internal constructor(
     private val engineDelegate = lazy(engineFactory)
     private val clientDelegate = lazy { createClient() }
 
+    internal val inventoryUploadUrl: String?
+        get() = (configuration as? SupabaseConfiguration.Configured)?.url?.let { "$it/rest/v1/rpc/upload_inventory_batch" }
+
     internal val accountSessionsEnabled: Boolean get() = sessionManager != null
 
     /** Shared Auth/Storage client, or null when configuration is missing/invalid. */

@@ -34,7 +34,7 @@ internal val inventoryOutboxCallback = object : RoomDatabase.Callback() {
 }
 
 /** Triggers run in the writer's transaction, including bulk updates and foreign-key cascades. */
-private fun installInventoryOutbox(connection: SQLiteConnection) {
+internal fun installInventoryOutbox(connection: SQLiteConnection) {
     fun trigger(name: String, event: String, table: String, condition: String, body: String) {
         connection.execSQL("CREATE TRIGGER IF NOT EXISTS $name $event ON $table WHEN $condition BEGIN $body END")
     }
