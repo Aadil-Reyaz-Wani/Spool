@@ -167,11 +167,11 @@
     <string name="moisture_low">Low</string>
     <string name="moisture_high">High</string>
     <string name="moisture_no_gain">No moisture detected since your last weigh-in.</string>
-    <string name="moisture_dry_ok">Gained only %1$s g since drying — fine to print.</string>
+    <string name="moisture_dry_ok">Gained only %1$s g since drying. Fine to print.</string>
     <string name="moisture_low_warning">Gained %1$s g. Fine for quick parts; dry before something important.</string>
-    <string name="moisture_high_warning">Gained %1$s g — this spool is thirsty. Dry ~%2$d h at %3$d°C, then tap Mark dried.</string>
+    <string name="moisture_high_warning">Gained %1$s g. This spool is thirsty. Dry ~%2$d h at %3$d°C, then tap Mark dried.</string>
     <string name="moisture_last_dried">Last dried: %1$s</string>
-    <string name="moisture_tare_mismatch">Spool type differs from your dry baseline — compare may be off.</string>
+    <string name="moisture_tare_mismatch">Spool type differs from your dry baseline. Comparison may be off.</string>
     <string name="moisture_based_on_weigh_in">Based on your last weigh-in.</string>
     <string name="moisture_weigh_now">Weigh now</string>
     <string name="moisture_mark_dried">Mark dried</string>

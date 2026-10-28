@@ -12,7 +12,7 @@ import platform.UserNotifications.UNTimeIntervalNotificationTrigger
 import platform.UserNotifications.UNUserNotificationCenter
 import org.koin.dsl.module
 
-// ponytail: no BGTaskScheduler background refresh on iOS — checks run when the app opens;
+// ponytail: no BGTaskScheduler background refresh on iOS; checks run when the app opens;
 // add a BGAppRefreshTask in AppDelegate if background checks are ever needed.
 class IosNotificationPoster : NotificationPoster, com.aadil.spool.core.data.repository.InventoryNotifications {
 
