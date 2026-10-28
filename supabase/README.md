@@ -393,6 +393,68 @@ Conflict-side/unreadable-copy removal, offline removal, failed writes and accoun
 switches were covered by automated tests rather than this phone pass. No iOS
 runtime, actual two-device or full E2E pass; no server mutation from removal.
 
+
+## Profile display-name editing (Step 12)
+
+Account / Edit name prefills the currently displayed name and offers Save name
+or Cancel. Signup remains optional and unchanged; missing provider names are
+allowed. Only name is editable: provider-managed email remains read-only, and
+there is no photo, avatar, phone number or additional registration form.
+
+Saving calls the authenticated Supabase Auth updateUser endpoint with only
+user metadata data.spool_display_name. This application-owned key takes priority
+over provider display_name/full_name/name, so later Google responses containing
+an updated provider name do not replace the user's saved choice. No email,
+password, roles or ownership fields are sent. Updates use the current user's
+credentials, check the expected permanent account ID, and serialize with sign-in
+and sign-out. Metadata is display data only and never authorizes inventory access.
+No new database schema, migration, table, permission, secret or dependency.
+
+Name saves require connectivity; this step does not add an offline profile-upload
+queue. The last successfully saved name remains in the existing cached auth
+session for offline display. Editing and failed-save drafts survive configuration
+changes and supported saved-state recreation through an account-bound
+SavedStateHandle. Drafts are cleared on account changes or Cancel; saving never
+replays automatically after recreation. Blank, over80-character and control-filled
+names are rejected; names are trimmed and Unicode is supported. A provider name
+longer than80 characters can be shortened before saving. Busy actions ignore
+repeated taps, failures/timeouts retain the draft, and errors never expose tokens
+or provider exception details. The existing themed text field now supports an
+enabled parameter so the draft is disabled during a save. The editor's content
+scrolls for limited-height layouts.
+
+Verification:218 selected tests passed plus1 existing opt-in live probe skipped
+(network Android36 passed/1 skipped, network native35, data native73, shared
+Android host74). Fifteen new distinct cases (6 SDK/MockEngine cases on Android
+and iOS,9 ViewModel cases) cover name-only request payloads, SDK session caching,
+subsequent provider-name changes, wrong account/invalid input, failure/retry,
+serialization with sign-out, prefill/cancel, duplicate taps, saved-state drafts,
+account switches/late replies, missing/long names and timeout feedback. The existing
+real-Room ownership test also verifies name/email changes preserve inventory,
+pending rows and the inventory session revision. Android build/lint passed
+(zero errors,56 existing warnings), and shared iOS compilation passed.
+A focused Android phone pass (29 October2026) passed prefill/cancel, blank-name
+validation, an actual temporary name save verified in Supabase, cached-name
+restoration after reopening, and preservation after real Google sign-out/sign-in.
+Offline Save name with no active network shows an error and retains the draft;
+network settings were restored. The original visible name was restored using the
+app; its new custom metadata key retains that original name. Permanent account
+ID, email and Google provider name stayed unchanged.
+
+The pass found that the landscape keyboard collapsed the old dialog's input
+area. The editor now uses a themed BasicAlertDialog/Surface with the heading,
+field and actions in one scrollable column. Post-fix phone screenshots/UI trees
+verify visible editable text, reachable Save/Cancel actions, retained rotation
+draft and cancellation. Android build/lint,74 shared host tests and shared iOS
+compilation passed again after the UI-only fix.
+
+Every Spool application data table remained identical to its pre-test state:
+original24 spools/31 prints, queues, receipts, recovery copies and sync cursors.
+Pending0/conflicts0/integrityok/FKerrors0; no new Spool crash. No iOS runtime,
+two-device propagation or full E2E pass was performed.
+
+Reference: [Supabase Kotlin profile metadata update](https://supabase.com/docs/reference/kotlin/auth-updateuser).
+
 References: [RLS](https://supabase.com/docs/guides/database/postgres/row-level-security),
 [column permissions](https://supabase.com/docs/guides/database/postgres/column-level-security),
 [migrations](https://supabase.com/docs/guides/local-development/database-migrations),

@@ -11,6 +11,10 @@ import io.ktor.client.engine.mock.respond
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.headersOf
 import io.ktor.http.content.TextContent
+import kotlinx.coroutines.async
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.yield
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.flow.first
@@ -18,6 +22,7 @@ import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.withTimeout
 import kotlinx.io.IOException
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.put
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.jsonObject
@@ -27,6 +32,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFails
 import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
+import kotlin.test.assertTrue
 import kotlin.test.assertNull
 import kotlin.time.Clock
 import kotlin.time.Duration.Companion.hours
@@ -178,4 +184,129 @@ class AccountRepositoryTest {
     fun credentialsDoNotPrintTokens() {
         assertEquals("GoogleCredentials(REDACTED)", GoogleCredentials("secret", "nonce").toString())
     }
+    @Test fun displayNameValidationSupportsUnicodeAndRejectsBlankLongOrMultilineNames() {
+        assertEquals("Aadil 王", normalizeDisplayName("  Aadil 王  "))
+        assertEquals("x".repeat(80), normalizeDisplayName("x".repeat(80)))
+        assertNull(normalizeDisplayName("   "))
+        assertNull(normalizeDisplayName("x".repeat(81)))
+        assertNull(normalizeDisplayName("First\nLast"))
+        assertNull(normalizeDisplayName("First\u0000Last"))
+        val custom = user.copy(userMetadata = buildJsonObject {
+            put(DISPLAY_NAME_KEY, "Chosen name"); put("display_name", "Provider display"); put("full_name", "New Google Name")
+        })
+        assertEquals("Chosen name", custom.toSpoolAccount().name)
+        assertEquals("Google Name", user.copy(userMetadata = buildJsonObject {
+            put(DISPLAY_NAME_KEY, JsonPrimitive(false)); put("full_name", "Google Name")
+        }).toSpoolAccount().name)
+    }
+
+    @Test fun profileUpdateSendsOnlyCustomNameAndPersistsItInCachedSession() = authTest {
+        val storage = MemorySessionManager(session()); var requests = 0
+        val updated = user.copy(userMetadata = buildJsonObject {
+            put("full_name", "Google Name"); put(DISPLAY_NAME_KEY, "Chosen 王")
+        })
+        val connection = SupabaseConnection(configuration, storage, setupAuthPlatform = false) {
+            MockEngine { request ->
+                requests++; assertEquals("/auth/v1/user", request.url.encodedPath); assertEquals("PUT", request.method.value)
+                val body = Json.parseToJsonElement((request.body as TextContent).text).jsonObject
+                assertEquals(setOf("data"), body.keys)
+                assertEquals(buildJsonObject { put(DISPLAY_NAME_KEY, "Chosen 王") }, body["data"])
+                respond(Json.encodeToString(UserInfo.serializer(), updated), headers = headersOf("Content-Type", "application/json"))
+            }
+        }
+        try {
+            val repository = SupabaseAccountRepository(connection)
+            repository.updateDisplayName(user.id, "  Chosen 王  ")
+            assertEquals(1, requests)
+            assertEquals(SpoolAccount(user.id, "Chosen 王", user.email), storage.loadSession()?.user?.toSpoolAccount())
+            assertEquals("Chosen 王", repository.sessions.first { it.account != null }.account?.name)
+        } finally { connection.close() }
+        val offline = SupabaseConnection(configuration, storage, setupAuthPlatform = false) { MockEngine { error("Offline") } }
+        try {
+            val restored = withTimeout(5000) { SupabaseAccountRepository(offline).sessions.first { it.account != null } }
+            assertEquals("Chosen 王", restored.account?.name); assertEquals(user.id, restored.account?.id)
+        } finally { offline.close() }
+    }
+
+    @Test fun wrongAccountAndInvalidNamesNeverSendProfileRequests() = authTest {
+        var requests = 0
+        val connection = SupabaseConnection(configuration, MemorySessionManager(session()), setupAuthPlatform = false) {
+            MockEngine { requests++; error("Unexpected profile request") }
+        }
+        try {
+            val repository = SupabaseAccountRepository(connection)
+            assertFails { repository.updateDisplayName("other-account", "Name") }
+            assertFails { repository.updateDisplayName(user.id, " ") }
+            assertFails { repository.updateDisplayName(user.id, "x".repeat(81)) }
+            assertFails { repository.updateDisplayName("", "Name") }
+            assertEquals(0, requests)
+        } finally { connection.close() }
+    }
+
+    @Test fun offlineProfileFailureKeepsPreviousNameAndCanBeRetried() = authTest {
+        val storage = MemorySessionManager(session()); var offline = true
+        val updated = user.copy(userMetadata = buildJsonObject { put(DISPLAY_NAME_KEY, "Retry name") })
+        val connection = SupabaseConnection(configuration, storage, setupAuthPlatform = false) {
+            MockEngine {
+                if (offline) throw IOException("Offline")
+                respond(Json.encodeToString(UserInfo.serializer(), updated), headers = headersOf("Content-Type", "application/json"))
+            }
+        }
+        try {
+            val repository = SupabaseAccountRepository(connection)
+            assertFails { repository.updateDisplayName(user.id, "Retry name") }
+            assertEquals("Google Name", storage.loadSession()?.user?.toSpoolAccount()?.name)
+            offline = false; repository.updateDisplayName(user.id, "Retry name")
+            assertEquals("Retry name", storage.loadSession()?.user?.toSpoolAccount()?.name)
+        } finally { connection.close() }
+    }
+
+    @Test fun laterGoogleSignInUsesSavedCustomNameOverNewProviderNameWithoutProfileWrite() = authTest {
+        val chosen = user.copy(userMetadata = buildJsonObject {
+            put(DISPLAY_NAME_KEY, "Chosen name"); put("full_name", "Changed Google Name")
+        })
+        var requests = 0
+        val connection = SupabaseConnection(configuration, MemorySessionManager(), setupAuthPlatform = false) {
+            MockEngine { request ->
+                requests++; assertEquals("/auth/v1/token", request.url.encodedPath)
+                respond(Json.encodeToString(session().copy(user = chosen)), headers = headersOf("Content-Type", "application/json"))
+            }
+        }
+        try {
+            assertNotNull(connection.client).auth.setSessionStatus(SessionStatus.NotAuthenticated())
+            val repository = SupabaseAccountRepository(connection)
+            repository.signIn(GoogleCredentials("google-id-token", "nonce"))
+            assertEquals("Chosen name", repository.sessions.first { it.account != null }.account?.name)
+            assertEquals(1, requests)
+        } finally { connection.close() }
+    }
+
+    @Test fun profileRequestFinishesBeforeSignOutCanSwitchItsAccount() = authTest {
+        val started = CompletableDeferred<Unit>(); val finish = CompletableDeferred<Unit>(); var signOutRequests = 0
+        val storage = MemorySessionManager(session())
+        val updated = user.copy(userMetadata = buildJsonObject { put(DISPLAY_NAME_KEY, "Chosen") })
+        val connection = SupabaseConnection(configuration, storage, setupAuthPlatform = false) {
+            MockEngine { request ->
+                if (request.url.encodedPath == "/auth/v1/user") {
+                    started.complete(Unit); finish.await()
+                    respond(Json.encodeToString(UserInfo.serializer(), updated), headers = headersOf("Content-Type", "application/json"))
+                } else {
+                    assertEquals("/auth/v1/logout", request.url.encodedPath); signOutRequests++
+                    respond("{}", headers = headersOf("Content-Type", "application/json"))
+                }
+            }
+        }
+        try {
+            val repository = SupabaseAccountRepository(connection)
+            coroutineScope {
+                val write = async { repository.updateDisplayName(user.id, "Chosen") }
+                started.await(); val out = async { repository.signOut() }; yield()
+                assertEquals(0, signOutRequests)
+                finish.complete(Unit); write.await(); out.await()
+            }
+            assertEquals(1, signOutRequests); assertNull(storage.loadSession())
+            assertEquals(AccountSession(), repository.sessions.first())
+        } finally { finish.complete(Unit); connection.close() }
+    }
+
 }

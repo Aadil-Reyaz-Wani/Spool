@@ -38,6 +38,7 @@ class InventoryConflictResolverTest {
         override val googleWebClientId = ""
         override val sessions = MutableStateFlow(AccountSession(SpoolAccount("a", null, null)))
         override suspend fun signIn(credentials: GoogleCredentials) = Unit
+        override suspend fun updateDisplayName(accountId: String, name: String) { error("Unexpected profile write") }
         override suspend fun signOut() { sessions.value = AccountSession() }
     }
     private class Remote(var value: RemoteInventorySnapshot) : InventoryConflictRemote {

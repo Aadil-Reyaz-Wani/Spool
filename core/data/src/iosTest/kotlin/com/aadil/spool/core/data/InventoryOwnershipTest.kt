@@ -39,6 +39,7 @@ class InventoryOwnershipTest {
         override val googleWebClientId = ""
         override val sessions = MutableStateFlow(AccountSession(initializing = true))
         override suspend fun signIn(credentials: GoogleCredentials) = Unit
+        override suspend fun updateDisplayName(accountId: String, name: String) { error("Unexpected profile write") }
         override suspend fun signOut() { sessions.value = AccountSession() }
         fun login(id: String, email: String = "$id@example.com") {
             sessions.value = AccountSession(SpoolAccount(id, "Name", email))
@@ -227,12 +228,16 @@ class InventoryOwnershipTest {
         }
     }
 
-    @Test fun profileEmailChangesDoNotChangeOwnershipAndSameAccountLoginRejectsOldRepository() = runBlocking {
+    @Test fun profileNameAndEmailChangesDoNotChangeOwnershipAndSameAccountLoginRejectsOldRepository() = runBlocking {
         withDatabase {
             val a = switch("account-a")
             a.insertSpool(spool("A"))
             val oldScope = session.scope.value!!
-            accounts.login("account-a", "changed@example.com")
+            val before = a.getAllSpools().first()
+            val pending = db.spoolDao().pendingInventoryChanges("account-a")
+            accounts.sessions.value = AccountSession(SpoolAccount("account-a", "Edited profile name", "changed@example.com"))
+            assertEquals(before, a.getAllSpools().first())
+            assertEquals(pending, db.spoolDao().pendingInventoryChanges("account-a"))
             assertEquals(oldScope, session.scope.value)
             assertEquals(1, a.getAllSpools().first().size)
             switch("")

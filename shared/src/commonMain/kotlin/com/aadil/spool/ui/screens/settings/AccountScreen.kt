@@ -2,6 +2,8 @@ package com.aadil.spool.ui.screens.settings
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
@@ -13,6 +15,9 @@ import androidx.compose.material.icons.outlined.Badge
 import androidx.compose.material.icons.outlined.Email
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.Logout
+import androidx.compose.material3.BasicAlertDialog
+import androidx.compose.material3.Surface
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.TextButton
 import androidx.compose.material.icons.outlined.MoveToInbox
@@ -28,6 +33,8 @@ import com.aadil.spool.feature.settings.AccountError
 import com.aadil.spool.feature.settings.AccountViewModel
 import com.aadil.spool.ui.auth.rememberGoogleSignIn
 import com.aadil.spool.ui.common.SpoolAppBar
+import com.aadil.spool.ui.components.SpoolOutlinedTextField
+import com.aadil.spool.core.network.MAX_DISPLAY_NAME_LENGTH
 import com.aadil.spool.ui.components.SpoolButton
 import com.aadil.spool.ui.components.SpoolHeadingText
 import com.aadil.spool.ui.theme.Dimens
@@ -36,6 +43,7 @@ import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import spool.shared.generated.resources.*
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AccountScreen(navigateUp: () -> Unit, reviewConflicts: () -> Unit, openRecovery: () -> Unit) {
     val viewModel: AccountViewModel = koinViewModel()
@@ -55,6 +63,35 @@ fun AccountScreen(navigateUp: () -> Unit, reviewConflicts: () -> Unit, openRecov
             if (account != null) {
                 SpoolHeadingText(text = stringResource(Res.string.account_name), icon = Icons.Outlined.Badge)
                 Text(account.name ?: stringResource(Res.string.account_name_unavailable), style = MaterialTheme.typography.bodyLarge)
+                TextButton(enabled = !state.busy && !state.session.initializing, onClick = viewModel::editName) {
+                    Text(stringResource(Res.string.account_edit_name))
+                }
+                if (state.nameSaved) Text(stringResource(Res.string.account_name_saved), style = MaterialTheme.typography.bodyMedium)
+                if (state.editingName) {
+                    BasicAlertDialog(onDismissRequest = viewModel::cancelNameEdit) {
+                        Surface(shape = MaterialTheme.shapes.medium, color = MaterialTheme.colorScheme.surfaceContainerHigh) {
+                            // Keep the whole form scrollable when the landscape keyboard leaves little height.
+                            Column(modifier = Modifier.verticalScroll(rememberScrollState()).padding(Dimens.PaddingLarge),
+                                verticalArrangement = Arrangement.spacedBy(Dimens.PaddingMedium)) {
+                                Text(stringResource(Res.string.account_edit_name), style = MaterialTheme.typography.headlineSmall)
+                                SpoolOutlinedTextField(
+                                    value = state.nameDraft, onValueChange = viewModel::changeName,
+                                    label = stringResource(Res.string.account_name), leadingIcon = Icons.Outlined.Badge,
+                                    enabled = !state.busy,
+                                    isError = state.error == AccountError.NameInvalid,
+                                    supportingText = stringResource(Res.string.account_name_rules, MAX_DISPLAY_NAME_LENGTH),
+                                )
+                                Text(stringResource(Res.string.account_name_save_notice), style = MaterialTheme.typography.bodySmall)
+                                if (state.error == AccountError.Profile) Text(stringResource(Res.string.account_name_save_error),
+                                    color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodyMedium)
+                                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
+                                    TextButton(enabled = !state.busy, onClick = viewModel::cancelNameEdit) { Text(stringResource(Res.string.btn_cancel)) }
+                                    TextButton(enabled = !state.busy, onClick = viewModel::saveName) { Text(stringResource(Res.string.account_save_name)) }
+                                }
+                            }
+                        }
+                    }
+                }
                 SpoolHeadingText(text = stringResource(Res.string.account_email), icon = Icons.Outlined.Email)
                 Text(account.email ?: stringResource(Res.string.account_email_unavailable), style = MaterialTheme.typography.bodyLarge)
                 Text(stringResource(Res.string.account_email_managed_by_google), style = MaterialTheme.typography.bodySmall)
@@ -151,13 +188,15 @@ fun AccountScreen(navigateUp: () -> Unit, reviewConflicts: () -> Unit, openRecov
                     Text(stringResource(Res.string.account_sign_in_unavailable), style = MaterialTheme.typography.bodyMedium)
                 }
             }
-            state.error?.let { error ->
+            state.error?.takeUnless { it == AccountError.Profile || it == AccountError.NameInvalid }?.let { error ->
                 Text(
                     stringResource(when (error) {
                         AccountError.SignIn -> Res.string.account_sign_in_error
                         AccountError.Session -> Res.string.account_session_error
                         AccountError.SignOut -> Res.string.account_sign_out_error
                         AccountError.Import -> Res.string.inventory_import_error
+                        AccountError.Profile -> Res.string.account_name_save_error
+                        AccountError.NameInvalid -> Res.string.account_name_save_error
                     }),
                     color = MaterialTheme.colorScheme.error,
                     style = MaterialTheme.typography.bodyMedium,

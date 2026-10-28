@@ -307,4 +307,10 @@
     <string name="recovery_remove_title">Remove this saved copy?</string>
     <string name="recovery_remove_body">Remove this saved copy from Recovery on this installation. Your active inventory, restored spools and syncing stay unchanged. Cloud copies and copies on other devices are kept. Cloud copies may be available after reinstalling.</string>
     <string name="recovery_removed">Saved copy removed from Recovery on this device.</string>
+    <string name="account_edit_name">Edit name</string>
+    <string name="account_save_name">Save name</string>
+    <string name="account_name_saved">Name updated.</string>
+    <string name="account_name_rules">Use 1 to %1$d characters on one line.</string>
+    <string name="account_name_save_notice">Your chosen name is saved to your Spool account. Connect to save changes.</string>
+    <string name="account_name_save_error">Could not save your name. Connect and try again. Your draft is kept.</string>
 </resources>

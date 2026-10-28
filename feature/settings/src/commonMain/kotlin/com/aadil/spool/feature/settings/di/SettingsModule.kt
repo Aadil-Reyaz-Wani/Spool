@@ -24,5 +24,5 @@ val settingsModule: Module = module {
         val uploads = get<InventoryUploadCoordinator>()
         InventoryRecoveryViewModel(get(), checkNotNull(session.scope.value), get(), get<CurrencyPreferencesRepository>().currencyCodeFlow, uploads::retry)
     }
-    viewModel { AccountViewModel(get(), get(), get()) }
+    viewModel { AccountViewModel(get(), get(), get(), get()) }
 }

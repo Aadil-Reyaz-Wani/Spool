@@ -5,6 +5,9 @@ import io.github.jan.supabase.auth.providers.Google
 import io.github.jan.supabase.auth.providers.builtin.IDToken
 import io.github.jan.supabase.auth.status.SessionStatus
 import io.github.jan.supabase.auth.user.UserInfo
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
+import kotlinx.serialization.json.put
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.withTimeout
@@ -33,18 +36,28 @@ interface AccountRepository {
     val sessions: Flow<AccountSession>
     suspend fun signIn(credentials: GoogleCredentials)
     suspend fun signOut()
+    suspend fun updateDisplayName(accountId: String, name: String)
+}
+
+const val MAX_DISPLAY_NAME_LENGTH = 80
+internal const val DISPLAY_NAME_KEY = "spool_display_name"
+
+fun normalizeDisplayName(value: String): String? = value.trim().takeIf { name ->
+    name.isNotEmpty() && name.length <= MAX_DISPLAY_NAME_LENGTH && name.none { it.isISOControl() }
 }
 
 internal fun UserInfo.toSpoolAccount(): SpoolAccount {
     fun text(key: String): String? = (userMetadata?.get(key) as? JsonPrimitive)
-        ?.contentOrNull?.trim()?.takeIf { it.isNotEmpty() }
-    return SpoolAccount(id, text("display_name") ?: text("full_name") ?: text("name"), email)
+        ?.takeIf { it.isString }?.contentOrNull?.trim()?.takeIf { it.isNotEmpty() }
+    return SpoolAccount(id, text(DISPLAY_NAME_KEY) ?: text("display_name") ?: text("full_name") ?: text("name"), email)
 }
 
 internal class SupabaseAccountRepository(
     private val connection: SupabaseConnection,
     private val configuredClientId: String = SupabaseBuildConfig.GOOGLE_WEB_CLIENT_ID,
 ) : AccountRepository {
+    private val accountMutex = Mutex()
+
     override val googleWebClientId: String
         get() = if (connection.accountSessionsEnabled) configuredClientId else ""
 
@@ -73,30 +86,51 @@ internal class SupabaseAccountRepository(
     }
 
     override suspend fun signIn(credentials: GoogleCredentials) {
-        require(credentials.idToken.isNotBlank() && credentials.nonce.isNotBlank())
-        val auth = checkNotNull(connection.client?.auth)
-        withTimeout(30_000) {
-            auth.awaitInitialization()
-            auth.signInWith(IDToken) {
-                provider = Google
-                idToken = credentials.idToken
-                nonce = credentials.nonce
+        accountMutex.withLock {
+            require(credentials.idToken.isNotBlank() && credentials.nonce.isNotBlank())
+            val auth = checkNotNull(connection.client?.auth)
+            withTimeout(30_000) {
+                auth.awaitInitialization()
+                auth.signInWith(IDToken) {
+                    provider = Google
+                    idToken = credentials.idToken
+                    nonce = credentials.nonce
+                }
             }
         }
     }
 
     override suspend fun signOut() {
-        val auth = connection.client?.auth ?: return
-        try {
-            withTimeout(8_000) { auth.signOut() }
-        } catch (_: TimeoutCancellationException) {
-            // Continue with local sign-out and clearing the credential provider state.
-        } catch (cancelled: CancellationException) {
-            throw cancelled
-        } catch (_: Exception) {
-            // Signing out of this device must also work offline.
-        } finally {
-            withContext(NonCancellable) { auth.clearSession() }
+        accountMutex.withLock {
+            val auth = connection.client?.auth ?: return
+            try {
+                withTimeout(8_000) { auth.signOut() }
+            } catch (_: TimeoutCancellationException) {
+                // Continue with local sign-out and clearing the credential provider state.
+            } catch (cancelled: CancellationException) {
+                throw cancelled
+            } catch (_: Exception) {
+                // Signing out of this device must also work offline.
+            } finally {
+                withContext(NonCancellable) { auth.clearSession() }
+            }
         }
     }
+
+    override suspend fun updateDisplayName(accountId: String, name: String) {
+        val normalized = requireNotNull(normalizeDisplayName(name))
+        require(accountId.isNotBlank())
+        accountMutex.withLock {
+            check(connection.accountSessionsEnabled)
+            val auth = checkNotNull(connection.client?.auth)
+            withTimeout(30_000) {
+                auth.awaitInitialization()
+                check(auth.currentUserOrNull()?.id == accountId)
+                // The custom key is separate from Google/Apple's provider-owned name fields.
+                val updated = auth.updateUser { data { put(DISPLAY_NAME_KEY, normalized) } }
+                check(updated.id == accountId && updated.toSpoolAccount().name == normalized)
+            }
+        }
+    }
+
 }

@@ -196,9 +196,11 @@ fun SpoolOutlinedTextField(
     singleLine: Boolean = true,
     supportingText: String? = "",
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
-    keyboardActions: KeyboardActions = KeyboardActions.Default
+    keyboardActions: KeyboardActions = KeyboardActions.Default,
+    enabled: Boolean = true,
 ) {
     OutlinedTextField(
+        enabled = enabled,
         value = value,
         onValueChange = onValueChange,
         label = { Text(label) },
