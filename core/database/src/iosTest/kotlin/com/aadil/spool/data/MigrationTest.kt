@@ -36,7 +36,7 @@ class MigrationTest {
     private val driver = BundledSQLiteDriver()
 
     @Test fun everySupportedVersionPreservesInventoryAndReopenKeepsIdentities() = runBlocking {
-        for (version in 10..16) withDatabaseFile { path ->
+        for (version in 10..17) withDatabaseFile { path ->
             createLegacy(path, version, populated = true)
             val before = snapshot(path, version)
             val database = open(path)
@@ -65,7 +65,7 @@ class MigrationTest {
             }
             assertEquals(before, snapshot(path, version), "All pre-existing fields from version $version")
             driver.open(path).use {
-                assertEquals(listOf(listOf("17")), it.rows("PRAGMA user_version"))
+                assertEquals(listOf(listOf("18")), it.rows("PRAGMA user_version"))
                 assertTrue(it.rows("PRAGMA foreign_key_check").isEmpty())
                 assertEquals(listOf(listOf("ok")), it.rows("PRAGMA integrity_check"))
             }
@@ -207,6 +207,27 @@ class MigrationTest {
         }
     }
 
+    @Test fun accountInventoryIsQueuedOnceOnUpgradeWithoutChangingStoredValues() = runBlocking {
+        withDatabaseFile { path ->
+            createLegacy(path, 17, populated = true)
+            driver.open(path).use { it.execSQL("UPDATE filaments SET owner_id = 'account-a' WHERE id = 7") }
+            val before = snapshot(path, 17)
+            val db = open(path)
+            val queued = try {
+                val changes = db.spoolDao().pendingInventoryChanges("account-a")
+                assertEquals(3, changes.size)
+                assertEquals(listOf("spool", "usage_log", "usage_log"), changes.map { it.entityType })
+                assertTrue(changes.all { it.operation == "upsert" })
+                assertTrue(db.spoolDao().pendingInventoryChanges("").isEmpty())
+                changes
+            } finally { db.close() }
+            assertEquals(before, snapshot(path, 17))
+            val reopened = open(path)
+            try { assertEquals(queued, reopened.spoolDao().pendingInventoryChanges("account-a")) }
+            finally { reopened.close() }
+        }
+    }
+
     private fun open(path: String) = getSpoolDatabase(Room.databaseBuilder<SpoolDatabase>(
         name = path,
         factory = { SpoolDatabaseConstructor.initialize() },
@@ -231,7 +252,7 @@ class MigrationTest {
                     val columns = entity.jsonObject["fields"]!!.jsonArray.map { it.jsonObject["columnName"]!!.jsonPrimitive.content }
                     val fixtures = if (table == "filaments") spoolRows else logRows
                     fixtures.forEach { fixture ->
-                        val row = fixture + ("uuid" to "'00000000-0000-4000-8000-${fixture.getValue("id").padStart(12, '0')}'")
+                        val row = mapOf("owner_id" to "''") + fixture + ("uuid" to "'00000000-0000-4000-8000-${fixture.getValue("id").padStart(12, '0')}'")
                         connection.execSQL("INSERT INTO `$table` (${columns.joinToString { "`$it`" }}) VALUES (${columns.joinToString { row.getValue(it) }})")
                     }
                     connection.execSQL("UPDATE sqlite_sequence SET seq = ${if (table == "filaments") 900 else 1200} WHERE name = '$table'")

@@ -7,6 +7,7 @@ import androidx.room.OnConflictStrategy.Companion.IGNORE
 import androidx.room.Query
 import androidx.room.Transaction
 import androidx.room.Update
+import com.aadil.spool.data.entity.PendingInventoryChange
 import com.aadil.spool.data.entity.Filament
 import com.aadil.spool.data.entity.UsageLog
 import kotlinx.coroutines.flow.Flow
@@ -14,6 +15,20 @@ import kotlinx.coroutines.flow.first
 
 @Dao
 interface SpoolDao {
+
+    @Query("SELECT * FROM pending_inventory_changes WHERE owner_id = :ownerId ORDER BY id LIMIT :limit")
+    suspend fun pendingInventoryChanges(ownerId: String, limit: Int = 100): List<PendingInventoryChange>
+
+    @Transaction
+    suspend fun insertOwnedLogAndDeductWeight(ownerId: String, log: UsageLog): Boolean {
+        if (log.id != 0 || !log.gramsUsed.isFinite() || log.gramsUsed <= 0) return false
+        val spool = ownedSpool(ownerId, log.spoolId) ?: return false
+        val remaining = spool.currentWeight - log.gramsUsed
+        if (remaining < 0) return false
+        insertUsageLog(log)
+        updateCurrentWeight(spool.id, remaining)
+        return true
+    }
 
     @Insert(onConflict = IGNORE)
     suspend fun insertSpool(filament: Filament)

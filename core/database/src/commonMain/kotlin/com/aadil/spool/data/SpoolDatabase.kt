@@ -8,12 +8,13 @@ import androidx.room.RoomDatabase
 import androidx.room.RoomDatabaseConstructor
 import androidx.room.migration.AutoMigrationSpec
 import com.aadil.spool.data.dao.SpoolDao
+import com.aadil.spool.data.entity.PendingInventoryChange
 import com.aadil.spool.data.entity.Filament
 import com.aadil.spool.data.entity.UsageLog
 
 @Database(
-    entities = [Filament::class, UsageLog::class],
-    version = 17,
+    entities = [Filament::class, UsageLog::class, PendingInventoryChange::class],
+    version = 18,
     autoMigrations = [
         AutoMigration(from = 10, to = 11),
         AutoMigration(from = 11, to = 12, spec = SpoolDatabase.DeletePriceSpec::class),

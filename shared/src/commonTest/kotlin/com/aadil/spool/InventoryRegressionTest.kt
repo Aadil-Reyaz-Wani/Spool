@@ -160,6 +160,26 @@ class InventoryRegressionTest {
         assertEquals(original.copy(price = 205.0), repo.spools.value.single())
     }
 
+    @Test fun newPrintSavesWeightAndHistoryTogetherAndFailureKeepsDraft() = runTest {
+        val repo = FakeSpoolRepository(listOf(testSpool())).apply { failSaving = true }
+        val vm = keep(SpoolDetailsViewModel(repo))
+        vm.quickDeductionUpdateField("50", "New print", false)
+        vm.deductCurrentWeight(7, "50")
+        advanceUntilIdle()
+        assertEquals(1000.0, repo.spools.value.single().currentWeight)
+        assertTrue(repo.logs.value.isEmpty())
+        assertEquals("New print", vm.printObjectUiState.value.printTitle)
+        repo.failSaving = false
+        vm.deductCurrentWeight(7, "50")
+        advanceUntilIdle()
+        assertEquals(950.0, repo.spools.value.single().currentWeight)
+        assertEquals(50.0, repo.logs.value.single().gramsUsed)
+        assertEquals(10.0, repo.logs.value.single().pricePerPrint)
+        assertEquals("New print", repo.logs.value.single().title)
+        assertEquals("", vm.printObjectUiState.value.printTitle)
+        assertEquals(1, repo.writes)
+    }
+
     @Test fun editedPrintRecalculatesCostFromNewWeightWithoutDetailsSubscription() = runTest {
         val repo = FakeSpoolRepository(listOf(testSpool().copy(currentWeight = 899.5)))
         val log = UsageLog(id = 3, spoolId = 7, title = "Print", gramsUsed = 100.5, pricePerPrint = 20.10, timestamp = 1, isFailure = false)

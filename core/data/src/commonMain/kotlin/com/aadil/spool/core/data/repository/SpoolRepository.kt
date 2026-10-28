@@ -45,6 +45,7 @@ interface SpoolRepository {
     fun getSpoolsByColorHex(colorHex: Long): Flow<List<Filament>>
     fun getSpoolsByColorHexStream(colorHex: Long): Flow<List<Filament>> = getSpoolsByColorHex(colorHex)
 
+    suspend fun insertLogAndDeductWeight(log: UsageLog): Boolean
     suspend fun insertUsageLog(log: UsageLog)
     suspend fun insertSpoolUsageLog(log: UsageLog) = insertUsageLog(log)
 
@@ -100,6 +101,7 @@ class DefaultSpoolRepository(
     override fun getSpoolsByMaterialType(material: String): Flow<List<Filament>> = getAllSpools().map { rows -> rows.filter { it.material == material } }
     override fun getSpoolsByColorHex(colorHex: Long): Flow<List<Filament>> = getAllSpools().map { rows -> rows.filter { it.colorHex == colorHex } }
 
+    override suspend fun insertLogAndDeductWeight(log: UsageLog): Boolean = active(false) { spoolDao.insertOwnedLogAndDeductWeight(ownerId, log) }
     override suspend fun insertUsageLog(log: UsageLog) = write { spoolDao.insertOwnedLog(ownerId, log) }
     override suspend fun deleteUsageLog(log: UsageLog) = write { spoolDao.deleteOwnedLog(ownerId, log, false) }
     override suspend fun updateUsageLog(log: UsageLog) = write { spoolDao.updateOwnedLog(ownerId, log, false); Unit }

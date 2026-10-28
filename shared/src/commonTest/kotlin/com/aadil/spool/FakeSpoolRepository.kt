@@ -47,6 +47,14 @@ internal class FakeSpoolRepository(initial: List<Filament> = emptyList()) : Spoo
     override fun getSpoolsByBrand(brand: String) = spools.map { rows -> rows.filter { it.brand == brand } }
     override fun getSpoolsByMaterialType(material: String) = spools.map { rows -> rows.filter { it.material == material } }
     override fun getSpoolsByColorHex(colorHex: Long) = spools.map { rows -> rows.filter { it.colorHex == colorHex } }
+    override suspend fun insertLogAndDeductWeight(log: UsageLog): Boolean {
+        val spool = spools.value.firstOrNull { it.id == log.spoolId } ?: return false
+        if (log.gramsUsed > spool.currentWeight) return false
+        beforeWrite()
+        spools.value = spools.value.map { if (it.id == spool.id) it.copy(currentWeight = it.currentWeight - log.gramsUsed) else it }
+        logs.value += log
+        return true
+    }
     override suspend fun insertUsageLog(log: UsageLog) { beforeWrite(); logs.value += log }
     override suspend fun deleteUsageLog(log: UsageLog) { logs.value = logs.value.filterNot { it.id == log.id } }
     override suspend fun updateUsageLog(log: UsageLog) {
