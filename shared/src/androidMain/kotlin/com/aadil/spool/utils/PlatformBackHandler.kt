@@ -6,9 +6,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
 
 @Composable
-actual fun PlatformBackHandler(enabled: Boolean) {
+actual fun PlatformBackHandler(enabled: Boolean, onBack: (() -> Unit)?) {
     val activity = LocalContext.current as? Activity
     BackHandler(enabled = enabled) {
-        activity?.moveTaskToBack(true)
+        if (onBack != null) onBack() else activity?.moveTaskToBack(true)
     }
 }
