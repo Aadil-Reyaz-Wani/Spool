@@ -50,7 +50,7 @@ fun AccountScreen(navigateUp: () -> Unit, reviewConflicts: () -> Unit, openRecov
     val state by viewModel.state.collectAsStateWithLifecycle()
     val google = rememberGoogleSignIn(viewModel.googleWebClientId)
     Scaffold(topBar = {
-        SpoolAppBar(title = stringResource(Res.string.account_title), canNavigateBack = true, navigateUp = navigateUp)
+        SpoolAppBar(title = stringResource(Res.string.account_title), canNavigateBack = !state.deletionPending, navigateUp = navigateUp)
     }) { padding ->
         Column(
             modifier = Modifier.fillMaxSize().padding(padding).verticalScroll(rememberScrollState())
@@ -63,7 +63,7 @@ fun AccountScreen(navigateUp: () -> Unit, reviewConflicts: () -> Unit, openRecov
             if (account != null) {
                 SpoolHeadingText(text = stringResource(Res.string.account_name), icon = Icons.Outlined.Badge)
                 Text(account.name ?: stringResource(Res.string.account_name_unavailable), style = MaterialTheme.typography.bodyLarge)
-                TextButton(enabled = !state.busy && !state.session.initializing, onClick = viewModel::editName) {
+                TextButton(enabled = !state.busy && !state.deletionPending && !state.session.initializing, onClick = viewModel::editName) {
                     Text(stringResource(Res.string.account_edit_name))
                 }
                 if (state.nameSaved) Text(stringResource(Res.string.account_name_saved), style = MaterialTheme.typography.bodyMedium)
@@ -98,41 +98,43 @@ fun AccountScreen(navigateUp: () -> Unit, reviewConflicts: () -> Unit, openRecov
                 if (state.session.needsConnection) {
                     Text(stringResource(Res.string.account_offline_session), style = MaterialTheme.typography.bodyMedium)
                 }
-                Text(stringResource(Res.string.inventory_account_local_notice), style = MaterialTheme.typography.bodyMedium)
-                val upload = state.uploads
-                SpoolHeadingText(text = stringResource(Res.string.inventory_upload_title), icon = Icons.Outlined.CloudUpload)
-                Text(
-                    stringResource(when (upload.mode) {
-                        InventoryUploadMode.Checking -> Res.string.inventory_upload_checking
-                        InventoryUploadMode.Uploading -> Res.string.inventory_upload_active
-                        InventoryUploadMode.Waiting -> Res.string.inventory_upload_waiting
-                        InventoryUploadMode.SignInRequired -> Res.string.inventory_upload_session
-                        InventoryUploadMode.NeedsAttention -> Res.string.inventory_upload_attention
-                        InventoryUploadMode.Idle -> if (upload.queue.pending > 0) Res.string.inventory_upload_pending else Res.string.inventory_upload_complete
-                    }),
-                    style = MaterialTheme.typography.bodyMedium,
-                    minLines = 2,
-                )
-                Text(stringResource(Res.string.inventory_upload_count, upload.queue.pending), style = MaterialTheme.typography.bodyMedium)
-                if (upload.queue.conflicts > 0) {
-                    Text(stringResource(Res.string.inventory_upload_conflicts, upload.queue.conflicts), style = MaterialTheme.typography.bodyMedium)
-                    SpoolButton(text = stringResource(Res.string.conflict_review_button), enabled = !state.busy, onClick = reviewConflicts)
+                if (!state.deletionPending) {
+                    Text(stringResource(Res.string.inventory_account_local_notice), style = MaterialTheme.typography.bodyMedium)
+                    val upload = state.uploads
+                    SpoolHeadingText(text = stringResource(Res.string.inventory_upload_title), icon = Icons.Outlined.CloudUpload)
+                    Text(
+                        stringResource(when (upload.mode) {
+                            InventoryUploadMode.Checking -> Res.string.inventory_upload_checking
+                            InventoryUploadMode.Uploading -> Res.string.inventory_upload_active
+                            InventoryUploadMode.Waiting -> Res.string.inventory_upload_waiting
+                            InventoryUploadMode.SignInRequired -> Res.string.inventory_upload_session
+                            InventoryUploadMode.NeedsAttention -> Res.string.inventory_upload_attention
+                            InventoryUploadMode.Idle -> if (upload.queue.pending > 0) Res.string.inventory_upload_pending else Res.string.inventory_upload_complete
+                        }),
+                        style = MaterialTheme.typography.bodyMedium,
+                        minLines = 2,
+                    )
+                    Text(stringResource(Res.string.inventory_upload_count, upload.queue.pending), style = MaterialTheme.typography.bodyMedium)
+                    if (upload.queue.conflicts > 0) {
+                        Text(stringResource(Res.string.inventory_upload_conflicts, upload.queue.conflicts), style = MaterialTheme.typography.bodyMedium)
+                        SpoolButton(text = stringResource(Res.string.conflict_review_button), enabled = !state.busy && !state.deletionPending, onClick = reviewConflicts)
+                    }
+                    Text(stringResource(Res.string.inventory_upload_restore_notice), style = MaterialTheme.typography.bodySmall)
+                    // Keep action positions stable as uploads start and finish.
+                    SpoolButton(
+                        text = stringResource(Res.string.inventory_upload_retry),
+                        icon = Icons.Outlined.Refresh,
+                        enabled = !state.busy && !state.deletionPending && upload.mode != InventoryUploadMode.Uploading && upload.mode != InventoryUploadMode.Checking,
+                        onClick = viewModel::retryUploads,
+                    )
+                    SpoolButton(text = stringResource(Res.string.recovery_title), enabled = !state.busy && !state.deletionPending, onClick = openRecovery)
                 }
-                Text(stringResource(Res.string.inventory_upload_restore_notice), style = MaterialTheme.typography.bodySmall)
-                // Keep action positions stable as uploads start and finish.
-                SpoolButton(
-                    text = stringResource(Res.string.inventory_upload_retry),
-                    icon = Icons.Outlined.Refresh,
-                    enabled = !state.busy && upload.mode != InventoryUploadMode.Uploading && upload.mode != InventoryUploadMode.Checking,
-                    onClick = viewModel::retryUploads,
-                )
-                SpoolButton(text = stringResource(Res.string.recovery_title), enabled = !state.busy, onClick = openRecovery)
-                if (state.guestSpoolCount > 0) {
+                if (!state.deletionPending && state.guestSpoolCount > 0) {
                     Text(stringResource(Res.string.inventory_guest_available, state.guestSpoolCount), style = MaterialTheme.typography.bodyMedium)
                     SpoolButton(
                         text = stringResource(Res.string.inventory_import_button),
                         icon = Icons.Outlined.MoveToInbox,
-                        enabled = !state.busy,
+                        enabled = !state.busy && !state.deletionPending,
                         onClick = viewModel::requestGuestImport,
                     )
                 }
@@ -145,6 +147,32 @@ fun AccountScreen(navigateUp: () -> Unit, reviewConflicts: () -> Unit, openRecov
                         confirmButton = { TextButton(onClick = viewModel::confirmGuestImport) { Text(stringResource(Res.string.inventory_import_button)) } },
                         dismissButton = { TextButton(onClick = viewModel::dismissGuestImport) { Text(stringResource(Res.string.inventory_keep_guest)) } },
                     )
+                }
+                if (state.deletionPending) {
+                    Text(stringResource(Res.string.account_delete_pending), style = MaterialTheme.typography.bodyMedium)
+                }
+                TextButton(enabled = !state.busy && !state.session.initializing, onClick = viewModel::requestAccountDeletion) {
+                    Text(stringResource(if (state.deletionPending) Res.string.account_delete_retry else Res.string.account_delete),
+                        color = MaterialTheme.colorScheme.error)
+                }
+                if (state.confirmDelete) {
+                    BasicAlertDialog(onDismissRequest = viewModel::dismissAccountDeletion) {
+                        Surface(shape = MaterialTheme.shapes.medium, color = MaterialTheme.colorScheme.surfaceContainerHigh) {
+                            Column(Modifier.verticalScroll(rememberScrollState()).padding(Dimens.PaddingLarge),
+                                verticalArrangement = Arrangement.spacedBy(Dimens.PaddingMedium)) {
+                                Text(stringResource(Res.string.account_delete_title), style = MaterialTheme.typography.headlineSmall)
+                                Text(account.email ?: account.name ?: stringResource(Res.string.inventory_this_account),
+                                    style = MaterialTheme.typography.bodyLarge)
+                                Text(stringResource(Res.string.account_delete_confirmation), style = MaterialTheme.typography.bodyMedium)
+                                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
+                                    TextButton(onClick = viewModel::dismissAccountDeletion) { Text(stringResource(Res.string.btn_cancel)) }
+                                    TextButton(onClick = { viewModel.deleteAccount(google::clearCredentialState) }) {
+                                        Text(stringResource(Res.string.account_delete), color = MaterialTheme.colorScheme.error)
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
                 SpoolButton(
                     text = stringResource(Res.string.account_sign_out),
@@ -191,6 +219,7 @@ fun AccountScreen(navigateUp: () -> Unit, reviewConflicts: () -> Unit, openRecov
             state.error?.takeUnless { it == AccountError.Profile || it == AccountError.NameInvalid }?.let { error ->
                 Text(
                     stringResource(when (error) {
+                        AccountError.Delete -> Res.string.account_delete_error
                         AccountError.SignIn -> Res.string.account_sign_in_error
                         AccountError.Session -> Res.string.account_session_error
                         AccountError.SignOut -> Res.string.account_sign_out_error

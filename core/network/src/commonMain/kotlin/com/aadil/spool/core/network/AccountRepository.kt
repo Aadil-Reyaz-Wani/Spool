@@ -7,6 +7,16 @@ import io.github.jan.supabase.auth.status.SessionStatus
 import io.github.jan.supabase.auth.user.UserInfo
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import io.ktor.client.request.header
+import io.ktor.client.request.setBody
+import io.ktor.client.statement.bodyAsText
+import io.ktor.http.HttpMethod
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
+import kotlinx.serialization.json.booleanOrNull
+import kotlin.time.Clock
 import kotlinx.serialization.json.put
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
@@ -36,6 +46,8 @@ interface AccountRepository {
     val sessions: Flow<AccountSession>
     suspend fun signIn(credentials: GoogleCredentials)
     suspend fun signOut()
+    suspend fun deleteAccount(accountId: String)
+    suspend fun clearDeletedSession(accountId: String)
     suspend fun updateDisplayName(accountId: String, name: String)
 }
 
@@ -114,6 +126,40 @@ internal class SupabaseAccountRepository(
             } finally {
                 withContext(NonCancellable) { auth.clearSession() }
             }
+        }
+    }
+
+    override suspend fun deleteAccount(accountId: String) {
+        accountMutex.withLock {
+            require(accountId.isNotBlank())
+            val client = checkNotNull(connection.client)
+            withTimeout(30_000) {
+                client.auth.awaitInitialization()
+                val session = checkNotNull(client.auth.currentSessionOrNull())
+                check(session.user?.id == accountId && session.expiresAt > Clock.System.now())
+                val response = client.httpClient.request(checkNotNull(connection.accountDeletionUrl)) {
+                    method = HttpMethod.Post
+                    header("Authorization", "Bearer ${session.accessToken}")
+                    header("Content-Type", "application/json")
+                    setBody(buildJsonObject { put("p_expected_owner", accountId) }.toString())
+                }
+                // Never log server bodies, credentials or inventory. A timeout is not confirmation.
+                check(response.status.value == 200)
+                val result = Json.parseToJsonElement(response.bodyAsText()).jsonObject
+                check(result["deleted"]?.jsonPrimitive?.booleanOrNull == true &&
+                    result["owner_id"]?.jsonPrimitive?.content == accountId)
+            }
+        }
+    }
+
+    override suspend fun clearDeletedSession(accountId: String) {
+        accountMutex.withLock {
+            val auth = connection.client?.auth ?: return
+            auth.awaitInitialization()
+            // Cleanup of an old deletion must never sign out a different account.
+            val currentOwner = auth.currentSessionOrNull()?.user?.id
+            val savedOwner = auth.sessionManager.loadSession()?.user?.id
+            if (currentOwner == accountId || (currentOwner == null && savedOwner == accountId)) auth.clearSession()
         }
     }
 

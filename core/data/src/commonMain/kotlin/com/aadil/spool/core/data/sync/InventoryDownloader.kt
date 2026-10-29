@@ -25,7 +25,7 @@ class InventoryDownloader(
     private val mutex = Mutex()
 
     suspend fun downloadNext(expected: InventoryScope): InventoryUploadResult = mutex.withLock {
-        if (expected.ownerId.isBlank() || session.scope.value != expected) return@withLock InventoryUploadResult.StaleScope
+        if (expected.ownerId.isBlank() || session.scope.value != expected || expected.ownerId in session.deletingOwners.value) return@withLock InventoryUploadResult.StaleScope
         val cursor = dao.pullCursor(expected.ownerId) ?: 0L
         val reply = coroutineScope {
             val receiving = async { remote.pull(expected.ownerId, cursor) }

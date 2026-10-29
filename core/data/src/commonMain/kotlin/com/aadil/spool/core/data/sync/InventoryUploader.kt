@@ -31,7 +31,7 @@ class InventoryUploader(
     private val mutex = Mutex()
 
     suspend fun uploadNext(expected: InventoryScope): InventoryUploadResult = mutex.withLock {
-        if (expected.ownerId.isBlank() || session.scope.value != expected) return@withLock InventoryUploadResult.StaleScope
+        if (expected.ownerId.isBlank() || session.scope.value != expected || expected.ownerId in session.deletingOwners.value) return@withLock InventoryUploadResult.StaleScope
         val batch = session.withScope(expected, null) { dao.prepare(expected.ownerId) }
             ?: return@withLock if (session.scope.value == expected) {
                 if (dao.conflictCount(expected.ownerId) > 0) InventoryUploadResult.Conflict else InventoryUploadResult.NoWork

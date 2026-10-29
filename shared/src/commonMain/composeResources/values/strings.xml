@@ -313,4 +313,10 @@
     <string name="account_name_rules">Use 1 to %1$d characters on one line.</string>
     <string name="account_name_save_notice">Your chosen name is saved to your Spool account. Connect to save changes.</string>
     <string name="account_name_save_error">Could not save your name. Connect and try again. Your draft is kept.</string>
+    <string name="account_delete">Delete account</string>
+    <string name="account_delete_title">Permanently delete your Spool account?</string>
+    <string name="account_delete_confirmation">This permanently deletes this Spool account, its cloud inventory, print history and retained recovery records. It also removes this account’s inventory, recovery copies and pending changes from this device, including changes that have not synced.\n\nGuest inventory and other accounts are kept. Your Google account is not deleted. Offline copies on other devices and system backups may remain.\n\nA connection is required. This cannot be undone.</string>
+    <string name="account_delete_pending">Account deletion has started. Inventory changes and sync for this account are paused on this device until deletion is confirmed. Reconnect and retry. If you cannot sign in or retry, contact spool.help@gmail.com. Do not import this inventory into another account.</string>
+    <string name="account_delete_retry">Retry account deletion</string>
+    <string name="account_delete_error">Could not confirm account deletion. The request may have reached the server. Reconnect and retry, or contact spool.help@gmail.com. Unsynchronized local data is kept until cloud deletion is confirmed.</string>
 </resources>

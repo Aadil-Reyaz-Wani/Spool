@@ -21,7 +21,7 @@ import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.TimeoutCancellationException
 import kotlin.coroutines.cancellation.CancellationException
 
-enum class AccountError { SignIn, Session, SignOut, Import, Profile, NameInvalid }
+enum class AccountError { SignIn, Session, SignOut, Import, Profile, NameInvalid, Delete }
 class GoogleSignInCancelled : Exception()
 
 data class AccountUiState(
@@ -35,6 +35,8 @@ data class AccountUiState(
     val editingName: Boolean = false,
     val nameDraft: String = "",
     val nameSaved: Boolean = false,
+    val confirmDelete: Boolean = false,
+    val deletionPending: Boolean = false,
 )
 
 class AccountViewModel(
@@ -58,6 +60,11 @@ class AccountViewModel(
         }
         inventory?.let { session ->
             viewModelScope.launch {
+                session.deletingOwners.collect { owners ->
+                    mutableState.value = state.value.copy(deletionPending = state.value.session.account?.id in owners)
+                }
+            }
+            viewModelScope.launch {
                 session.guestSpoolCount.collect { count ->
                     mutableState.value = state.value.copy(guestSpoolCount = count)
                 }
@@ -69,9 +76,12 @@ class AccountViewModel(
                     val owner = session.account?.id
                     val editorOwner = saved.get<String>("profile_owner")
                     if (!session.initializing && owner != editorOwner) clearNameDraft()
+                    if (!session.initializing && owner != saved.get<String>("deletion_confirm_owner")) saved.remove<String>("deletion_confirm_owner")
                     val editing = owner != null && saved.get<String>("profile_owner") == owner && saved.get<Boolean>("profile_editing") == true
                     mutableState.value = mutableState.value.copy(
                         session = session,
+                        deletionPending = owner in inventory?.deletingOwners?.value.orEmpty(),
+                        confirmDelete = owner != null && owner == saved.get<String>("deletion_confirm_owner"),
                         editingName = editing,
                         nameDraft = if (editing) saved["profile_draft"] ?: "" else "",
                         nameSaved = state.value.nameSaved && owner != null && owner == state.value.session.account?.id,
@@ -101,7 +111,7 @@ class AccountViewModel(
 
     fun editName() {
         val account = state.value.session.account ?: return
-        if (state.value.busy || state.value.session.initializing) return
+        if (state.value.busy || state.value.deletionPending || state.value.session.initializing) return
         saved["profile_owner"] = account.id
         saved["profile_draft"] = account.name.orEmpty()
         saved["profile_editing"] = true
@@ -123,7 +133,7 @@ class AccountViewModel(
 
     fun saveName() {
         val owner = state.value.session.account?.id ?: return
-        if (state.value.busy || !state.value.editingName || saved.get<String>("profile_owner") != owner) return
+        if (state.value.busy || state.value.deletionPending || !state.value.editingName || saved.get<String>("profile_owner") != owner) return
         val name = normalizeDisplayName(state.value.nameDraft)
         if (name == null) {
             mutableState.value = state.value.copy(error = AccountError.NameInvalid)
@@ -146,6 +156,48 @@ class AccountViewModel(
         }
     }
 
+    fun requestAccountDeletion() {
+        val owner = state.value.session.account?.id ?: return
+        if (state.value.busy || state.value.session.initializing) return
+        saved["deletion_confirm_owner"] = owner
+        mutableState.value = state.value.copy(confirmDelete = true, error = null)
+    }
+
+    fun dismissAccountDeletion() {
+        if (state.value.busy) return
+        saved.remove<String>("deletion_confirm_owner")
+        mutableState.value = state.value.copy(confirmDelete = false)
+    }
+
+    fun deleteAccount(clearProviderState: suspend () -> Unit) {
+        val owner = state.value.session.account?.id ?: return
+        val scope = inventory?.scope?.value ?: return
+        if (state.value.busy || !state.value.confirmDelete || scope.ownerId != owner ||
+            saved.get<String>("deletion_confirm_owner") != owner) return
+        saved.remove<String>("deletion_confirm_owner")
+        clearNameDraft()
+        mutableState.value = state.value.copy(busy = true, confirmDelete = false, editingName = false, nameDraft = "", error = null)
+        viewModelScope.launch {
+            try {
+                // Auth cleanup changes navigation and disposes this ViewModel. Finish accepted cleanup.
+                withContext(NonCancellable) {
+                    withTimeout(60_000) {
+                        check(inventory.deleteAccount(scope))
+                        try { withTimeout(8_000) { clearProviderState() } }
+                        catch (_: Exception) {
+                            // The account and local data are already deleted; provider cleanup is best effort.
+                        }
+                    }
+                }
+            } catch (_: TimeoutCancellationException) {
+                mutableState.value = state.value.copy(error = AccountError.Delete)
+            } catch (cancelled: CancellationException) { throw cancelled }
+            catch (_: Exception) {
+                mutableState.value = state.value.copy(error = AccountError.Delete)
+            } finally { mutableState.value = state.value.copy(busy = false) }
+        }
+    }
+
     fun retryUploads() { uploads?.retry() }
 
     fun requestSignOutConfirmation() {
@@ -159,7 +211,7 @@ class AccountViewModel(
     fun requestGuestImport() {
         val account = state.value.session.account ?: return
         val scope = inventory?.scope?.value ?: return
-        if (state.value.busy || state.value.guestSpoolCount == 0 || scope.ownerId != account.id) return
+        if (state.value.busy || state.value.deletionPending || state.value.guestSpoolCount == 0 || scope.ownerId != account.id) return
         pendingImport = scope
         mutableState.value = state.value.copy(confirmImport = true, error = null)
     }

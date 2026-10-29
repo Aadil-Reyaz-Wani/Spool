@@ -5,6 +5,8 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
+import androidx.datastore.preferences.core.stringSetPreferencesKey
+import com.aadil.spool.data.dao.InventorySyncDao
 import com.aadil.spool.core.model.currentTimeMillis
 import com.aadil.spool.core.network.AccountRepository
 import com.aadil.spool.data.dao.SpoolDao
@@ -29,21 +31,30 @@ interface InventoryNotifications {
 data class InventoryScope(val ownerId: String, val revision: Long)
 
 class InventorySession(
-    accounts: AccountRepository,
+    private val accounts: AccountRepository,
     private val dao: SpoolDao,
     private val notifications: InventoryNotifications? = null,
     private val preferences: DataStore<Preferences>? = null,
     private val coroutineScope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Default),
+    private val syncDao: InventorySyncDao? = null,
 ) {
     private val mutex = Mutex()
     private val mutableScope = MutableStateFlow<InventoryScope?>(null)
     val scope = mutableScope.asStateFlow()
     val guestSpoolCount = dao.guestSpoolCount()
     private var revision = 0L
+    private val mutableDeletingOwners = MutableStateFlow<Set<String>>(emptySet())
+    val deletingOwners = mutableDeletingOwners.asStateFlow()
 
     init {
         coroutineScope.launch {
             try {
+                val stored = preferences?.data?.first()
+                mutableDeletingOwners.value = stored?.get(DELETING).orEmpty()
+                // Only finish local cleanup after a durable, successful server confirmation.
+                for (owner in stored?.get(DELETED).orEmpty()) {
+                    finishDeletedAccount(owner)
+                }
                 accounts.sessions.collect { session ->
                     mutex.withLock {
                         val account = session.account
@@ -90,7 +101,7 @@ class InventorySession(
     suspend fun awaitReady(): InventoryScope = scope.filterNotNull().first()
 
     suspend fun <T> withScope(expected: InventoryScope, unavailable: T, block: suspend () -> T): T = mutex.withLock {
-        if (scope.value != expected) unavailable else block()
+        if (scope.value != expected || expected.ownerId in deletingOwners.value) unavailable else block()
     }
 
     suspend fun importGuestInventory(expected: InventoryScope): Boolean = withScope(expected, false) {
@@ -99,9 +110,44 @@ class InventorySession(
         true
     }
 
+    /** Explicit user action only. An ambiguous response keeps local data and blocks further writes. */
+    suspend fun deleteAccount(expected: InventoryScope): Boolean = mutex.withLock {
+        if (scope.value != expected || expected.ownerId.isBlank()) return@withLock false
+        val owner = expected.ownerId
+        val store = checkNotNull(preferences)
+        checkNotNull(syncDao)
+        val values = store.edit { it[DELETING] = it[DELETING].orEmpty() + owner }
+        mutableDeletingOwners.value = values[DELETING].orEmpty()
+        notifications?.clearInventoryNotifications()
+        if (owner !in values[DELETED].orEmpty()) {
+            accounts.deleteAccount(owner)
+            store.edit { it[DELETED] = it[DELETED].orEmpty() + owner }
+        }
+        finishDeletedAccount(owner)
+        true
+    }
+
+    private suspend fun finishDeletedAccount(owner: String) {
+        require(owner.isNotBlank())
+        checkNotNull(syncDao).purgeDeletedAccount(owner)
+        accounts.clearDeletedSession(owner)
+        if (scope.value?.ownerId == owner) {
+            revision++
+            mutableScope.value = null
+        }
+        // Leave no saved inventory or profile payload in the deletion journal.
+        val updated = checkNotNull(preferences).edit {
+            it[DELETING] = it[DELETING].orEmpty() - owner
+            it[DELETED] = it[DELETED].orEmpty() - owner
+        }
+        mutableDeletingOwners.value = updated[DELETING].orEmpty()
+    }
+
     fun close() { coroutineScope.cancel() }
 
     private companion object {
+        val DELETING = stringSetPreferencesKey("inventory_deleting_accounts")
+        val DELETED = stringSetPreferencesKey("inventory_deleted_accounts")
         val OWNER = stringPreferencesKey("inventory_scope_owner")
         val REVISION = longPreferencesKey("inventory_scope_revision")
     }

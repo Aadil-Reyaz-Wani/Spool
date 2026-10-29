@@ -42,6 +42,8 @@ class AccountViewModelTest {
             if (failure) error("Sensitive provider error")
             sessions.value = AccountSession(SpoolAccount("id", "Name", "mail@example.com"))
         }
+        override suspend fun deleteAccount(accountId: String) { error("Unexpected account deletion") }
+        override suspend fun clearDeletedSession(accountId: String) { error("Unexpected deletion cleanup") }
         override suspend fun updateDisplayName(accountId: String, name: String) {
             nameUpdates++
             nameUpdateHandler?.invoke()
@@ -222,6 +224,31 @@ class AccountViewModelTest {
         assertEquals(99, vm.state.value.nameDraft.length)
         vm.saveName(); assertEquals(AccountError.NameInvalid, vm.state.value.error); assertEquals(0, repo.nameUpdates)
         vm.changeName("Short name"); vm.saveName(); runCurrent(); assertEquals("Short name", vm.state.value.session.account?.name)
+    }
+
+    @Test fun deletionRequiresConfirmationAndIsBoundToTheAccount() = runTest {
+        Dispatchers.setMain(kotlinx.coroutines.test.StandardTestDispatcher(testScheduler))
+        val repo = signedInRepository(); val saved = SavedStateHandle()
+        val vm = AccountViewModel(repo, saved = saved); runCurrent()
+        vm.requestAccountDeletion(); assertTrue(vm.state.value.confirmDelete)
+        assertEquals("id", saved.get<String>("deletion_confirm_owner"))
+        vm.dismissAccountDeletion(); assertFalse(vm.state.value.confirmDelete)
+        assertFalse(saved.contains("deletion_confirm_owner"))
+        vm.requestAccountDeletion()
+        repo.sessions.value = AccountSession(SpoolAccount("other", "Other", "other@example.com")); runCurrent()
+        assertFalse(vm.state.value.confirmDelete); assertFalse(saved.contains("deletion_confirm_owner"))
+        vm.deleteAccount { error("Stale confirmation cannot delete or clear credentials") }
+        assertFalse(vm.state.value.busy)
+    }
+
+    @Test fun restoredDeletionConfirmationDoesNotAutomaticallyDelete() = runTest {
+        Dispatchers.setMain(kotlinx.coroutines.test.StandardTestDispatcher(testScheduler))
+        val repo = signedInRepository()
+        val saved = SavedStateHandle(mapOf("deletion_confirm_owner" to "id"))
+        val vm = AccountViewModel(repo, saved = saved); runCurrent()
+        assertTrue(vm.state.value.confirmDelete); assertFalse(vm.state.value.busy)
+        assertNotNull(vm.state.value.session.account)
+        vm.dismissAccountDeletion(); assertFalse(vm.state.value.confirmDelete)
     }
 
 }

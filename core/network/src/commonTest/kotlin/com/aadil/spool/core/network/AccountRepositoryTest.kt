@@ -309,4 +309,65 @@ class AccountRepositoryTest {
         } finally { finish.complete(Unit); connection.close() }
     }
 
+    @Test fun deletionUsesCapturedOwnerAndTokenAndKeepsSessionUntilLocalCleanup() = authTest {
+        val storage = MemorySessionManager(session()); var requests = 0
+        val connection = SupabaseConnection(configuration, storage, setupAuthPlatform = false) {
+            MockEngine { request ->
+                requests++
+                assertEquals("/rest/v1/rpc/delete_spool_account", request.url.encodedPath)
+                assertEquals("POST", request.method.value)
+                assertEquals("Bearer access", request.headers["Authorization"])
+                val body = Json.parseToJsonElement((request.body as TextContent).text).jsonObject
+                assertEquals(setOf("p_expected_owner"), body.keys)
+                assertEquals(user.id, body["p_expected_owner"]?.jsonPrimitive?.content)
+                respond(buildJsonObject { put("deleted", true); put("owner_id", user.id) }.toString(),
+                    headers = headersOf("Content-Type", "application/json"))
+            }
+        }
+        try {
+            val repository = SupabaseAccountRepository(connection)
+            repository.sessions.first { it.account != null && !it.needsConnection }
+            assertFails { repository.deleteAccount("other-owner") }
+            assertEquals(0, requests)
+            repository.deleteAccount(user.id)
+            assertEquals(1, requests); assertNotNull(storage.loadSession())
+            repository.clearDeletedSession("other-owner"); assertNotNull(storage.loadSession())
+            repository.clearDeletedSession(user.id); assertNull(storage.loadSession())
+        } finally { connection.close() }
+    }
+
+    @Test fun failedOrMismatchedDeletionNeverClearsSession() = authTest {
+        for ((status, body) in listOf(
+            HttpStatusCode.Unauthorized to "{}",
+            HttpStatusCode.Forbidden to "{}",
+            HttpStatusCode.InternalServerError to "sensitive server message",
+            HttpStatusCode.OK to "{}",
+            HttpStatusCode.OK to "{\"deleted\":true,\"owner_id\":\"other-owner\"}",
+        )) {
+            val storage = MemorySessionManager(session())
+            val connection = SupabaseConnection(configuration, storage, setupAuthPlatform = false) {
+                MockEngine { respond(body, status, headersOf("Content-Type", "application/json")) }
+            }
+            try {
+                val repository = SupabaseAccountRepository(connection)
+                repository.sessions.first { it.account != null && !it.needsConnection }
+                assertFails { repository.deleteAccount(user.id) }
+                assertNotNull(storage.loadSession())
+            } finally { connection.close() }
+        }
+    }
+
+    @Test fun offlineDeletionRetainsAuthenticationForExplicitRetry() = authTest {
+        val storage = MemorySessionManager(session())
+        val connection = SupabaseConnection(configuration, storage, setupAuthPlatform = false) {
+            MockEngine { throw IOException("Offline") }
+        }
+        try {
+            val repository = SupabaseAccountRepository(connection)
+            repository.sessions.first { it.account != null && !it.needsConnection }
+            assertFails { repository.deleteAccount(user.id) }
+            assertNotNull(storage.loadSession())
+        } finally { connection.close() }
+    }
+
 }

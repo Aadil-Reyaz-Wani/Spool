@@ -23,7 +23,7 @@ expect val platformDataStoreModule: Module
 
 val dataModule = module {
     includes(platformDataStoreModule)
-    single { InventorySession(get(), get(), getOrNull<InventoryNotifications>(), get()) } onClose { it?.close() }
+    single { InventorySession(get(), get(), getOrNull<InventoryNotifications>(), get(), syncDao = get()) } onClose { it?.close() }
     single { InventoryUploader(get(), get(), get()) }
     single<InventoryRecoveryRepository> { LocalInventoryRecoveryRepository(get(), get()) }
     single<InventoryConflictRepository> { InventoryConflictResolver(get(), get(), get()) }

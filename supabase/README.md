@@ -460,3 +460,63 @@ References: [RLS](https://supabase.com/docs/guides/database/postgres/row-level-s
 [migrations](https://supabase.com/docs/guides/local-development/database-migrations),
 [migration API](https://supabase.com/docs/reference/api/v1-apply-a-migration),
 [WorkManager constraints and retries](https://developer.android.com/develop/background-work/background-tasks/persistent/getting-started/define-work).
+
+## Account deletion
+
+`20261029020000_account_deletion.sql` adds `delete_spool_account(p_expected_owner uuid)`.
+Only the authenticated caller can delete their own permanent account ID. The RPC
+uses a fixed empty search path and the same per-owner advisory transaction lock
+as inventory upload. It deletes `auth.users`; existing foreign keys cascade the
+account's active inventory, history, tombstones, upload receipts and change records.
+No privileged key is shipped in the app. Replaying the same confirmed request
+with the same still-valid JWT is safe. A later Google sign-in can create a new,
+empty Spool account with a new permanent ID; it does not restore the deleted one.
+
+The account screen requires explicit confirmation. Deletion requires a connection
+and includes unsynchronized changes on the initiating device. Guest inventory and
+other accounts are preserved. DataStore journals the owner ID before the request
+and records successful server confirmation before local cleanup. The Room purge
+runs transactionally with outbox/recovery capture suppressed. It removes only the
+confirmed owner's inventory, history, queues, cursors, conflict/recovery payloads
+and restore/removal receipts. The account session is then cleared, and its old
+inventory scope is invalidated. Google credential-state cleanup is best effort.
+There is no Room schema change.
+
+A request timeout or rejected response never authorizes local data deletion. That
+account remains on Account with writes and sync paused and an explicit Retry action.
+OS jobs are canceled. Unconfirmed cloud deletion is not automatically retried on
+app startup. A persisted confirmed deletion finishes local cleanup on startup
+without another server deletion, including after a local transaction failure.
+If a response is lost and the old token later becomes unusable, support may be
+needed to confirm the old account's deletion; signing in again must never delete
+a newly created account or transfer the old inventory into it.
+
+Account deletion does not remotely erase offline caches on other devices or system
+backups, and is not a promise of forensic erasure of SQLite pages, infrastructure
+logs or provider backups. These limitations are disclosed in the confirmation and
+public policy. Those copies require device/backup controls and provider retention.
+
+Public deletion-request resource:
+https://sites.google.com/view/spool-privacy/account-deletion
+
+The page allows a support request without reinstalling the app. Requests go to
+`spool.help@gmail.com`. Verify ownership before deleting anything; an email address
+alone must not authorize deletion of an unrelated account. Resolve the exact
+permanent Spool user ID using the authenticated Supabase dashboard, verify it
+against the request, and use Supabase's user deletion operation for that verified
+user only. Confirm completion to the requester. Do not ask for passwords or tokens.
+Any legally required retention, provider backups or verification issue should be
+explained honestly. Never reuse a new account's ID to retry an old deletion.
+
+Run `supabase/tests/account_deletion.sql` as postgres after migration. It tests
+anonymous/missing-subject denial, wrong-owner and null-owner rejection, successful
+self-deletion, replay and cascade isolation using disposable fixtures inside a
+rolled-back transaction. No existing users are selected for deletion.
+
+A focused Android phone pass on 2026-10-29 verified confirmation/Cancel, rotation,
+offline retention, restart, explicit online retry and cloud/local cleanup using two
+disposable accounts. The paused-deletion sync display was corrected and retested.
+Original 24 spools and 31 prints and protected cloud fingerprints were unchanged;
+the original account was restored. Screenshots and temporary test credentials were
+removed. iOS runtime, two-device offline caches and full end-to-end release checks
+remain separate. Do not delete existing user accounts as a smoke test.

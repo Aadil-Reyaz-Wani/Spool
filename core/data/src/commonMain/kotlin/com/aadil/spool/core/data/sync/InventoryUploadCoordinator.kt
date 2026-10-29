@@ -16,6 +16,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -54,7 +55,9 @@ class InventoryUploadCoordinator(
     private val signals = Channel<Unit>(Channel.CONFLATED)
     private val drainMutex = Mutex()
     private val job = coroutineScope.launch(start = CoroutineStart.LAZY) {
-        session.scope.collectLatest { active ->
+        session.scope.combine(session.deletingOwners) { active, deleting ->
+            active?.takeUnless { it.ownerId in deleting }
+        }.collectLatest { active ->
             mutableStatus.value = InventoryUploadStatus(scope = active)
             if (active == null || active.ownerId.isBlank()) return@collectLatest
             try {
@@ -104,7 +107,7 @@ class InventoryUploadCoordinator(
                 setMode(active, InventoryUploadMode.NeedsAttention)
             } finally {
                 // Also removes periodic work, which otherwise survives sign-out/process death.
-                if (session.scope.value != active) runCatching { scheduler.cancel(active) }
+                if (session.scope.value != active || active.ownerId in session.deletingOwners.value) runCatching { scheduler.cancel(active) }
             }
         }
     }
@@ -115,13 +118,13 @@ class InventoryUploadCoordinator(
 
     fun retry() {
         val active = session.scope.value ?: return
-        if (active.ownerId.isBlank()) return
+        if (active.ownerId.isBlank() || active.ownerId in session.deletingOwners.value) return
         schedule(active)
         signals.trySend(Unit)
     }
 
     suspend fun runPending(expected: InventoryScope): InventoryUploadResult = drainMutex.withLock {
-        if (expected.ownerId.isBlank() || session.scope.value != expected) return@withLock InventoryUploadResult.StaleScope
+        if (expected.ownerId.isBlank() || session.scope.value != expected || expected.ownerId in session.deletingOwners.value) return@withLock InventoryUploadResult.StaleScope
         setMode(expected, InventoryUploadMode.Uploading)
         try {
             val result = withTimeoutOrNull(90_000) {

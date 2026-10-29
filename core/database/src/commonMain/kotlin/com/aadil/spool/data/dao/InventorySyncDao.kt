@@ -25,6 +25,51 @@ import kotlin.uuid.Uuid
 @Dao
 @OptIn(ExperimentalUuidApi::class)
 interface InventorySyncDao {
+    /** Only call after confirmed cloud account deletion. Guest inventory is never eligible. */
+    @Transaction
+    suspend fun purgeDeletedAccount(ownerId: String) {
+        require(ownerId.isNotBlank())
+        beginRemoteApply(InventoryRemoteApply(ownerId))
+        try {
+            deleteAccountSpools(ownerId)
+            deleteAccountChanges(ownerId)
+            deleteAccountSyncStates(ownerId)
+            deleteAccountBatches(ownerId)
+            deleteAccountPullState(ownerId)
+            deleteAccountConflictResolutions(ownerId)
+            deleteAccountRecoveryVersions(ownerId)
+            deleteAccountRecoveryRestores(ownerId)
+            deleteAccountRecoveryRemovals(ownerId)
+        } finally { endRemoteApply(ownerId) }
+    }
+
+    @Query("DELETE FROM filaments WHERE owner_id = :ownerId")
+    suspend fun deleteAccountSpools(ownerId: String)
+
+    @Query("DELETE FROM pending_inventory_changes WHERE owner_id = :ownerId")
+    suspend fun deleteAccountChanges(ownerId: String)
+
+    @Query("DELETE FROM inventory_sync_state WHERE owner_id = :ownerId")
+    suspend fun deleteAccountSyncStates(ownerId: String)
+
+    @Query("DELETE FROM inventory_upload_batches WHERE owner_id = :ownerId")
+    suspend fun deleteAccountBatches(ownerId: String)
+
+    @Query("DELETE FROM inventory_pull_state WHERE owner_id = :ownerId")
+    suspend fun deleteAccountPullState(ownerId: String)
+
+    @Query("DELETE FROM inventory_conflict_resolutions WHERE owner_id = :ownerId")
+    suspend fun deleteAccountConflictResolutions(ownerId: String)
+
+    @Query("DELETE FROM inventory_recovery_versions WHERE owner_id = :ownerId")
+    suspend fun deleteAccountRecoveryVersions(ownerId: String)
+
+    @Query("DELETE FROM inventory_recovery_restores WHERE owner_id = :ownerId")
+    suspend fun deleteAccountRecoveryRestores(ownerId: String)
+
+    @Query("DELETE FROM inventory_recovery_removals WHERE owner_id = :ownerId")
+    suspend fun deleteAccountRecoveryRemovals(ownerId: String)
+
     @Query("""SELECT COUNT(*) AS pending, COALESCE(MAX(id), 0) AS latest,
         (SELECT COUNT(*) FROM inventory_upload_batches b WHERE b.owner_id = :ownerId AND b.conflict_snapshot IS NOT NULL) AS conflicts,
         (SELECT COUNT(*) FROM pending_inventory_changes p WHERE p.owner_id = :ownerId AND p.acknowledged_at IS NULL

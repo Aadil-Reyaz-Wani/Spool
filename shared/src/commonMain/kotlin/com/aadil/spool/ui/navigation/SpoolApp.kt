@@ -78,6 +78,8 @@ fun MySpoolApp(modifier: Modifier = Modifier, initialSpoolId: Int? = null) {
     val spoolPrintUsageHistoryDetails by printHistoryViewModel.spoolPrintUsageHistoryDetails.collectAsStateWithLifecycle()
 
     val inventorySession = koinInject<InventorySession>()
+    val deletingOwners by inventorySession.deletingOwners.collectAsStateWithLifecycle()
+    val deletionPending = inventorySession.scope.value?.ownerId in deletingOwners
     val guestCount by inventorySession.guestSpoolCount.collectAsStateWithLifecycle(initialValue = 0)
 
     // Settings
@@ -94,7 +96,7 @@ fun MySpoolApp(modifier: Modifier = Modifier, initialSpoolId: Int? = null) {
     // It safely removes the screens from the backstack when the back button is pressed.
     // without the crash if the user presses the back button twice.
     val safePopBackStack: () -> Unit = {
-        if (backStack.size > 1) {
+        if (!deletionPending && backStack.size > 1) {
             backStack.removeLastOrNull()
         }
     }
@@ -126,7 +128,9 @@ fun MySpoolApp(modifier: Modifier = Modifier, initialSpoolId: Int? = null) {
     }
 
     NavDisplay(
-        backStack = backStack,
+        // Keep pending deletion on Account instead of accepting edits that cannot be saved.
+        backStack = if (deletionPending) listOf(Routes.Account) else backStack,
+        onBack = safePopBackStack,
         modifier = modifier,
         entryDecorators = listOf(
             rememberSaveableStateHolderNavEntryDecorator(),

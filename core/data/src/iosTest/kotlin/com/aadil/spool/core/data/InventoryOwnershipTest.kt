@@ -39,6 +39,8 @@ class InventoryOwnershipTest {
         override val googleWebClientId = ""
         override val sessions = MutableStateFlow(AccountSession(initializing = true))
         override suspend fun signIn(credentials: GoogleCredentials) = Unit
+        override suspend fun deleteAccount(accountId: String) { error("Unexpected account deletion") }
+        override suspend fun clearDeletedSession(accountId: String) { error("Unexpected deletion cleanup") }
         override suspend fun updateDisplayName(accountId: String, name: String) { error("Unexpected profile write") }
         override suspend fun signOut() { sessions.value = AccountSession() }
         fun login(id: String, email: String = "$id@example.com") {
