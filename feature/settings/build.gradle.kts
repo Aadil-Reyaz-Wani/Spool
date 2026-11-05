@@ -25,6 +25,7 @@ kotlin {
         commonMain.dependencies {
             api(project(":core:model"))
             api(project(":core:data"))
+            api(project(":core:network"))
             api(libs.koin.core)
             api(libs.koin.compose.viewmodel)
             implementation(libs.androidx.lifecycle.viewmodel)

@@ -42,61 +42,63 @@ suspend fun runLowStockCheck(
     alertRepository: NotificationPreferencesRepository,
     poster: NotificationPoster,
 ) = checkMutex.withLock {
-    val prefs = alertRepository.loadPrefs()
-    if (!prefs.enabled) return
+    spoolRepository.withActiveInventory inventory@ {
+        val prefs = alertRepository.loadPrefs()
+        if (!prefs.enabled) return@inventory
 
-    val now = Clock.System.now()
-    val local = now.toLocalDateTime(TimeZone.currentSystemDefault())
-    val nowMillis = now.toEpochMilliseconds()
-    val minuteOfDay = local.hour * 60 + local.minute
-    val epochDay = local.date.toEpochDays().toLong()
+        val now = Clock.System.now()
+        val local = now.toLocalDateTime(TimeZone.currentSystemDefault())
+        val nowMillis = now.toEpochMilliseconds()
+        val minuteOfDay = local.hour * 60 + local.minute
+        val epochDay = local.date.toEpochDays().toLong()
 
-    val configs = alertRepository.spoolConfigs().first()
-    val stocks = spoolRepository.getAllSpools().first().map {
-        SpoolStock(it.id, "${it.brand} ${it.colorName}", it.currentWeight, it.totalWeight)
-    }
-
-    // Re-arm: any spool that alerted and is now back above threshold becomes eligible again.
-    // Runs before the enabled/quiet-hours gates so refills always clear the flag.
-    configs.values.filter { it.alertedWhileLow }.forEach { config ->
-        val stock = stocks.find { it.id == config.spoolId }
-        if (stock != null && !LowStockEvaluator.isLow(stock.currentWeight, stock.totalWeight, config.thresholdGrams)) {
-            alertRepository.saveSpoolConfig(config.copy(alertedWhileLow = false))
+        val configs = alertRepository.spoolConfigs().first()
+        val stocks = spoolRepository.getAllSpools().first().map {
+            SpoolStock(it.id, "${it.brand} ${it.colorName}", it.currentWeight, it.totalWeight)
         }
-    }
 
-    val eligible = LowStockEvaluator.eligibleSpools(stocks, configs, prefs, nowMillis, minuteOfDay)
-    if (eligible.isEmpty()) return
-    val quota = LowStockEvaluator.remainingQuota(prefs, epochDay)
-    if (quota <= 0) return
-
-    // A batched summary covers ALL eligible spools and consumes a single slot; never
-    // truncate it by quota or the leftover spools fire as extra notifications on the
-    // next check. Only individual notifications respect the remaining quota.
-    val batched = eligible.size >= 2
-    val toNotify = if (batched) eligible else eligible.take(quota)
-
-    val items = if (batched) {
-        listOf(
-            LowStockItem(
-                spoolId = -1,
-                title = getString(Res.string.low_stock_notif_batch_title),
-                body = getString(Res.string.low_stock_notif_batch_body, toNotify.size),
-                reorderUrl = null,
-            )
-        )
-    } else {
-        toNotify.map { stock ->
-            val config = configs[stock.id]
-            LowStockItem(
-                spoolId = stock.id,
-                title = getString(Res.string.low_stock_notif_title),
-                body = getString(Res.string.low_stock_notif_body, stock.label, stock.currentWeight.toInt()),
-                reorderUrl = config?.reorderUrl?.takeIf { it.isNotBlank() },
-            )
+        // Re-arm: any spool that alerted and is now back above threshold becomes eligible again.
+        // Runs before the enabled/quiet-hours gates so refills always clear the flag.
+        configs.values.filter { it.alertedWhileLow }.forEach { config ->
+            val stock = stocks.find { it.id == config.spoolId }
+            if (stock != null && !LowStockEvaluator.isLow(stock.currentWeight, stock.totalWeight, config.thresholdGrams)) {
+                alertRepository.saveSpoolConfig(config.copy(alertedWhileLow = false))
+            }
         }
-    }
 
-    poster.post(items, batched, getString(Res.string.action_reorder))
-    alertRepository.markNotified(toNotify.map { it.id }, nowMillis, epochDay, items.size)
+        val eligible = LowStockEvaluator.eligibleSpools(stocks, configs, prefs, nowMillis, minuteOfDay)
+        if (eligible.isEmpty()) return@inventory
+        val quota = LowStockEvaluator.remainingQuota(prefs, epochDay)
+        if (quota <= 0) return@inventory
+
+        // A batched summary covers ALL eligible spools and consumes a single slot; never
+        // truncate it by quota or the leftover spools fire as extra notifications on the
+        // next check. Only individual notifications respect the remaining quota.
+        val batched = eligible.size >= 2
+        val toNotify = if (batched) eligible else eligible.take(quota)
+
+        val items = if (batched) {
+            listOf(
+                LowStockItem(
+                    spoolId = -1,
+                    title = getString(Res.string.low_stock_notif_batch_title),
+                    body = getString(Res.string.low_stock_notif_batch_body, toNotify.size),
+                    reorderUrl = null,
+                )
+            )
+        } else {
+            toNotify.map { stock ->
+                val config = configs[stock.id]
+                LowStockItem(
+                    spoolId = stock.id,
+                    title = getString(Res.string.low_stock_notif_title),
+                    body = getString(Res.string.low_stock_notif_body, stock.label, stock.currentWeight.toInt()),
+                    reorderUrl = config?.reorderUrl?.takeIf { it.isNotBlank() },
+                )
+            }
+        }
+
+        poster.post(items, batched, getString(Res.string.action_reorder))
+        alertRepository.markNotified(toNotify.map { it.id }, nowMillis, epochDay, items.size)
+    }
 }

@@ -22,6 +22,14 @@ kotlin {
     iosSimulatorArm64()
 
     sourceSets {
+        commonTest.dependencies {
+            implementation(libs.kotlin.test)
+            implementation(libs.kotlinx.coroutines.test)
+        }
+        iosTest.dependencies {
+            implementation(libs.androidx.room.runtime)
+            implementation(libs.androidx.sqlite.bundled)
+        }
         commonMain.dependencies {
             api(project(":core:model"))
             api(project(":core:database"))

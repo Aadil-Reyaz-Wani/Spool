@@ -72,6 +72,7 @@ fun SpoolEntryScreen(
                 SpoolEntryError.INVALID_INPUT -> stringResource(Res.string.entry_invalid_fields)
                 SpoolEntryError.INVALID_RESTOCK -> stringResource(Res.string.entry_invalid_restock)
                 SpoolEntryError.LOAD_FAILED -> stringResource(Res.string.entry_load_failed)
+                SpoolEntryError.CONCURRENT_UPDATE -> stringResource(Res.string.entry_changed_during_edit)
                 SpoolEntryError.SAVE_FAILED -> stringResource(Res.string.entry_save_failed)
                 null -> null
             },

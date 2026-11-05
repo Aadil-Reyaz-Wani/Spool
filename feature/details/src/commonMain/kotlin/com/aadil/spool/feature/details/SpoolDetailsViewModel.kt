@@ -24,7 +24,8 @@ data class PrintObjectUiState(
     val spoolId: Int = 0,
     val gramsUsed: String = "",
     val printTitle: String = "",
-    val isFailed: Boolean = false
+    val isFailed: Boolean = false,
+    val existingLog: UsageLog? = null
 )
 
 open class SpoolDetailsViewModel(
@@ -97,20 +98,14 @@ open class SpoolDetailsViewModel(
                     gramsUsed = parsedDeductedWeight,
                     pricePerPrint = pricePerGram * parsedDeductedWeight,
                 )
-                if (currentState.id == 0) {
-                    val newCurrentWeight = filament.currentWeight - parsedDeductedWeight
-                    if (newCurrentWeight < 0) {
-                        _isError.value = "Cannot log more than the remaining filament weight"
-                        return@launch
-                    }
-                    spoolRepository.updateCurrentWeight(id, newCurrentWeight)
-                    spoolRepository.insertSpoolUsageLog(newUsageLog)
+                val applied = if (currentState.id == 0) {
+                    spoolRepository.insertLogAndDeductWeight(newUsageLog)
                 } else {
-                    val applied = spoolRepository.editLogAndRestoreCurrentWeight(newUsageLog)
-                    if (!applied) {
-                        _isError.value = "Cannot log more than the remaining filament weight"
-                        return@launch
-                    }
+                    spoolRepository.editLogAndRestoreCurrentWeight(newUsageLog)
+                }
+                if (!applied) {
+                    _isError.value = "Cannot log more than the remaining filament weight"
+                    return@launch
                 }
 
                 _printObjectUiState.update { PrintObjectUiState() }
@@ -156,14 +151,6 @@ open class SpoolDetailsViewModel(
     }
 
     fun prepareEditLog(log: UsageLog) {
-        _printObjectUiState.update {
-            it.copy(
-                id = log.id,
-                spoolId = log.spoolId,
-                gramsUsed = log.gramsUsed.toString(),
-                printTitle = log.title,
-                isFailed = log.isFailure
-            )
-        }
+        _printObjectUiState.value = log.toPrintObjectUiState()
     }
 }

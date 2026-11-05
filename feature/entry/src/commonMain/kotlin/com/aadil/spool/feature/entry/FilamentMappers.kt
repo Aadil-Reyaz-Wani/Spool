@@ -22,6 +22,7 @@ data class SpoolEntryUiState(
 )
 
 fun SpoolEntryUiState.toFilament(existing: Filament? = null): Filament {
+    require(id == 0 || existing?.id == id) { "Editing a spool requires its stored entity" }
     val base = existing ?: Filament(
         brand = brand,
         material = material,

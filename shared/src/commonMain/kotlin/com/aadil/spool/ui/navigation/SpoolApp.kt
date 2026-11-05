@@ -13,15 +13,11 @@ import androidx.compose.ui.Modifier
 import org.jetbrains.compose.resources.stringResource
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
-import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
 import androidx.savedstate.serialization.SavedStateConfiguration
-import kotlinx.serialization.modules.SerializersModule
-import kotlinx.serialization.modules.polymorphic
-import kotlinx.serialization.modules.subclass
 import spool.shared.generated.resources.*
 import com.aadil.spool.utils.PlatformBackHandler
 import com.aadil.spool.ui.common.SpoolAppBar
@@ -36,15 +32,20 @@ import com.aadil.spool.ui.screens.entry.SpoolEntryScreen
 import com.aadil.spool.feature.entry.SpoolEntryViewModel
 import com.aadil.spool.ui.screens.history.PrintHistoryScreen
 import com.aadil.spool.feature.history.PrintHistoryViewModel
+import com.aadil.spool.ui.screens.settings.InventoryRecoveryScreen
+import com.aadil.spool.ui.screens.settings.InventoryConflictsScreen
+import com.aadil.spool.ui.screens.settings.AccountScreen
 import com.aadil.spool.ui.screens.settings.AboutScreen
 import com.aadil.spool.ui.screens.settings.HelpScreen
 import com.aadil.spool.feature.settings.SpoolSettingsViewModel
 import com.aadil.spool.ui.screens.splash.SplashScreen
 import com.mikepenz.aboutlibraries.ui.compose.m3.LibrariesContainer
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.first
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 import com.aadil.spool.core.data.repository.NotificationPreferencesRepository
+import com.aadil.spool.core.data.repository.InventorySession
 import com.aadil.spool.core.data.repository.SpoolRepository
 import com.aadil.spool.notifications.NotificationPoster
 import com.aadil.spool.notifications.runLowStockCheck
@@ -76,26 +77,18 @@ fun MySpoolApp(modifier: Modifier = Modifier, initialSpoolId: Int? = null) {
     // Print History
     val spoolPrintUsageHistoryDetails by printHistoryViewModel.spoolPrintUsageHistoryDetails.collectAsStateWithLifecycle()
 
+    val inventorySession = koinInject<InventorySession>()
+    val deletingOwners by inventorySession.deletingOwners.collectAsStateWithLifecycle()
+    val deletionPending = inventorySession.scope.value?.ownerId in deletingOwners
+    val guestCount by inventorySession.guestSpoolCount.collectAsStateWithLifecycle(initialValue = 0)
+
     // Settings
     val selectedCurrency by spoolSettingsViewModel.selectedCurrency.collectAsStateWithLifecycle()
 
     // Navigation
     val backStack = rememberNavBackStack(
         configuration = SavedStateConfiguration {
-            serializersModule = SerializersModule {
-                polymorphic(baseClass = NavKey::class) {
-                    subclass(serializer = Routes.Splash.serializer())
-                    subclass(serializer = Routes.Dashboard.serializer())
-                    subclass(serializer = Routes.SpoolEntry.serializer())
-                    subclass(serializer = Routes.SpoolDetails.serializer())
-                    subclass(serializer = Routes.PrintHistory.serializer())
-                    subclass(serializer = Routes.Filter.serializer())
-                    subclass(serializer = Routes.About.serializer())
-                    subclass(serializer = Routes.OpenSourceLicenses.serializer())
-                    subclass(serializer = Routes.Help.serializer())
-                    subclass(serializer = Routes.FitCheck.serializer())
-                }
-            }
+            serializersModule = spoolNavigationSerializers
         },
         Routes.Splash
     )
@@ -103,7 +96,7 @@ fun MySpoolApp(modifier: Modifier = Modifier, initialSpoolId: Int? = null) {
     // It safely removes the screens from the backstack when the back button is pressed.
     // without the crash if the user presses the back button twice.
     val safePopBackStack: () -> Unit = {
-        if (backStack.size > 1) {
+        if (!deletionPending && backStack.size > 1) {
             backStack.removeLastOrNull()
         }
     }
@@ -129,13 +122,15 @@ fun MySpoolApp(modifier: Modifier = Modifier, initialSpoolId: Int? = null) {
     // the splash transition handles that case.
     LaunchedEffect(initialSpoolId) {
         val id = initialSpoolId ?: return@LaunchedEffect
-        if (backStack.lastOrNull() !is Routes.Splash) {
+        if (backStack.lastOrNull() !is Routes.Splash && spoolRepository.getSpool(id).first() != null) {
             backStack.add(Routes.SpoolDetails(id))
         }
     }
 
     NavDisplay(
-        backStack = backStack,
+        // Keep pending deletion on Account instead of accepting edits that cannot be saved.
+        backStack = if (deletionPending) listOf(Routes.Account) else backStack,
+        onBack = safePopBackStack,
         modifier = modifier,
         entryDecorators = listOf(
             rememberSaveableStateHolderNavEntryDecorator(),
@@ -148,7 +143,9 @@ fun MySpoolApp(modifier: Modifier = Modifier, initialSpoolId: Int? = null) {
                 SplashScreen()
                 LaunchedEffect(Unit) {
                     delay(1500L)
-                    if (initialSpoolId != null) {
+                    if (initialSpoolId != null && spoolRepository.getSpool(initialSpoolId).first() != null) {
+                        // Cold links need a destination to return to.
+                        backStack.add(Routes.Dashboard)
                         backStack.add(Routes.SpoolDetails(initialSpoolId))
                     } else {
                         backStack.add(Routes.Dashboard)
@@ -168,6 +165,7 @@ fun MySpoolApp(modifier: Modifier = Modifier, initialSpoolId: Int? = null) {
                     onCardClick = { id ->
                         backStack.add(Routes.SpoolDetails(id))
                     },
+                    guestInventoryCount = if (inventorySession.scope.value?.ownerId?.isNotEmpty() == true) guestCount else 0,
                     listOfSpools = listOfSpools,
                     listOfUniqueBrandStrings = listOfUniqueBrandStrings,
                     listOfUniqueMaterialTypeStrings = listOfUniqueMaterialTypeStrings,
@@ -183,6 +181,7 @@ fun MySpoolApp(modifier: Modifier = Modifier, initialSpoolId: Int? = null) {
                     },
                     selectedOption = filterAppliedState.whichFilter,
                     selectedCurrency = selectedCurrency,
+                    onAccountClick = { backStack.add(Routes.Account) },
                     onAboutClick = {
                         backStack.add(Routes.About)
                     },
@@ -193,6 +192,19 @@ fun MySpoolApp(modifier: Modifier = Modifier, initialSpoolId: Int? = null) {
                         backStack.add(Routes.FitCheck())
                     }
                 )
+            }
+
+            entry<Routes.InventoryRecovery> {
+                InventoryRecoveryScreen(navigateUp = safePopBackStack)
+            }
+
+            entry<Routes.InventoryConflicts> {
+                InventoryConflictsScreen(navigateUp = safePopBackStack)
+            }
+
+            entry<Routes.Account> {
+                AccountScreen(navigateUp = safePopBackStack, reviewConflicts = { backStack.add(Routes.InventoryConflicts) },
+                    openRecovery = { backStack.add(Routes.InventoryRecovery) })
             }
 
             // Entry Screen Entry

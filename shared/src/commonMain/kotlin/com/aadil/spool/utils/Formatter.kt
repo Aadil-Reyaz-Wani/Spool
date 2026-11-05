@@ -1,5 +1,8 @@
 package com.aadil.spool.utils
 
+import kotlin.math.abs
+import kotlin.math.roundToLong
+
 fun Double.formatAsCurrency(currencyCode: String): String {
     val symbol = when (currencyCode.uppercase()) {
         "USD" -> "$"
@@ -11,11 +14,11 @@ fun Double.formatAsCurrency(currencyCode: String): String {
         "AUD" -> "$"
         else -> "$currencyCode "
     }
-    val rounded = (this * 100.0).toLong() / 100.0
-    val integerPart = rounded.toLong()
-    val fracPart = ((rounded - integerPart) * 100).toLong().let { if (it < 0) -it else it }
-    val fracStr = if (fracPart < 10) "0$fracPart" else "$fracPart"
-    return "$symbol$integerPart.$fracStr"
+    val cents = if (isNaN()) 0L else (this * 100.0).roundToLong()
+    val sign = if (cents < 0) "-" else ""
+    val integerPart = abs(cents / 100)
+    val fracStr = abs(cents % 100).toString().padStart(2, '0')
+    return "$symbol$sign$integerPart.$fracStr"
 }
 
 fun Double.formatToInternationalStandard(maxDecimals: Int = 1): String {

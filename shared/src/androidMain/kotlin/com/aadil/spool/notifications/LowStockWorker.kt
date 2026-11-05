@@ -8,14 +8,19 @@ import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.WorkerParameters
+import com.aadil.spool.core.data.repository.InventorySession
+import com.aadil.spool.core.data.repository.InventoryNotifications
 import com.aadil.spool.core.data.repository.NotificationPreferencesRepository
 import com.aadil.spool.core.data.repository.SpoolRepository
+import kotlinx.coroutines.withTimeoutOrNull
 import org.koin.core.context.GlobalContext
 import org.koin.dsl.module
 import java.util.concurrent.TimeUnit
 
 val androidNotificationsModule = module {
-    single<NotificationPoster> { AndroidNotificationPoster(get()) }
+    single { AndroidNotificationPoster(get()) }
+    single<NotificationPoster> { get<AndroidNotificationPoster>() }
+    single<InventoryNotifications> { get<AndroidNotificationPoster>() }
 }
 
 class LowStockWorker(
@@ -26,6 +31,7 @@ class LowStockWorker(
     override suspend fun doWork(): Result {
         AndroidNotificationPoster.ensureChannel(applicationContext)
         val koin = GlobalContext.get()
+        if (withTimeoutOrNull(10_000) { koin.get<InventorySession>().awaitReady() } == null) return Result.retry()
         runLowStockCheck(
             spoolRepository = koin.get<SpoolRepository>(),
             alertRepository = koin.get<NotificationPreferencesRepository>(),

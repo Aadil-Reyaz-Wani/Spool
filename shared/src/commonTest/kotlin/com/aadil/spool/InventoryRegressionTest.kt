@@ -160,6 +160,26 @@ class InventoryRegressionTest {
         assertEquals(original.copy(price = 205.0), repo.spools.value.single())
     }
 
+    @Test fun newPrintSavesWeightAndHistoryTogetherAndFailureKeepsDraft() = runTest {
+        val repo = FakeSpoolRepository(listOf(testSpool())).apply { failSaving = true }
+        val vm = keep(SpoolDetailsViewModel(repo))
+        vm.quickDeductionUpdateField("50", "New print", false)
+        vm.deductCurrentWeight(7, "50")
+        advanceUntilIdle()
+        assertEquals(1000.0, repo.spools.value.single().currentWeight)
+        assertTrue(repo.logs.value.isEmpty())
+        assertEquals("New print", vm.printObjectUiState.value.printTitle)
+        repo.failSaving = false
+        vm.deductCurrentWeight(7, "50")
+        advanceUntilIdle()
+        assertEquals(950.0, repo.spools.value.single().currentWeight)
+        assertEquals(50.0, repo.logs.value.single().gramsUsed)
+        assertEquals(10.0, repo.logs.value.single().pricePerPrint)
+        assertEquals("New print", repo.logs.value.single().title)
+        assertEquals("", vm.printObjectUiState.value.printTitle)
+        assertEquals(1, repo.writes)
+    }
+
     @Test fun editedPrintRecalculatesCostFromNewWeightWithoutDetailsSubscription() = runTest {
         val repo = FakeSpoolRepository(listOf(testSpool().copy(currentWeight = 899.5)))
         val log = UsageLog(id = 3, spoolId = 7, title = "Print", gramsUsed = 100.5, pricePerPrint = 20.10, timestamp = 1, isFailure = false)
@@ -173,6 +193,8 @@ class InventoryRegressionTest {
         assertEquals(50.0, repo.logs.value.single().gramsUsed)
         assertEquals(10.0, repo.logs.value.single().pricePerPrint)
         assertEquals("Edited", repo.logs.value.single().title)
+        assertEquals(log.uuid, repo.logs.value.single().uuid)
+        assertEquals(log.timestamp, repo.logs.value.single().timestamp)
         assertNull(vm.isError.value)
     }
 
@@ -263,6 +285,31 @@ class InventoryRegressionTest {
         advanceUntilIdle()
         assertEquals(SpoolEntryError.LOAD_FAILED, vm.error.value)
         assertFalse(vm.isLoading.value)
+        assertEquals(0, repo.writes)
+    }
+
+    @Test fun cloudChangeWhileEditingDoesNotGetOverwrittenAndDraftSurvivesRecreation() = runTest {
+        val repo = FakeSpoolRepository(listOf(testSpool()))
+        val saved = SavedStateHandle()
+        val vm = keep(SpoolEntryViewModel(repo, saved))
+        vm.loadSpool(7)
+        advanceUntilIdle()
+        vm.update { copy(brand = "Unsaved local brand") }
+        val remote = testSpool().copy(currentWeight = 500.0, note = "Another device")
+        repo.spools.value = listOf(remote)
+        vm.saveOrUpdateSpool(7)
+        advanceUntilIdle()
+        assertEquals(SpoolEntryError.CONCURRENT_UPDATE, vm.error.value)
+        assertEquals(remote, repo.spools.value.single())
+        assertEquals("Unsaved local brand", vm.spoolEntryUiState.value.brand)
+        assertFalse(vm.saveCompleted.value)
+        val recreated = keep(SpoolEntryViewModel(repo, restored(saved)))
+        recreated.loadSpool(7)
+        advanceUntilIdle()
+        recreated.saveOrUpdateSpool(7)
+        advanceUntilIdle()
+        assertEquals(SpoolEntryError.CONCURRENT_UPDATE, recreated.error.value)
+        assertEquals(remote, repo.spools.value.single())
         assertEquals(0, repo.writes)
     }
 }

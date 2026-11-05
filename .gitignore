@@ -1,6 +1,7 @@
 *.iml
 **/.gradle/
 /local.properties
+/supabase.local.properties
 /.idea/caches
 /.idea/libraries
 /.idea/modules.xml
@@ -43,3 +44,6 @@ iosApp/Pods/
 .opencode/
 graphify-out/
 
+/.lavish/
+/SUPABASE.md
+/supabase.local.properties.example

@@ -16,7 +16,11 @@ import spool.shared.generated.resources.low_stock_channel_name
 
 private const val CHANNEL_ID = "low_stock"
 
-class AndroidNotificationPoster(private val context: Context) : NotificationPoster {
+class AndroidNotificationPoster(private val context: Context) : NotificationPoster, com.aadil.spool.core.data.repository.InventoryNotifications {
+
+    override fun clearInventoryNotifications() {
+        NotificationManagerCompat.from(context).cancelAll()
+    }
 
     override fun post(items: List<LowStockItem>, batched: Boolean, actionLabel: String) {
         val manager = NotificationManagerCompat.from(context)
