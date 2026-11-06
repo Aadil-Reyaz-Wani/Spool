@@ -1,5 +1,7 @@
 package com.aadil.spool.core.data.sync
 
+import com.aadil.spool.core.data.analytics.UsageAnalytics
+import com.aadil.spool.core.data.analytics.UsageEvent
 import com.aadil.spool.core.data.repository.InventoryScope
 import com.aadil.spool.core.data.repository.InventorySession
 import com.aadil.spool.core.network.InventoryUploadRemote
@@ -27,6 +29,7 @@ class InventoryUploader(
     private val dao: InventorySyncDao,
     private val session: InventorySession,
     private val remote: InventoryUploadRemote,
+    private val analytics: UsageAnalytics? = null,
 ) {
     private val mutex = Mutex()
 
@@ -54,6 +57,7 @@ class InventoryUploader(
             when (reply) {
                 is InventoryUploadReply.Applied -> {
                     dao.acknowledge(batch, reply.revision)
+                    analytics?.record(UsageEvent.SyncUploadApplied)
                     InventoryUploadResult.Applied
                 }
                 is InventoryUploadReply.Conflict -> {
@@ -62,7 +66,10 @@ class InventoryUploader(
                 }
                 InventoryUploadReply.NotAuthenticated -> InventoryUploadResult.NotAuthenticated
                 InventoryUploadReply.RetryLater -> InventoryUploadResult.RetryLater
-                InventoryUploadReply.Rejected -> InventoryUploadResult.Rejected
+                InventoryUploadReply.Rejected -> {
+                    analytics?.record(UsageEvent.SyncRejected)
+                    InventoryUploadResult.Rejected
+                }
             }
         }
     }

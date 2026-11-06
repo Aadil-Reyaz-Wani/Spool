@@ -1,5 +1,7 @@
 package com.aadil.spool.feature.settings
 
+import com.aadil.spool.core.data.analytics.UsageAnalytics
+import com.aadil.spool.core.data.analytics.UsageEvent
 import androidx.lifecycle.SavedStateHandle
 import com.aadil.spool.core.network.normalizeDisplayName
 import com.aadil.spool.core.network.MAX_DISPLAY_NAME_LENGTH
@@ -44,6 +46,7 @@ class AccountViewModel(
     private val inventory: InventorySession? = null,
     private val uploads: InventoryUploadCoordinator? = null,
     private val saved: SavedStateHandle = SavedStateHandle(),
+    private val analytics: UsageAnalytics? = null,
 ) : ViewModel() {
     private var pendingImport: InventoryScope? = null
     private val mutableState = MutableStateFlow(AccountUiState())
@@ -247,6 +250,7 @@ class AccountViewModel(
         viewModelScope.launch {
             try {
                 repository.signIn(requestCredentials())
+                analytics?.record(UsageEvent.SignInCompleted)
             } catch (_: GoogleSignInCancelled) {
                 // Dismissing Google's account picker is not an authentication error.
             } catch (_: TimeoutCancellationException) {

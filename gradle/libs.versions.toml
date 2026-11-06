@@ -1,4 +1,6 @@
 [versions]
+firebaseBom = "35.1.0"
+googleServices = "4.5.0"
 aboutlibrariesCore = "14.1.0"
 agp = "9.2.0"
 datastorePreferences = "1.2.1"
@@ -38,6 +40,8 @@ ktor = "3.4.0"
 desugarJdkLibs = "2.1.5"
 
 [libraries]
+firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "firebaseBom" }
+firebase-analytics = { module = "com.google.firebase:firebase-analytics" }
 androidx-credentials = { module = "androidx.credentials:credentials", version = "1.6.0" }
 androidx-credentials-play-services-auth = { module = "androidx.credentials:credentials-play-services-auth", version = "1.6.0" }
 googleid = { module = "com.google.android.libraries.identity.googleid:googleid", version = "1.1.1" }
@@ -109,6 +113,7 @@ androidx-runner = { group = "androidx.test", name = "runner", version.ref = "run
 androidx-core = { group = "androidx.test", name = "core", version.ref = "core" }
 
 [plugins]
+google-services = { id = "com.google.gms.google-services", version.ref = "googleServices" }
 android-application = { id = "com.android.application", version.ref = "agp" }
 kotlin-multiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }

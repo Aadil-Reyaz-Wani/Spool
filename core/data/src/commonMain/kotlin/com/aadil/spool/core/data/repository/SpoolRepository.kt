@@ -1,5 +1,7 @@
 package com.aadil.spool.core.data.repository
 
+import com.aadil.spool.core.data.analytics.UsageAnalytics
+import com.aadil.spool.core.data.analytics.UsageEvent
 import com.aadil.spool.data.dao.SpoolDao
 import com.aadil.spool.data.entity.Filament
 import com.aadil.spool.data.entity.UsageLog
@@ -70,6 +72,7 @@ class DefaultSpoolRepository(
     private val spoolDao: SpoolDao,
     private val inventorySession: InventorySession,
     private val inventoryScope: InventoryScope,
+    private val analytics: UsageAnalytics? = null,
 ) : SpoolRepository {
     private val ownerId get() = inventoryScope.ownerId
 
@@ -87,7 +90,12 @@ class DefaultSpoolRepository(
 
     override fun getAllSpools(): Flow<List<Filament>> = visible(spoolDao.getOwnedSpools(ownerId), emptyList())
     override fun getSpool(id: Int): Flow<Filament?> = visible(spoolDao.getOwnedSpool(ownerId, id), null)
-    override suspend fun insertSpool(filament: Filament) = write { spoolDao.insertOwnedSpool(ownerId, filament) }
+    override suspend fun insertSpool(filament: Filament) = write {
+        if (filament.id == 0) {
+            spoolDao.insertOwnedSpool(ownerId, filament)
+            analytics?.record(UsageEvent.SpoolCreated)
+        }
+    }
     override suspend fun updateSpool(filament: Filament) = write { spoolDao.updateOwnedSpool(ownerId, filament, false) }
     override suspend fun updateSpoolAndUsageCosts(filament: Filament) = write { spoolDao.updateOwnedSpool(ownerId, filament, true) }
     override suspend fun updateSpoolFromDraft(filament: Filament, expected: Filament): Boolean = active(false) { spoolDao.updateOwnedSpoolFromDraft(ownerId, filament, expected) }
@@ -103,7 +111,11 @@ class DefaultSpoolRepository(
     override fun getSpoolsByMaterialType(material: String): Flow<List<Filament>> = getAllSpools().map { rows -> rows.filter { it.material == material } }
     override fun getSpoolsByColorHex(colorHex: Long): Flow<List<Filament>> = getAllSpools().map { rows -> rows.filter { it.colorHex == colorHex } }
 
-    override suspend fun insertLogAndDeductWeight(log: UsageLog): Boolean = active(false) { spoolDao.insertOwnedLogAndDeductWeight(ownerId, log) }
+    override suspend fun insertLogAndDeductWeight(log: UsageLog): Boolean = active(false) {
+        spoolDao.insertOwnedLogAndDeductWeight(ownerId, log).also { applied ->
+            if (applied) analytics?.record(UsageEvent.UsageLogged)
+        }
+    }
     override suspend fun insertUsageLog(log: UsageLog) = write { spoolDao.insertOwnedLog(ownerId, log) }
     override suspend fun deleteUsageLog(log: UsageLog) = write { spoolDao.deleteOwnedLog(ownerId, log, false) }
     override suspend fun updateUsageLog(log: UsageLog) = write { spoolDao.updateOwnedLog(ownerId, log, false); Unit }

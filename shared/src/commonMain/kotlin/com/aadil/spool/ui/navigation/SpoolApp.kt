@@ -35,6 +35,9 @@ import com.aadil.spool.feature.history.PrintHistoryViewModel
 import com.aadil.spool.ui.screens.settings.InventoryRecoveryScreen
 import com.aadil.spool.ui.screens.settings.InventoryConflictsScreen
 import com.aadil.spool.ui.screens.settings.AccountScreen
+import com.aadil.spool.feature.settings.AnalyticsViewModel
+import com.aadil.spool.ui.screens.settings.AnalyticsScreen
+import com.aadil.spool.ui.screens.settings.AnalyticsConsentDialog
 import com.aadil.spool.ui.screens.settings.AboutScreen
 import com.aadil.spool.ui.screens.settings.HelpScreen
 import com.aadil.spool.feature.settings.SpoolSettingsViewModel
@@ -59,6 +62,10 @@ fun MySpoolApp(modifier: Modifier = Modifier, initialSpoolId: Int? = null) {
     val spoolDetailsViewModel: SpoolDetailsViewModel = koinViewModel()
     val printHistoryViewModel: PrintHistoryViewModel = koinViewModel()
     val spoolSettingsViewModel: SpoolSettingsViewModel = koinViewModel()
+
+    val analyticsViewModel: AnalyticsViewModel = koinViewModel()
+    val analyticsConsent by analyticsViewModel.consent.collectAsStateWithLifecycle()
+    val analyticsPromptDismissed by analyticsViewModel.promptDismissed.collectAsStateWithLifecycle()
 
     // Dashboard
     val listOfSpools by dashboardViewModel.getAllSpool.collectAsStateWithLifecycle()
@@ -127,6 +134,11 @@ fun MySpoolApp(modifier: Modifier = Modifier, initialSpoolId: Int? = null) {
         }
     }
 
+    if (backStack.lastOrNull() == Routes.Dashboard && analyticsConsent.loaded &&
+        analyticsConsent.available && analyticsConsent.choice == null && !analyticsPromptDismissed && !deletionPending) {
+        AnalyticsConsentDialog(analyticsViewModel)
+    }
+
     NavDisplay(
         // Keep pending deletion on Account instead of accepting edits that cannot be saved.
         backStack = if (deletionPending) listOf(Routes.Account) else backStack,
@@ -182,6 +194,7 @@ fun MySpoolApp(modifier: Modifier = Modifier, initialSpoolId: Int? = null) {
                     selectedOption = filterAppliedState.whichFilter,
                     selectedCurrency = selectedCurrency,
                     onAccountClick = { backStack.add(Routes.Account) },
+                    onPrivacyClick = { backStack.add(Routes.AnalyticsPrivacy) },
                     onAboutClick = {
                         backStack.add(Routes.About)
                     },
@@ -369,6 +382,10 @@ fun MySpoolApp(modifier: Modifier = Modifier, initialSpoolId: Int? = null) {
                     },
                     selectedCurrency = selectedCurrency
                 )
+            }
+
+            entry<Routes.AnalyticsPrivacy> {
+                AnalyticsScreen(navigateUp = safePopBackStack, viewModel = analyticsViewModel)
             }
 
             entry<Routes.About> {

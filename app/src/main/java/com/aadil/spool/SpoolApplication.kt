@@ -1,6 +1,7 @@
 package com.aadil.spool
 
 import android.app.Application
+import com.aadil.spool.core.data.analytics.UsageAnalytics
 import com.aadil.spool.core.data.di.dataModule
 import com.aadil.spool.core.data.sync.InventoryUploadCoordinator
 import com.aadil.spool.sync.platformInventoryUploadModule
@@ -35,6 +36,7 @@ class SpoolApplication : Application() {
                 settingsModule
             )
         }
+        application.koin.get<UsageAnalytics>().start()
         application.koin.get<InventoryUploadCoordinator>().start()
     }
 }
