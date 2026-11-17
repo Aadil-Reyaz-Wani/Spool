@@ -41,6 +41,8 @@ kotlin {
         }
         androidMain.dependencies {
             implementation(libs.androidx.datastore.preferences)
+            implementation(project.dependencies.platform(libs.firebase.bom))
+            implementation(libs.firebase.analytics)
             implementation(libs.androidx.core.ktx)
         }
     }

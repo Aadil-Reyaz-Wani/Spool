@@ -331,4 +331,14 @@
     <string name="account_delete_pending">Account deletion has started. Inventory changes and sync for this account are paused on this device until deletion is confirmed. Reconnect and retry. If you cannot sign in or retry, contact spool.help@gmail.com. Do not import this inventory into another account.</string>
     <string name="account_delete_retry">Retry account deletion</string>
     <string name="account_delete_error">Could not confirm account deletion. The request may have reached the server. Reconnect and retry, or contact spool.help@gmail.com. Unsynchronized local data is kept until cloud deletion is confirmed.</string>
+    <string name="analytics_privacy_title">Privacy</string>
+    <string name="analytics_usage_title">Optional usage analytics</string>
+    <string name="analytics_consent_title">Help improve Spool?</string>
+    <string name="analytics_description">With your permission, Spool uses Google Analytics for Firebase to measure app sessions, spool creation, usage logging, sign-in completion and sync outcomes. Firebase also receives app and device information, approximate location and an installation identifier. We do not include your name, email, spool details or print titles in analytics events.</string>
+    <string name="analytics_optional">Analytics is off unless you allow it. Your choice does not affect inventory, sign-in or cloud sync. You can change it in Settings > Privacy. Turning it off stops collection and resets analytics data on this device; it does not delete reports already received by Google.</string>
+    <string name="analytics_allow">Allow analytics</string>
+    <string name="analytics_decline">No thanks</string>
+    <string name="analytics_unavailable">Analytics is not available in this build or on this platform.</string>
+    <string name="analytics_save_error">Could not save your choice. Please try again.</string>
+    <string name="analytics_retry">Try again</string>
 </resources>

@@ -28,6 +28,9 @@ sealed interface Routes : NavKey {
     object About : Routes
 
     @Serializable
+    object AnalyticsPrivacy : Routes
+
+    @Serializable
     object Account : Routes
 
     @Serializable

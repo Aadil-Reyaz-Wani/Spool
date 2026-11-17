@@ -47,3 +47,5 @@ graphify-out/
 /.lavish/
 /SUPABASE.md
 /supabase.local.properties.example
+
+/app/google-services.json

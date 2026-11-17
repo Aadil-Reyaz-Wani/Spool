@@ -1,5 +1,7 @@
 package com.aadil.spool.core.data.sync
 
+import com.aadil.spool.core.data.analytics.UsageAnalytics
+import com.aadil.spool.core.data.analytics.UsageEvent
 import com.aadil.spool.core.data.repository.InventoryScope
 import com.aadil.spool.core.data.repository.InventorySession
 import com.aadil.spool.core.model.RemoteInventorySnapshot
@@ -21,6 +23,7 @@ class InventoryDownloader(
     private val dao: InventorySyncDao,
     private val session: InventorySession,
     private val remote: InventoryPullRemote,
+    private val analytics: UsageAnalytics? = null,
 ) {
     private val mutex = Mutex()
 
@@ -53,11 +56,15 @@ class InventoryDownloader(
                     dao.applyPull(page, conflict, page.snapshot?.takeIf { it.spool.deletedAt != null }?.let {
                         Json.encodeToString(RemoteInventorySnapshot.serializer(), it)
                     })
+                    if (page.snapshot != null) analytics?.record(UsageEvent.SyncDownloadProcessed)
                     if (page.hasMore) InventoryUploadResult.Applied else InventoryUploadResult.NoWork
                 }
                 InventoryPullReply.NotAuthenticated -> InventoryUploadResult.NotAuthenticated
                 InventoryPullReply.RetryLater -> InventoryUploadResult.RetryLater
-                InventoryPullReply.Rejected -> InventoryUploadResult.Rejected
+                InventoryPullReply.Rejected -> {
+                    analytics?.record(UsageEvent.SyncRejected)
+                    InventoryUploadResult.Rejected
+                }
             }
         }
     }

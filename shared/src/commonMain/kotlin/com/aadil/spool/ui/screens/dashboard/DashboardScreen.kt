@@ -85,6 +85,7 @@ fun DashboardScreen(
     onHelpClick: () -> Unit,
     onFitCheckClick: () -> Unit = {},
     onAccountClick: () -> Unit = {},
+    onPrivacyClick: () -> Unit = {},
     guestInventoryCount: Int = 0,
 ) {
 
@@ -129,6 +130,10 @@ fun DashboardScreen(
                         onAccountClick = {
                             isSettingsMenuExpanded = false
                             onAccountClick()
+                        },
+                        onPrivacyClick = {
+                            isSettingsMenuExpanded = false
+                            onPrivacyClick()
                         },
                         onFitCheckClick = onFitCheckClick
                     )
@@ -347,6 +352,7 @@ fun DropdownMenuWithDetails(
     onHelpClick: () -> Unit,
     onFitCheckClick: () -> Unit = {},
     onAccountClick: () -> Unit = {},
+    onPrivacyClick: () -> Unit = {},
 ) {
     DropdownMenu(
         expanded = expanded,
@@ -376,6 +382,11 @@ fun DropdownMenuWithDetails(
             text = { Text("Currency") },
             trailingIcon = { Icon(Icons.Outlined.Wallet, contentDescription = null) },
             onClick = onCurrencyClick
+        )
+        DropdownMenuItem(
+            text = { Text(stringResource(Res.string.analytics_privacy_title)) },
+            trailingIcon = { Icon(Icons.Outlined.Info, contentDescription = null) },
+            onClick = onPrivacyClick
         )
         DropdownMenuItem(
             text = { Text("About") },
